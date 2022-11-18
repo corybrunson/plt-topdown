@@ -4,8 +4,7 @@
 #' @name plot
 #' @aliases plot,Rcpp_PersistenceLandscape-method
 #' @include PersistenceLandscape.r
-#' @param x A persistence landscape object of class
-#'   'Rcpp_PersistenceLandscape'.
+#' @param x A persistence landscape object of class 'Rcpp_PersistenceLandscape'.
 #' @param replace_inf When using an exact representation of a persistence
 #'   landscape, infinite values can appear. If not `NULL`, this value will
 #'   replace `Inf` (and its negative will replace `-Inf`) in the plot.
@@ -15,16 +14,18 @@
 #'   [grDevices::hcl.pals()], or the name of a palette function documented there
 #'   (e.g. `'rainbow()'`), or a vector of colors for [grDevices::colorRamp()] to
 #'   interpolate.
-#' @param ... Additional parameters passed to [grDevices::hcl.colors()],
-#'   [grDevices::colorRampPalette()] (`alpha` and `rev`), or [base::plot()]
-#'   (others). Values passed to `type` or `col` will be ignored with a message.
+#' @param alpha,rev Parameters passed to [grDevices::hcl.colors()],
+#'   [grDevices::colorRampPalette()].
+#' @param ... Additional parameters passed to [base::plot()]. Values passed to
+#'   `type` or `col` will be ignored with a message.
 #' @example inst/examples/ex-plot.r
 #' @export
 setMethod(
   "plot",
   c(x = "Rcpp_PersistenceLandscape"),
   function(
-    x, replace_inf = NULL, n_levels = NULL, palette = "viridis", ...
+    x, replace_inf = NULL, n_levels = NULL,
+    palette = "viridis", alpha = NULL, rev = FALSE, ...
   ) {
     # pre-process internal representation of landscape
     internal <- x$getInternal()
@@ -45,11 +46,9 @@ setMethod(
     dots <- list(...)
     
     # create color palette
-    col_dots <- dots[intersect(c("alpha", "rev"), names(dots))]
-    dots <- dots[setdiff(names(dots), names(col_dots))]
     cols <- colorLevels(
-      n = n_levels, palette = palette,
-      alpha = col_dots$alpha, rev = col_dots$rev %||% FALSE
+      n = n_levels,
+      palette = palette, alpha = alpha, rev = rev
     )
     
     # reconcile defaults with dots
@@ -103,7 +102,7 @@ accessLevel <- function(internal, level) {
   }
 }
 
-colorLevels <- function(n, palette, alpha = NULL, rev = FALSE) {
+colorLevels <- function(n, palette, alpha, rev) {
   
   if (length(palette) == 1L) {
     

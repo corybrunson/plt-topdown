@@ -6,13 +6,20 @@
 \alias{show,Rcpp_PersistenceLandscape-method}
 \title{Plot Method for Persistence Landscapes.}
 \usage{
-\S4method{plot}{Rcpp_PersistenceLandscape}(x, replace_inf = NULL, n_levels = NULL, palette = "viridis", ...)
+\S4method{plot}{Rcpp_PersistenceLandscape}(
+  x,
+  replace_inf = NULL,
+  n_levels = NULL,
+  palette = "viridis",
+  alpha = NULL,
+  rev = FALSE,
+  ...
+)
 
 \S4method{show}{Rcpp_PersistenceLandscape}(object)
 }
 \arguments{
-\item{x}{A persistence landscape object of class
-'Rcpp_PersistenceLandscape'.}
+\item{x}{A persistence landscape object of class 'Rcpp_PersistenceLandscape'.}
 
 \item{replace_inf}{When using an exact representation of a persistence
 landscape, infinite values can appear. If not \code{NULL}, this value will
@@ -26,9 +33,11 @@ determined to be the number of levels in \code{pl} or \code{x}.}
 (e.g. \code{'rainbow()'}), or a vector of colors for \code{\link[grDevices:colorRamp]{grDevices::colorRamp()}} to
 interpolate.}
 
-\item{...}{Additional parameters passed to \code{\link[grDevices:palettes]{grDevices::hcl.colors()}},
-\code{\link[grDevices:colorRamp]{grDevices::colorRampPalette()}} (\code{alpha} and \code{rev}), or \code{\link[base:plot]{base::plot()}}
-(others). Values passed to \code{type} or \code{col} will be ignored with a message.}
+\item{alpha, rev}{Parameters passed to \code{\link[grDevices:palettes]{grDevices::hcl.colors()}},
+\code{\link[grDevices:colorRamp]{grDevices::colorRampPalette()}}.}
+
+\item{...}{Additional parameters passed to \code{\link[base:plot]{base::plot()}}. Values passed to
+\code{type} or \code{col} will be ignored with a message.}
 
 \item{object}{A \link{PersistenceLandscape} object.}
 }
