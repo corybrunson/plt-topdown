@@ -1,0 +1,11 @@
+# R project
+^.*\.Rproj$
+^\.Rproj\.user$
+
+# package supplementation
+LICENSE
+README.rmd
+docs
+
+# ignore
+ignore

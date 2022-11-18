@@ -29,6 +29,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <Rcpp.h>
 
 #include "Configure.h"
 
@@ -37,8 +38,8 @@
 
 double computeDistanceOfPointsInPlane(std::pair<double, double> p1,
                                       std::pair<double, double> p2) {
-  // std::cerr << "Computing distance of points : (" << p1.first << "," <<
-  // p1.second << ") and (" << p2.first << "," << p2.second << ")\n"; std::cerr
+  // Rcpp::Rcerr << "Computing distance of points : (" << p1.first << "," <<
+  // p1.second << ") and (" << p2.first << "," << p2.second << ")\n"; Rcpp::Rcerr
   // << "Distance : " << sqrt( (p1.first-p2.first)*(p1.first-p2.first) +
   // (p1.second-p2.second)*(p1.second-p2.second) ) << "\n";
   return sqrt((p1.first - p2.first) * (p1.first - p2.first) +
@@ -243,9 +244,9 @@ void PersistenceBarcodes::putToBins(size_t numberOfBins) {
   double dx = (minMax.second - minMax.first) / (double)numberOfBins;
 
   if (dbg) {
-    std::cerr << "Min : " << minMax.first << std::endl;
-    std::cerr << "Max : " << minMax.second << std::endl;
-    std::cerr << "dx : " << dx << std::endl;
+    Rcpp::Rcerr << "Min : " << minMax.first << std::endl;
+    Rcpp::Rcerr << "Max : " << minMax.second << std::endl;
+    Rcpp::Rcerr << "dx : " << dx << std::endl;
   }
 
   for (size_t i = 0; i != this->barcodes.size(); ++i) {
@@ -286,9 +287,9 @@ void PersistenceBarcodes::sort() {
 bool PersistenceBarcodes::compare(PersistenceBarcodes &b) {
   bool dbg = true;
   if (dbg) {
-    std::cerr << "this->barcodes.size() : " << this->barcodes.size()
+    Rcpp::Rcerr << "this->barcodes.size() : " << this->barcodes.size()
               << std::endl;
-    std::cerr << "b.barcodes.size() : " << b.barcodes.size() << std::endl;
+    Rcpp::Rcerr << "b.barcodes.size() : " << b.barcodes.size() << std::endl;
   }
   if (this->barcodes.size() != b.barcodes.size())
     return false;
@@ -296,9 +297,9 @@ bool PersistenceBarcodes::compare(PersistenceBarcodes &b) {
   b.sort();
   for (size_t i = 0; i != this->barcodes.size(); ++i) {
     if (this->barcodes[i] != b.barcodes[i]) {
-      std::cerr << "this->barcodes[" << i << "] = " << this->barcodes[i]
+      Rcpp::Rcerr << "this->barcodes[" << i << "] = " << this->barcodes[i]
                 << std::endl;
-      std::cerr << "b.barcodes[" << i << "] = " << b.barcodes[i] << std::endl;
+      Rcpp::Rcerr << "b.barcodes[" << i << "] = " << b.barcodes[i] << std::endl;
       getchar();
       return false;
     }
@@ -328,7 +329,7 @@ void PersistenceBarcodes::setAverageMidpointToZero() {
   double average = computeAverageOfMidpointOfBarcodesWeightedByLength();
 
   if (dbg) {
-    std::cerr << "average : " << average << std::endl;
+    Rcpp::Rcerr << "average : " << average << std::endl;
   }
 
   // shift every barcode by -average
@@ -561,14 +562,14 @@ PersistenceBarcodes::PersistenceBarcodes(const PersistenceBarcodes &orgyginal) {
 
 PersistenceBarcodes PersistenceBarcodes::
 operator=(const PersistenceBarcodes &rhs) {
-  // std::cout << "Before : " << this->barcodes.size() << "\n";
+  // Rcpp::Rcout << "Before : " << this->barcodes.size() << "\n";
 
   this->dimensionOfBarcode = rhs.dimensionOfBarcode;
   this->barcodes.clear();
   this->barcodes.insert(this->barcodes.begin(), rhs.barcodes.begin(),
                         rhs.barcodes.end());
 
-  // std::cout << "after : " << this->barcodes.size() << "\n";
+  // Rcpp::Rcout << "after : " << this->barcodes.size() << "\n";
   // std::cin.ignore();
 
   return *this;
@@ -618,8 +619,8 @@ PersistenceBarcodes::PersistenceBarcodes(const char *filename) {
     throw(err);
   } else {
     if (dbg) {
-      std::cerr << "Reading file : " << filename << std::endl;
-      std::cerr << "areThereInfiniteIntervals : " << areThereInfiniteIntervals
+      Rcpp::Rcerr << "Reading file : " << filename << std::endl;
+      Rcpp::Rcerr << "areThereInfiniteIntervals : " << areThereInfiniteIntervals
                 << std::endl;
     }
 
@@ -654,7 +655,7 @@ PersistenceBarcodes::PersistenceBarcodes(const char *filename) {
       }
 
       if (dbg) {
-        std::cerr << "Reading interval : " << begin << " " << end << std::endl;
+        Rcpp::Rcerr << "Reading interval : " << begin << " " << end << std::endl;
       }
 
       // if ( (!areThereInfiniteIntervals) && (end != infty) )
@@ -682,7 +683,7 @@ PersistenceBarcodes::PersistenceBarcodes(const char *filename) {
         }
       } else {
         if (dbg) {
-          std::cerr
+          Rcpp::Rcerr
               << "There are infinite intervals. The vaue of infinity is : "
               << infty << std::endl;
         }
@@ -690,7 +691,7 @@ PersistenceBarcodes::PersistenceBarcodes(const char *filename) {
           this->barcodes.push_back(std::make_pair(begin, end));
         } else {
           if (dbg) {
-            std::cerr << "The endpoint is infinity \n";
+            Rcpp::Rcerr << "The endpoint is infinity \n";
           }
           // we have here infinite interval.
           if (shallInfiniteBarcodesBeIgnored) {
@@ -813,8 +814,8 @@ second.barcodes.begin() , second.barcodes.end() );
 
    if ( computeBottleneckDistanceDBG )
    {
-       std::cerr << "firstBar.size()  : " << firstBar.size() << std::endl;
-       std::cerr << "secondBar.size()  : " << secondBar.size() << std::endl;
+       Rcpp::Rcerr << "firstBar.size()  : " << firstBar.size() << std::endl;
+       Rcpp::Rcerr << "secondBar.size()  : " << secondBar.size() << std::endl;
        std::cin.ignore();
    }
 
@@ -848,7 +849,7 @@ essential parts:
 I converge all the double numbers here to ints by multipling by this big number:
    int bigNumber = 10000;
 
-   if (computeBottleneckDistanceDBG)std::cerr << "Starting creation of cost
+   if (computeBottleneckDistanceDBG)Rcpp::Rcerr << "Starting creation of cost
 matrix \n";
 
    for ( size_t coll = 0 ; coll != (firstBar.size()+secondBar.size()) ; ++coll )
@@ -856,7 +857,7 @@ matrix \n";
        for ( size_t row = 0 ; row != (firstBar.size()+secondBar.size()) ; ++row
 )
        {
-           if (computeBottleneckDistanceDBG)std::cerr << "row = " << row << "\n"
+           if (computeBottleneckDistanceDBG)Rcpp::Rcerr << "row = " << row << "\n"
 << "coll : " << coll << "\n"; if ( ( coll < firstBar.size() ) && ( row <
 secondBar.size() ) )
            {
@@ -865,9 +866,9 @@ secondBar.size() ) )
 (int)bigNumber*pow((double)computeDistanceOfPointsInPlane( firstBar[coll] ,
 secondBar[row] ),(double)p); if (computeBottleneckDistanceDBG)
                {
-                    std::cerr << "Region P1, computing distance between : " <<
-firstBar[coll] << " and " << secondBar[row] << "\n"; std::cerr << "The distance
-is : " << Array[coll][row] << std::endl; std::cerr << "The distance is : " <<
+                    Rcpp::Rcerr << "Region P1, computing distance between : " <<
+firstBar[coll] << " and " << secondBar[row] << "\n"; Rcpp::Rcerr << "The distance
+is : " << Array[coll][row] << std::endl; Rcpp::Rcerr << "The distance is : " <<
 computeDistanceOfPointsInPlane( firstBar[coll] , secondBar[row] ) << std::endl;
                }
            }
@@ -879,10 +880,10 @@ diagonal Array[coll][row] = (int)bigNumber*pow(computeDistanceOfPointsInPlane(
 secondBar[row] , projectionToDiagonal(secondBar[coll - firstBar.size()])
 ),(double)p); if (computeBottleneckDistanceDBG)
                 {
-                    std::cerr << "Region P2, computing distance between : " <<
+                    Rcpp::Rcerr << "Region P2, computing distance between : " <<
 secondBar[row] << " and projection(" <<secondBar[coll - firstBar.size()] << ")
 which is : "  << projectionToDiagonal(secondBar[coll - firstBar.size()]) <<
-"\n"; std::cerr << "The distance is : " << Array[coll][row] << std::endl;
+"\n"; Rcpp::Rcerr << "The distance is : " << Array[coll][row] << std::endl;
                 }
            }
            if ( (coll < firstBar.size()) && (row >= secondBar.size()) )
@@ -892,10 +893,10 @@ diagonal Array[coll][row] = (int)bigNumber*pow(computeDistanceOfPointsInPlane(
 firstBar[coll] , projectionToDiagonal(firstBar[row-secondBar.size()])
 ),(double)p); if (computeBottleneckDistanceDBG)
               {
-                  std::cerr << "Region P3, computing distance between : " <<
+                  Rcpp::Rcerr << "Region P3, computing distance between : " <<
 firstBar[coll] << " and projection(" << firstBar[row-secondBar.size()] << ")
 which is :  " << projectionToDiagonal(firstBar[row-secondBar.size()]) << "\n";
-                  std::cerr << "The distance is : " << Array[coll][row] <<
+                  Rcpp::Rcerr << "The distance is : " << Array[coll][row] <<
 std::endl;
               }
            }
@@ -903,7 +904,7 @@ std::endl;
            {
                //P4
                if (computeBottleneckDistanceDBG)
-                        std::cout << "Region P4, set to infinitey \n";
+                        Rcpp::Rcout << "Region P4, set to infinitey \n";
                Array[coll][row] = 0;
            }
            if (computeBottleneckDistanceDBG)std::cin.ignore();
@@ -916,11 +917,11 @@ std::endl;
        {
            for ( size_t j = 0 ; j != (firstBar.size()+secondBar.size()) ; ++j )
            {
-               std::cout << Array[i][j] << "  ";
+               Rcpp::Rcout << Array[i][j] << "  ";
            }
-           std::cout << "\n";
+           Rcpp::Rcout << "\n";
        }
-       std::cout << "Matrix has been created\n"; std::cin.ignore();
+       Rcpp::Rcout << "Matrix has been created\n"; std::cin.ignore();
    }
 
 
@@ -933,9 +934,9 @@ hungarian(Array,Result,(firstBar.size()+secondBar.size()),(firstBar.size()+secon
         {
           for (int x=0;x<(firstBar.size()+secondBar.size());++x)
           {
-            std::cout << (int)Result[y][x] << " ";
+            Rcpp::Rcout << (int)Result[y][x] << " ";
           }
-          std::cout << "\n";
+          Rcpp::Rcout << "\n";
         }
     }
 
@@ -951,26 +952,26 @@ hungarian(Array,Result,(firstBar.size()+secondBar.size()),(firstBar.size()+secon
                bool store = false;
                if ( x < firstBar.size() )
                {
-                    if (computeBottleneckDistanceDBG){std::cout << firstBar[x]
+                    if (computeBottleneckDistanceDBG){Rcpp::Rcout << firstBar[x]
 << "  ";} store = true;
                }
                else
                {
-                    if (computeBottleneckDistanceDBG){std::cout << "projection("
+                    if (computeBottleneckDistanceDBG){Rcpp::Rcout << "projection("
 << secondBar[x - firstBar.size()] << ")  ";}
                }
-               if (computeBottleneckDistanceDBG){std::cout << " is paired with
+               if (computeBottleneckDistanceDBG){Rcpp::Rcout << " is paired with
 ";} if ( y < secondBar.size() )
                {
-                    if (computeBottleneckDistanceDBG){std::cout <<
+                    if (computeBottleneckDistanceDBG){Rcpp::Rcout <<
 secondBar[y];} store = true;
                }
                else
                {
-                    if (computeBottleneckDistanceDBG){std::cout << "projection("
+                    if (computeBottleneckDistanceDBG){Rcpp::Rcout << "projection("
 << firstBar[y - secondBar.size()] << ")  ";}
                }
-               if (computeBottleneckDistanceDBG){std::cout << "\n\n";}
+               if (computeBottleneckDistanceDBG){Rcpp::Rcout << "\n\n";}
 
                if ( store )
                {

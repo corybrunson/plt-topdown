@@ -1,4 +1,4 @@
 library(testthat)
-library(tdatools)
+library(plt)
 
-test_check("tdatools")
+test_check("plt")

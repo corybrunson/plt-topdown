@@ -1,0 +1,136 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.rmd. Please edit that file -->
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-"
+)
+# devtools::load_all()
+library(plt)
+```
+
+# plt
+
+Persistence landscapes are a vectorization of persistence data (also called persistence diagrams), [originated by Peter Bubenik](https://jmlr.csail.mit.edu/papers/v16/bubenik15a.html), that have useful statistical properties including linearity and an inner product.
+This is an R package interface to [Paweł Dłotko's Persistence Landscapes Toolbox](https://www2.math.upenn.edu/~dlotko/persistenceLandscape.html), [developed with Bubenik](https://www.sciencedirect.com/science/article/pii/S0747717116300104) to efficienctly compute and calculate with persistence landscapes.
+It was adapted from [Jose Bouza's **tda-tools** package](https://github.com/jjbouza/tda-tools), a TDA pipeline used by [Bubenik's lab](https://people.clas.ufl.edu/peterbubenik/researchgroup/).
+
+## Installation
+
+Since the package is not on CRAN, we suggest that you install **remotes** on your system. To do this just open an R session and run:
+
+```{r, eval=FALSE}
+install.packages("remotes")
+```
+
+Then install the package from the GitHub repository as follows:
+
+```{r, eval=FALSE}
+remotes::install_github("corybrunson/plt")
+```
+
+Alternatively, you can clone or download the code repository and install the package from source (from within the directory):
+
+```{r, eval=FALSE}
+devtools::install()
+```
+
+You should now be able to load the package normally from an R session using
+`library("plt")`.
+
+## Quickstart Guide
+
+The **plt** package supports various operations involving persistence landscapes:
+
+* Compute persistence landscapes from persistence data
+* Perform Hilbert space operations (vector space operations and an inner product) on persistence landscapes
+* Plot persistence landscapes
+
+Examples and tests in **plt** rely on other packages to simulate data and to compute persistence diagrams from data:
+
+* **tdaunif** provides functions to sample uniformly from various immersed manifolds.
+* **ripserr** and **TDA** provide functions to compute persistence data from point clouds and distance matrices.
+
+### Calculation
+
+**plt** introduces the 'Rcpp_PersistenceLandscape' S4 class, which is exposed using **Rcpp** from the underlying 'PersistenceLandscape' C++ class.
+Instances of this class can be created using `new()` but the recommended way is to use `landscape()`.
+This function accepts either a single matrix of persistence data or a persistence diagram object, which is a specially formatted list containing the first and most important element `$pairs`.
+The `$pairs` entry is itself a list, of a 2-column matrix of persistence pairs for each homological degree from 0 (`$pairs[[1]]`) to the maximum degree calculated.
+The generic conversion function `as_persistence()` includes methods for outputs from `ripserr::vietoris_rips()` and from `TDA::*Diag()`.
+
+To begin an illustration, we noisily sample 60 points from a figure eight and compute the persistence diagram of the point cloud:
+
+```{r}
+pc <- tdaunif::sample_lemniscate_gerono(60, sd = .1)
+pd <- ripserr::vietoris_rips(pc, max_dim = 1, threshold = 2, p = 2)
+print(pd)
+```
+
+We the convert the persistence data to the preferred persistence diagram format and inspect some of its features:
+
+```{r}
+pd <- as_persistence(pd)
+print(head(pd$pairs[[1]]))
+print(head(pd$pairs[[2]]))
+```
+
+This allows us to compute a persistence landscape---in this case, for the 1-dimensional features.
+Here we compute the landscape exactly, which can be cost-prohibitive for larger persistence data:
+
+```{r}
+pl1 <- landscape(pd, degree = 1, exact = TRUE)
+print(pl1)
+```
+
+### Class
+
+The object `pl1` is not an array, but rather an object that encapsulates both the data that encode a landscape and several basic operations that can be performed on it.
+This allows us to work with persistence landscapes without worrying about pre-processing their representations.
+At any point, the underlying landscape can be extracted using `$getInternal()`, which in the case of an exactly calculated landscape returns a list of 2-column matrices, each matrix containing coordinates that define one level of the landscape as a piecewise linear function:
+
+```{r}
+print(length(pl1$getInternal()))
+print(pl1$getInternal())
+```
+
+The length of this list is the number of levels of the landscape.
+
+An alternative, approximate construction computes the value of each level of the landscape at each point on a 1-dimensional grid, ranging from `min_x` to `max_x` at increments of `dx`.
+A landscape constructed using a discrete approximation is stored as a 3-dimensional array of dimensions (levels, values, 2), with one level per feature (some of which may be trivial) and one value per grid point, stored as $x,y$ pairs along the third dimension.
+
+```{r}
+pl1d <- landscape(pd, degree = 1, min_x = 0, max_x = 2, dx = 0.01)
+print(dim(pl1d$getInternal()))
+print(pl1d$getInternal())
+```
+
+Exactly computed landscapes can be converted to discrete landscape objects, but the other direction is not well-defined:
+
+```{r}
+pl1$getDiscrete()
+try(pl1d$getExact())
+```
+
+### Visualization
+
+**plt** provides a `plot()` method for the 'Rcpp_PersistenceLandscape' class.
+It uses **grDevices** to build color palettes, and as such its default palette is viridis; but the user may supply the name of a recognized palette or a sequence of colors between which to interpolate:
+
+```{r}
+plot(pl1, palette = "terrain")
+plot(pl1d, palette = "terrain")
+```
+
+### Vector Operations
+
+
+
+### Inner Product
+
+

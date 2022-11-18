@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <Rcpp.h>
 
 // global variables and their default values.
 bool areThereInfiniteIntervals = false;
@@ -112,7 +113,7 @@ void configure() {
       ++vaiableNumber;
     } else {
       if (dbg) {
-        std::cout << "IGNORE THIS LINE : " << line << endl;
+        Rcpp::Rcout << "IGNORE THIS LINE : " << line << endl;
       }
       isThisAFirsLine = false;
     }

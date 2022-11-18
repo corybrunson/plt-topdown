@@ -1,6 +1,4 @@
 #include "pl.h"
-#include "rip.h"
-#include "h0.h"
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -12,24 +10,21 @@ RCPP_MODULE(Landscape) {
 
       .method("getExact",
               &PersistenceLandscapeInterface::getPersistenceLandscapeExact,
-              "Returns the PL in the exact representation.")
+              "Returns the PL in exact representation.")
       .method("getDiscrete",
               &PersistenceLandscapeInterface::getPersistenceLandscapeDiscrete,
-              "Returns the PL in the discrete representation.")
+              "Returns the PL in discrete representation.")
       .method("getInternal", &PersistenceLandscapeInterface::getInternal,
               "Returns the internal tensor representation of the PL.")
       .method("add", &PersistenceLandscapeInterface::sum,
               "Adds this PL to another.")
       .method("scale", &PersistenceLandscapeInterface::scale,
-              "Scales this PL by a scaler.")
+              "Multiplies this PL by a scalar.")
       .method("inner", &PersistenceLandscapeInterface::inner,
-              "Take inner product of this PL with another.");
+              "Takes the inner product of this PL with another.");
 
   Rcpp::function("PLsum", &PLsum);
   Rcpp::function("PLscale", &PLscale);
   Rcpp::function("PLinner", &PLinner);
   Rcpp::function("PLaverage", &PLaverage);
 }
-
-RCPP_MODULE(Diagram) { Rcpp::function("rip_raw", &rip_raw); }
-RCPP_MODULE(H0) {Rcpp::function("H0_diagram_interface", &H0_diagram_interface); }
