@@ -8,6 +8,18 @@ RCPP_MODULE(Landscape) {
   class_<PersistenceLandscapeInterface>("PersistenceLandscape")
       .constructor<NumericMatrix, bool, double, double, double, double>()
 
+      .method("isExact",
+              &PersistenceLandscapeInterface::isExact,
+              "Queries whether the underlying PL representation is exact.")
+      .method("getMin",
+              &PersistenceLandscapeInterface::getMin,
+              "Returns the infimum of the PL support.")
+      .method("getMax",
+              &PersistenceLandscapeInterface::getMax,
+              "Returns the supremum of the PL support.")
+      .method("getdx",
+              &PersistenceLandscapeInterface::getdx,
+              "Returns the resolution of the discrete representation.")
       .method("getExact",
               &PersistenceLandscapeInterface::getPersistenceLandscapeExact,
               "Returns the PL in exact representation.")

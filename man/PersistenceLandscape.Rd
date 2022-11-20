@@ -9,7 +9,12 @@
 \alias{as.vector.Rcpp_PersistenceLandscape}
 \alias{as.data.frame.Rcpp_PersistenceLandscape}
 \title{Exported C++ Class 'PersistenceLandscape'}
+\format{
+An object of class \code{C++Class} of length 1.
+}
 \usage{
+PersistenceLandscape
+
 \method{as.vector}{Rcpp_PersistenceLandscape}(x, mode = "any")
 
 \method{as.data.frame}{Rcpp_PersistenceLandscape}(x, row.names = NULL, optional = FALSE, exact = FALSE, ...)
@@ -74,3 +79,4 @@ pl2$getInternal()
 try(pl2$getExact())
 pl2$getDiscrete()
 }
+\keyword{datasets}
