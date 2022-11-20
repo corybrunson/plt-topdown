@@ -121,7 +121,7 @@ scaleDiscreteLandscapes(double scale, PersistenceLandscape l) {
 }
 
 std::vector<std::vector<std::pair<double, double>>>
-exactLandscapeToDiscrete(PersistenceLandscape l, double dx, double max_x, double min_x) {
+exactLandscapeToDiscrete(PersistenceLandscape l, double min_x, double max_x, double dx) {
   std::vector<std::vector<std::pair<double, double>>> out;
 
 
@@ -215,7 +215,7 @@ public:
   NumericVector getPersistenceLandscapeDiscrete() {
     if (exact) {
       return discretePersistenceLandscapeToR(
-          exactLandscapeToDiscrete(pl_raw.land, dx, max_pl, 0));
+          exactLandscapeToDiscrete(pl_raw.land, 0, max_pl, dx));
     } else {
       return discretePersistenceLandscapeToR(pl_raw.land);
     }
@@ -232,12 +232,12 @@ public:
       return exact;
   }
 
-  double getMax() const {
-      return max_pl;
-  }
-
   double getMin() const {
       return min_pl;
+  }
+
+  double getMax() const {
+      return max_pl;
   }
 
   double getdx() const {
@@ -265,12 +265,12 @@ public:
         std::pair<bool,bool> conversions = operationOnPairOfLanscapesConversion(*this, other);
 
         if(conversions.first == true){
-            auto conversion1 = exactLandscapeToDiscrete(this->pl_raw, other.dx, other.max_pl, other.min_pl);
+            auto conversion1 = exactLandscapeToDiscrete(this->pl_raw, other.min_pl, other.max_pl, other.dx);
             pl_out = PersistenceLandscape(addDiscreteLandscapes(conversion1, other.pl_raw));
         }
 
         else if(conversions.second == true){
-            auto conversion2 = exactLandscapeToDiscrete(other.pl_raw, PersistenceLandscapeInterface::dx, PersistenceLandscapeInterface::max_pl, PersistenceLandscapeInterface::min_pl);
+            auto conversion2 = exactLandscapeToDiscrete(other.pl_raw, PersistenceLandscapeInterface::min_pl, PersistenceLandscapeInterface::max_pl, PersistenceLandscapeInterface::dx);
             pl_out = PersistenceLandscape(addDiscreteLandscapes(conversion2, PersistenceLandscapeInterface::pl_raw));
         }
     }

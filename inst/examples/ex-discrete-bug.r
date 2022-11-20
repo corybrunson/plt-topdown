@@ -4,6 +4,8 @@
 # pt <- tdaunif::sample_torus_tube(24, 5)
 # print(pt)
 
+library(plt)
+
 pt <- structure(
   c(
     -1.18409010378033, -0.492925552645496, -0.955262965067976, 
