@@ -11,11 +11,11 @@
 landscape(
   pd,
   degree = NULL,
+  threshold = NULL,
   exact = FALSE,
-  dx = 0.1,
-  min_x = 0,
-  max_x = 10,
-  threshold = NULL
+  min_x = NULL,
+  max_x = NULL,
+  dx = NULL
 )
 
 str_internal(pl)
@@ -31,21 +31,21 @@ supp_range(pl)
 persistence diagram object with element \code{pairs} being a list of 2-column
 matrices (birth-death pairs).}
 
-\item{degree}{Non-negative integer; if input is a persistence diagram
-object, then the dimension for which to compute a landscape. (For degree
-$d$, the $(d+1)$th matrix in the list will be selected.)}
+\item{degree}{Non-negative integer; if input is a persistence diagram object,
+then the dimension for which to compute a landscape. (For degree $d$, the
+$(d+1)$th matrix in the list will be selected.)}
+
+\item{threshold}{Numeric; the threshold used to compute the persistence
+diagram (could be infinite).}
 
 \item{exact}{Set to \code{TRUE} for exact computation, \code{FALSE} (default) for
 discrete.}
 
-\item{dx}{Domain grid diameter for discrete PL (should be more intuitively
-named).}
+\item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
+taken to be the support of the PL.}
 
-\item{min_x, max_x}{Domain thresholds for discrete PL (should be more
-intuitively named).}
-
-\item{threshold}{Numeric; the threshold used to compute the persistence
-diagram (could be infinite).}
+\item{dx}{Domain grid diameter for discrete PL; if not specified, then set to
+the power of 10 that yields between 100 and 1000 intervals.}
 
 \item{pl}{A persistence landscape as returned by \code{landscape()}.}
 }
@@ -81,8 +81,7 @@ pd <- as_persistence(TDA::ripsDiag(points, maxdimension = 2L, maxscale = 3))
 print(dim(pd$pairs[[2L]]))
 
 # compute persistence landscape for 1-dimensional cycles
-pl <- landscape(pd, degree = 1L,
-                dx = 0.1, max_x = 2, threshold = pd$threshold)
+pl <- landscape(pd, degree = 1L, threshold = pd$threshold)
 print(pl)
 
 # landscape dimensions
@@ -90,5 +89,10 @@ print(dim(pl$getInternal()))
 # landscape values
 print(pl$getInternal())
 # plot landscape
+plot(pl)
+
+# custom parameters
+pl <- landscape(pd, degree = 1L, dx = 0.1, max_x = 2, threshold = pd$threshold)
+print(pl)
 plot(pl)
 }

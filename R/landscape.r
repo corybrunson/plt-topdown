@@ -6,17 +6,17 @@
 #' @param pd Persistence data (or diagram), stored as a 2-column matrix or as a
 #'   persistence diagram object with element `pairs` being a list of 2-column
 #'   matrices (birth-death pairs).
-#' @param degree Non-negative integer; if input is a persistence diagram
-#'   object, then the dimension for which to compute a landscape. (For degree
-#'   $d$, the $(d+1)$th matrix in the list will be selected.)
+#' @param degree Non-negative integer; if input is a persistence diagram object,
+#'   then the dimension for which to compute a landscape. (For degree $d$, the
+#'   $(d+1)$th matrix in the list will be selected.)
 #' @param exact Set to `TRUE` for exact computation, `FALSE` (default) for
 #'   discrete.
-#' @param dx Domain grid diameter for discrete PL (should be more intuitively
-#'   named).
-#' @param min_x,max_x Domain thresholds for discrete PL (should be more
-#'   intuitively named).
 #' @param threshold Numeric; the threshold used to compute the persistence
 #'   diagram (could be infinite).
+#' @param min_x,max_x Domain thresholds for discrete PL; if not specified, then
+#'   taken to be the support of the PL.
+#' @param dx Domain grid diameter for discrete PL; if not specified, then set to
+#'   the power of 10 that yields between 100 and 1000 intervals.
 #' @param pl A persistence landscape as returned by `landscape()`.
 #' @return `landscape()` returns a persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape'). Other functions return summary information
@@ -25,8 +25,8 @@
 #' @example inst/examples/ex-landscape-discrete.r
 #' @export
 landscape <- function(
-    pd, degree = NULL,
-    exact = FALSE, dx = 0.1, min_x = 0, max_x = 10, threshold = NULL
+    pd, degree = NULL, threshold = NULL,
+    exact = FALSE, min_x = NULL, max_x = NULL, dx = NULL
 ) {
   
   # birth-death pairs matrix `diagram` and threshold `max_y`
@@ -35,17 +35,23 @@ landscape <- function(
       stop("`landscape()` requires a homological degree (`degree = <int>`).")
     diagram <- pd$pairs[[degree + 1L]]
     if (! is.na(pd$threshold)) threshold <- pd$threshold
-    max_y <- threshold %||% max(diagram[, 2L])
   } else if (is.atomic(pd)) {
     diagram <- pd
     stopifnot(ncol(diagram) >= 2L, is.numeric(diagram))
-    max_y <- threshold %||% max(diagram[, 2L])
   }
+  max_y <- threshold %||% max(diagram[, 2L])
   
   # content check
   if (is.null(diagram) || all(is.na(diagram))) {
     stop("`landscape()` requires non-empty, non-missing persistence data.")
   }
+  
+  # infer any missing parameters from the diagram
+  min_x <- min_x %||% min(diagram)
+  max_x <- max_x %||% max(diagram)
+  if (! min_x < max_x) stop("Must have `min_x < max_x`.")
+  # grid of between 100 and 1000 intervals of length a power of 10
+  dx <- dx %||% 10 ^ (floor(log(max_x - min_x, 10)) - 2L)
   
   # construct persistence landscape
   new(PersistenceLandscape, diagram, exact, min_x, max_x, dx, max_y)

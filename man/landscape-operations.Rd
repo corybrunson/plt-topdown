@@ -40,7 +40,7 @@ pl <- landscape(pd$pairs[[1]], exact = FALSE, max_x=2.5, dx=0.1)
 print(pl$getInternal()[2, , ])
 print(pl$scale(0.5)$getInternal()[2, , ])
 
-# create two landscapes from the same sampling procedure
+# create two landscapes from the same sampling distribution
 x <- tdaunif::sample_torus_tube(4, 2.5)
 y <- tdaunif::sample_torus_tube(4, 2.5)
 x_pd <- as_persistence(ripserr::vietoris_rips(x, max_dim = 1, threshold = 2))
