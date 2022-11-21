@@ -364,18 +364,6 @@ public:
   friend double computeInnerProduct(const PersistenceLandscape &l1,
                                     const PersistenceLandscape &l2);
 
-  // visualization part...
-  void printToFiles(const char *filename, unsigned from, unsigned to) const;
-  void printToFiles(const char *filename) const;
-  void printToFiles(const char *filename, int numberOfElementsLater, ...) const;
-  void printToFile(const char *filename, unsigned from, unsigned to) const;
-  void printToFile(const char *filename) const;
-  void generateGnuplotCommandToPlot(const char *filename, unsigned from,
-                                    unsigned to) const;
-  void generateGnuplotCommandToPlot(const char *filename) const;
-  void generateGnuplotCommandToPlot(const char *filename,
-                                    int numberOfElementsLater, ...) const;
-
   // this function compute n-th moment of lambda_level
   double computeNthMoment(unsigned n, double center, unsigned level) const;
 
@@ -383,63 +371,12 @@ public:
   // the filtration values.
   std::vector<std::pair<double, unsigned>>
   generateBettiNumbersHistogram() const;
-  void printBettiNumbersHistoramIntoFileAndGenerateGnuplotCommand(
-      char *filename) const;
   std::vector<std::vector<std::pair<double, double>>> land;
 
 private:
   bool exact;
   unsigned dimension;
 };
-
-void PersistenceLandscape::plot(char *filename, size_t from, size_t to,
-                                double xRangeBegin, double xRangeEnd,
-                                double yRangeBegin, double yRangeEnd) {
-  // this program create a gnuplot script file that allows to plot persistence
-  // diagram.
-  ofstream out;
-
-  std::ostringstream nameSS;
-  nameSS << filename << "_GnuplotScript";
-  std::string nameStr = nameSS.str();
-  out.open((char *)nameStr.c_str());
-
-  if ((xRangeBegin != -1) || (xRangeEnd != -1) || (yRangeBegin != -1) ||
-      (yRangeEnd != -1)) {
-    out << "set xrange [" << xRangeBegin << " : " << xRangeEnd << "]" << endl;
-    out << "set yrange [" << yRangeBegin << " : " << yRangeEnd << "]" << endl;
-  }
-
-  if (from == -1) {
-    from = 0;
-  }
-  if (to == -1) {
-    to = this->land.size();
-  }
-
-  out << "plot ";
-  for (size_t lambda = std::min(from, this->land.size());
-       lambda != std::min(to, this->land.size()); ++lambda) {
-    out << "     '-' using 1:2 title 'l" << lambda << "' with lp";
-    if (lambda + 1 != std::min(to, this->land.size())) {
-      out << ", \\";
-    }
-    out << endl;
-  }
-
-  for (size_t lambda = std::min(from, this->land.size());
-       lambda != std::min(to, this->land.size()); ++lambda) {
-    for (size_t i = 1; i != this->land[lambda].size() - 1; ++i) {
-      out << this->land[lambda][i].first << " " << this->land[lambda][i].second
-          << endl;
-    }
-    out << "EOF" << endl;
-  }
-  cout
-      << "Gnuplot script to visualize persistence diagram written to the file: "
-      << nameStr << ". Type load '" << nameStr << "' in gnuplot to visualize."
-      << endl;
-}
 
 PersistenceLandscape::PersistenceLandscape(
     std::vector<std::vector<std::pair<double, double>>>
@@ -878,8 +815,6 @@ bool PersistenceLandscape::testLandscape(const PersistenceBarcodes &b) {
           Rcpp::Rcout << "(" << b.barcodes[nr].first << "," <<
           b.barcodes[nr].second << ")\n"; getchar();
           */
-          // this->printToFiles("out");
-          // this->generateGnuplotCommandToPlot("out");
           // getchar();getchar();getchar();
         }
       }
@@ -1046,155 +981,6 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     }
   }
   return result;
-}
-
-void PersistenceLandscape::printToFiles(const char *filename, unsigned from,
-                                        unsigned to) const {
-  if (from > to)
-    throw("Error printToFiles printToFile( char* filename , unsigned from , "
-          "unsigned to ). 'from' cannot be greater than 'to'.");
-  // if ( to > this->land.size() )throw("Error in printToFiles( char* filename ,
-  // unsigned from , unsigned to ). 'to' is out of range.");
-  if (to > this->land.size()) {
-    to = this->land.size();
-  }
-  std::ofstream write;
-  for (size_t dim = from; dim != to; ++dim) {
-    std::ostringstream name;
-    name << filename << "_" << dim << ".dat";
-    std::string fName = name.str();
-    const char *FName = fName.c_str();
-
-    write.open(FName);
-    write << "#lambda_" << dim << std::endl;
-    for (size_t i = 1; i != this->land[dim].size() - 1; ++i) {
-      write << this->land[dim][i].first << "  " << this->land[dim][i].second
-            << std::endl;
-    }
-    write.close();
-  }
-}
-
-void PersistenceLandscape::printToFiles(const char *filename,
-                                        int numberOfElementsLater, ...) const {
-  va_list arguments;
-  va_start(arguments, numberOfElementsLater);
-  std::ofstream write;
-  for (int x = 0; x < numberOfElementsLater; x++) {
-    unsigned dim = va_arg(arguments, unsigned);
-    if (dim > this->land.size())
-      throw("In function generateGnuplotCommandToPlot(char* filename,int "
-            "numberOfElementsLater,  ... ), one of the number provided is "
-            "greater than number of nonzero landscapes");
-    std::ostringstream name;
-    name << filename << "_" << dim << ".dat";
-    std::string fName = name.str();
-    const char *FName = fName.c_str();
-    write.open(FName);
-    write << "#lambda_" << dim << std::endl;
-    for (size_t i = 1; i != this->land[dim].size() - 1; ++i) {
-      write << this->land[dim][i].first << "  " << this->land[dim][i].second
-            << std::endl;
-    }
-    write.close();
-  }
-  va_end(arguments);
-}
-
-void PersistenceLandscape::printToFiles(const char *filename) const {
-  this->printToFiles(filename, (unsigned)0, (unsigned)this->land.size());
-}
-
-void PersistenceLandscape::printToFile(const char *filename, unsigned from,
-                                       unsigned to) const {
-  if (from > to)
-    throw("Error in printToFile( char* filename , unsigned from , unsigned to "
-          "). 'from' cannot be greater than 'to'.");
-  if (to > this->land.size())
-    throw("Error in printToFile( char* filename , unsigned from , unsigned to "
-          "). 'to' is out of range.");
-  std::ofstream write;
-  write.open(filename);
-  write << this->dimension << std::endl;
-  for (size_t dim = from; dim != to; ++dim) {
-    write << "#lambda_" << dim << std::endl;
-    for (size_t i = 1; i != this->land[dim].size() - 1; ++i) {
-      write << this->land[dim][i].first << "  " << this->land[dim][i].second
-            << std::endl;
-    }
-  }
-  write.close();
-}
-
-void PersistenceLandscape::printToFile(const char *filename) const {
-  this->printToFile(filename, 0, this->land.size());
-}
-
-void PersistenceLandscape::generateGnuplotCommandToPlot(const char *filename,
-                                                        unsigned from,
-                                                        unsigned to) const {
-  if (from > to)
-    throw("Error in printToFile( char* filename , unsigned from , unsigned to "
-          "). 'from' cannot be greater than 'to'.");
-  // if ( to > this->land.size() )throw("Error in printToFile( char* filename ,
-  // unsigned from , unsigned to ). 'to' is out of range.");
-  if (to > this->land.size()) {
-    to = this->land.size();
-  }
-  std::ostringstream result;
-  result << "plot ";
-  for (size_t dim = from; dim != to; ++dim) {
-    // result << "\"" << filename << "_" << dim <<".dat\" w lp".dat\" w lp title
-    // \"L" << dim <<"\"";
-    result << "\"" << filename << "_" << dim << ".dat\" with lines notitle ";
-    if (dim != to - 1) {
-      result << ", ";
-    }
-  }
-  std::ofstream write;
-  std::ostringstream outFile;
-  outFile << filename << "_gnuplotCommand.txt";
-  std::string outF = outFile.str();
-  Rcpp::Rcout << "The gnuplot command can be found in the file \""
-            << outFile.str() << "\"\n";
-  write.open(outF.c_str());
-  write << result.str();
-  write.close();
-}
-
-void PersistenceLandscape::generateGnuplotCommandToPlot(
-    const char *filename, int numberOfElementsLater, ...) const {
-  va_list arguments;
-  va_start(arguments, numberOfElementsLater);
-  std::ostringstream result;
-  result << "plot ";
-  for (int x = 0; x < numberOfElementsLater; x++) {
-    unsigned dim = va_arg(arguments, unsigned);
-    if (dim > this->land.size())
-      throw("In function generateGnuplotCommandToPlot(char* filename,int "
-            "numberOfElementsLater,  ... ), one of the number provided is "
-            "greater than number of nonzero landscapes");
-    result << "\"" << filename << "_" << dim << ".dat\" w lp title \"L" << dim
-           << "\"";
-    if (x != numberOfElementsLater - 1) {
-      result << ", ";
-    }
-  }
-  std::ofstream write;
-  std::ostringstream outFile;
-  outFile << filename << "_gnuplotCommand.txt";
-  std::string outF = outFile.str();
-  Rcpp::Rcout << "The gnuplot command can be found in the file \""
-            << outFile.str() << "\"\n";
-  write.open(outF.c_str());
-  write << result.str();
-  write.close();
-}
-
-void PersistenceLandscape::generateGnuplotCommandToPlot(
-    const char *filename) const {
-  this->generateGnuplotCommandToPlot(filename, (unsigned)0,
-                                     (unsigned)this->land.size());
 }
 
 PersistenceLandscape::PersistenceLandscape(
@@ -2808,24 +2594,6 @@ PersistenceLandscape::generateBettiNumbersHistogram() const {
   }
   return result;
 } // generateBettiNumbersHistogram
-
-void PersistenceLandscape::
-    printBettiNumbersHistoramIntoFileAndGenerateGnuplotCommand(
-        char *filename) const {
-  std::vector<std::pair<double, unsigned>> histogram =
-      this->generateBettiNumbersHistogram();
-  std::ostringstream result;
-  for (size_t i = 0; i != histogram.size(); ++i) {
-    result << histogram[i].first << " " << histogram[i].second << std::endl;
-  }
-  std::ofstream write;
-  write.open(filename);
-  write << result.str();
-  write.close();
-  Rcpp::Rcout << "The result is in the file : " << filename
-            << " . Now in gnuplot type plot \"" << filename << "\" with lines"
-            << std::endl;
-} // printBettiNumbersHistoramIntoFileAndGenerateGnuplotCommand
 
 /*
 double computeInnerProduct( const PersistenceLandscape& l1 , const
