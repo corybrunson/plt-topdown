@@ -34,16 +34,16 @@
 //           &PersistenceLandscapeInterface::getdx,
 //           "Returns the resolution of the discrete representation.")
 //   .method("getExact",
-//           &PersistenceLandscapeInterface::getPersistenceLandscapeExact,
+//           &PersistenceLandscapeInterface::getExact,
 //           "Returns the PL in exact representation.")
 //   .method("getDiscrete",
-//           &PersistenceLandscapeInterface::getPersistenceLandscapeDiscrete,
+//           &PersistenceLandscapeInterface::getDiscrete,
 //           "Returns the PL in discrete representation.")
 //   .method("getInternal",
 //           &PersistenceLandscapeInterface::getInternal,
 //           "Returns the internal tensor representation of the PL.")
 //   .method("add",
-//           &PersistenceLandscapeInterface::sum,
+//           &PersistenceLandscapeInterface::add,
 //           "Adds this PL to another.")
 //   .method("scale",
 //           &PersistenceLandscapeInterface::scale,
