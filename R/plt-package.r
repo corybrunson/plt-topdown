@@ -13,4 +13,4 @@
 "_PACKAGE"
 
 # load modules (can be done anywhere, will activate at load time)
-Rcpp::loadModule("Landscape", TRUE)
+Rcpp::loadModule("PersistenceLandscape", TRUE)

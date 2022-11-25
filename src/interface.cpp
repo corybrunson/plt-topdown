@@ -3,8 +3,9 @@
 
 using namespace Rcpp;
 RCPP_EXPOSED_CLASS(PersistenceLandscapeInterface)
-RCPP_MODULE(Landscape) {
-
+// NB: Module name will be used by `loadModule()`. -JCB
+RCPP_MODULE(PersistenceLandscape) {
+  // https://cran.r-project.org/web/packages/Rcpp/vignettes/Rcpp-modules.pdf
   class_<PersistenceLandscapeInterface>("PersistenceLandscape")
       .constructor<NumericMatrix, bool, double, double, double, double>()
 
