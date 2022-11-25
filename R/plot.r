@@ -29,7 +29,7 @@ setMethod(
   ) {
     # pre-process internal representation of landscape
     internal <- x$getInternal()
-    if (is.null(n_levels)) n_levels <- num_levels(x)
+    if (is.null(n_levels)) n_levels <- pl_num_envelopes(x)
     if (! is.null(replace_inf)) {
       if (is.atomic(internal)) {
         internal[internal == Inf] <- replace_inf

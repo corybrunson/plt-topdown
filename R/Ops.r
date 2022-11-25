@@ -12,9 +12,6 @@
 #' @example inst/examples/ex-PersistenceLandscape-methods.r
 NULL
 
-# register S4 class for S3 inheritance
-setOldClass("Rcpp_PersistenceLandscape")
-
 #' @rdname Rcpp_PersistenceLandscape-methods
 #' @aliases Rcpp_PersistenceLandscape,missing-method
 #' @export
