@@ -12,5 +12,5 @@
 #'   'tdatools' package prepared by Jose Bouza.
 "_PACKAGE"
 
-# load modules (can be done anywhere, will activate at load time)
-Rcpp::loadModule("PersistenceLandscape", TRUE)
+# load {Rcpp} module(s) (can be done anywhere, will activate at load time)
+# Rcpp::loadModule("PersistenceLandscape", TRUE)

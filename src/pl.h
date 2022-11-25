@@ -113,6 +113,7 @@ scaleDiscreteLandscapes(double scale, PersistenceLandscape l) {
     for (std::pair<double, double> pair : level)
       level_out.push_back(std::make_pair(pair.first, scale * pair.second));
     for (auto i : level_out){
+      // TODO: Delete this loop or figure out what belongs in it! -JCB
     }
     out.push_back(level_out);
   }
@@ -184,9 +185,10 @@ std::vector<std::pair<double, double>> generateGrid(double start, double end,
 
 class PersistenceLandscapeInterface {
 public:
-  // Creates PL from PD
+  // Creates PL from PD (in the form of a 2-column numeric matrix)
   // TODO: Better defaults.
   // Natural defaults are inferred in R through `landscape()`.
+  // Should C++ defaults be removed?
   PersistenceLandscapeInterface(NumericMatrix persistence_diagram,
                                 bool exact = false,
                                 double min_pl = 0, double max_pl = 10,
@@ -202,7 +204,7 @@ public:
                                 double min_pl, double max_pl, double dx)
       : pl_raw(pl), exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {}
 
-  std::vector<NumericVector> getPersistenceLandscapeExact() {
+  std::vector<NumericVector> getExact() {
     if (!exact) {
       stop("Error: Can not convert a discrete PL to an exact PL.");
     }
@@ -212,7 +214,7 @@ public:
     }
   }
 
-  NumericVector getPersistenceLandscapeDiscrete() {
+  NumericVector getDiscrete() {
     if (exact) {
       return discretePersistenceLandscapeToR(
           exactLandscapeToDiscrete(pl_raw.land, 0, max_pl, dx));
@@ -246,7 +248,7 @@ public:
 
   // Adds this to another PL
   PersistenceLandscapeInterface
-  sum(const PersistenceLandscapeInterface &other) {
+  add(const PersistenceLandscapeInterface &other) {
     PersistenceLandscape pl_out;
 
     if (PersistenceLandscapeInterface::exact && other.isExact())
@@ -319,7 +321,7 @@ PersistenceLandscapeInterface PLaverage(List p){
     PersistenceLandscapeInterface out = as<PersistenceLandscapeInterface>(p[0]);
 
     for (int i = 1; i < p.size(); i++){
-        out = out.sum(as<PersistenceLandscapeInterface>(p[i]));
+        out = out.add(as<PersistenceLandscapeInterface>(p[i]));
     }
 
     return out.scale(1.0/p.size());
@@ -327,7 +329,7 @@ PersistenceLandscapeInterface PLaverage(List p){
 
 PersistenceLandscapeInterface PLsum(PersistenceLandscapeInterface p1,
                                     PersistenceLandscapeInterface p2) {
-  return p1.sum(p2);
+  return p1.add(p2);
 }
 
 PersistenceLandscapeInterface PLscale(double scale,

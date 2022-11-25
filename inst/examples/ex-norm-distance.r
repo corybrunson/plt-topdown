@@ -84,7 +84,7 @@ pl_norm_discrete(pl1, p = 1)
 pl_norm <- function(pl, p = 2) {
   stopifnot(is.numeric(p), p >= 1)
   switch(
-    str_internal(pl),
+    pl_str(pl),
     exact = pl_norm_exact(pl = pl, p = p),
     discrete = pl_norm_discrete(pl = pl, p = p)
   )

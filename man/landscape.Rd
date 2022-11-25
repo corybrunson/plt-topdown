@@ -2,10 +2,11 @@
 % Please edit documentation in R/landscape.r
 \name{landscape}
 \alias{landscape}
-\alias{str_internal}
-\alias{num_levels}
-\alias{str_range}
-\alias{supp_range}
+\alias{pl_is_exact}
+\alias{pl_str}
+\alias{pl_num_envelopes}
+\alias{pl_limits}
+\alias{pl_support}
 \title{Persistence Landscapes}
 \usage{
 landscape(
@@ -18,13 +19,15 @@ landscape(
   dx = NULL
 )
 
-str_internal(pl)
+pl_is_exact(pl)
 
-num_levels(pl)
+pl_str(pl)
 
-str_range(pl)
+pl_num_envelopes(pl)
 
-supp_range(pl)
+pl_limits(pl)
+
+pl_support(pl)
 }
 \arguments{
 \item{pd}{Persistence data (or diagram), stored as a 2-column matrix or as a

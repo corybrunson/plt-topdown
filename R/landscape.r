@@ -57,7 +57,7 @@ landscape <- function(
   new(PersistenceLandscape, diagram, exact, min_x, max_x, dx, max_y)
 }
 
-# str_internal <- function(pl) {
+# pl_str <- function(pl) {
 #   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
 #   if (inherits(internal, "list")) {
 #     "exact"
@@ -74,21 +74,29 @@ landscape <- function(
 
 #' @rdname landscape
 #' @export
-str_internal <- function(pl) {
+pl_is_exact <- function(pl) {
   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
-  if (is.atomic(pl$getInternal())) "discrete" else "exact"
+  pl$isExact()
 }
 
 #' @rdname landscape
 #' @export
-num_levels <- function(pl) {
+pl_str <- function(pl) {
+  stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
+  # if (is.atomic(pl$getInternal())) "discrete" else "exact"
+  if (pl$isExact()) "exact" else "discrete"
+}
+
+#' @rdname landscape
+#' @export
+pl_num_envelopes <- function(pl) {
   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
   switch (
-    str_internal(pl),
+    pl_str(pl),
     exact = return(length(pl$getInternal())),
     discrete = return(dim(pl$getInternal())[[1L]])
   )
-  # if (str_internal(pl) == "exact") {
+  # if (pl_str(pl) == "exact") {
   #   return(length(pl$getInternal()))
   # } else {
   #   return(dim(pl$getInternal())[[1L]])
@@ -97,10 +105,10 @@ num_levels <- function(pl) {
 
 #' @rdname landscape
 #' @export
-str_range <- function(pl) {
+pl_limits <- function(pl) {
   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
   switch (
-    str_internal(pl),
+    pl_str(pl),
     exact = {
       xvec <- Reduce(rbind, pl$getInternal())[, 1L, drop = TRUE]
       return(range(xvec))
@@ -113,10 +121,10 @@ str_range <- function(pl) {
 
 #' @rdname landscape
 #' @export
-supp_range <- function(pl) {
+pl_support <- function(pl) {
   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
   switch (
-    str_internal(pl),
+    pl_str(pl),
     exact = {
       xvec <- Reduce(rbind, pl$getInternal())[, 1L, drop = TRUE]
       return(range(xvec[! is.infinite(xvec)]))

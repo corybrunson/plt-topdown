@@ -14,11 +14,11 @@ setMethod(
   function(object) {
     
     # internal structure
-    fmt <- str_internal(object)
+    fmt <- pl_str(object)
     # number of envelopes
-    envn <- num_levels(object)
+    envn <- pl_num_envelopes(object)
     # abscissal support
-    xran <- fmt_ran(supp_range(object))
+    xran <- fmt_ran(pl_support(object))
     
     # send summary line to console
     cat(sprintf(

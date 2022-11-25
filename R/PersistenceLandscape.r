@@ -24,8 +24,30 @@
 #' @export Rcpp_PersistenceLandscape
 #' @exportClass PersistenceLandscape
 #' @exportClass Rcpp_PersistenceLandscape
-PersistenceLandscape <- setClass("PersistenceLandscape")
+
+# setClass("PersistenceLandscape")
+
+# PersistenceLandscape <- setRcppClass("PersistenceLandscape")
+
+Rcpp::exposeClass(
+  "PersistenceLandscape",
+  constructors = list(
+    c("NumericMatrix", "bool", "double", "double", "double", "double")
+  ),
+  fields = character(0L),
+  methods = c(
+    "isExact", "getMin", "getMax", "getdx",
+    "getExact", "getDiscrete", "getInternal",
+    "add", "scale", "inner"
+  ),
+  header = '#include "pl.h"',
+  CppClass = "PersistenceLandscapeInterface"
+)
+
 Rcpp_PersistenceLandscape <- setClass("Rcpp_PersistenceLandscape")
+
+# register S4 class for S3 inheritance
+setOldClass("Rcpp_PersistenceLandscape")
 
 #' @rdname PersistenceLandscape
 #' @export
