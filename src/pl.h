@@ -112,9 +112,9 @@ scaleDiscreteLandscapes(double scale, PersistenceLandscape l) {
     std::vector<std::pair<double, double>> level_out;
     for (std::pair<double, double> pair : level)
       level_out.push_back(std::make_pair(pair.first, scale * pair.second));
-    for (auto i : level_out){
-      // TODO: Delete this loop or figure out what belongs in it! -JCB
-    }
+    // for (auto i : level_out){
+    //   // TODO: Delete this loop or figure out what belongs in it! -JCB
+    // }
     out.push_back(level_out);
   }
 
@@ -188,7 +188,7 @@ public:
   // Creates PL from PD (in the form of a 2-column numeric matrix)
   // TODO: Better defaults.
   // Natural defaults are inferred in R through `landscape()`.
-  // Should C++ defaults be removed?
+  // Should C++ defaults be removed? -JCB
   PersistenceLandscapeInterface(NumericMatrix persistence_diagram,
                                 bool exact = false,
                                 double min_pl = 0, double max_pl = 10,
