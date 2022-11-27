@@ -101,11 +101,11 @@ print(pl1$getInternal())
 
 The length of this list is the number of levels of the landscape.
 
-An alternative, approximate construction computes the value of each level of the landscape at each point on a 1-dimensional grid, ranging from `min_x` to `max_x` at increments of `dx`.
+An alternative, approximate construction computes the value of each level of the landscape at each point on a 1-dimensional grid, ranging from `min_b` to `max_b` at increments of `by`.
 A landscape constructed using a discrete approximation is stored as a 3-dimensional array of dimensions (levels, values, 2), with one level per feature (some of which may be trivial) and one value per grid point, stored as $x,y$ pairs along the third dimension.
 
 ```{r}
-pl1d <- landscape(pd, degree = 1, min_x = 0, max_x = 2, dx = 0.01)
+pl1d <- landscape(pd, degree = 1, min_b = 0, max_b = 2, by = 0.01)
 print(dim(pl1d$getInternal()))
 print(pl1d$getInternal())
 ```

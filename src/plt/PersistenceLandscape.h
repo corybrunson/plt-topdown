@@ -56,7 +56,7 @@ double birth(std::pair<double, double> a) { return a.first - a.second; }
 
 double death(std::pair<double, double> a) { return a.first + a.second; }
 
-// functions used in PersistenceLandscape( const PersistenceBarcodes& p )
+// functions used in PersistenceLandscape( const PersistenceBarcodes& pb )
 // constructor:
 bool comparePointsDBG = false;
 bool comparePoints(std::pair<double, double> f, std::pair<double, double> s) {
@@ -165,11 +165,10 @@ double functionValue(std::pair<double, double> p1, std::pair<double, double> p2,
 // Modified by Jose Bouza to accept exact/discrete constructor param.
 class PersistenceLandscape {
 public:
-  bool testLandscape(const PersistenceBarcodes &b); // for tests only!
-
+  
   PersistenceLandscape() { this->dimension = 0; }
-  PersistenceLandscape(const PersistenceBarcodes &p, bool exact = true,
-                       double dx = 0.01, double min_x = 0, double max_x = 10);
+  PersistenceLandscape(const PersistenceBarcodes &pb, bool exact = true,
+                       double min_x = 0, double max_x = 10, double dx = 0.01);
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
   PersistenceLandscape(char *filename);
@@ -203,7 +202,7 @@ public:
   friend std::ostream &operator<<(std::ostream &out,
                                   PersistenceLandscape &land);
 
-  void computeLandscapeOnDiscreteSetOfPoints(PersistenceBarcodes &b, double dx);
+  // void computeLandscapeOnDiscreteSetOfPoints(PersistenceBarcodes &b, double dx);
 
   typedef std::vector<std::pair<double, double>>::iterator lDimIterator;
   lDimIterator lDimBegin(unsigned dim) {
@@ -226,7 +225,6 @@ public:
             double xRangeBegin = -1, double xRangeEnd = -1,
             double yRangeBegin = -1, double yRangeEnd = -1);
 
-  PersistenceBarcodes convertToBarcode();
   // Friendzone:
 
   // this is a general algorithm to perform linear operations on persisntece
@@ -403,174 +401,6 @@ PersistenceLandscape::gimmeProperLandscapePoints() {
   }
   return result;
 }
-
-// CAUTION, this procedure do not work yet. Please do not use it until this
-// warning is removed.
-PersistenceBarcodes PersistenceLandscape::convertToBarcode() {
-  bool dbg = false;
-  // for the first level, find local maxima. They are points of the diagram.
-  // Find local minima and put them to the vector v for every next level, find
-  // local maxima and put them to the list L. Find local minima and put them to
-  // the list v2 Point belong to the persistence barcode if it belong to the
-  // list L, but do not belong to the list v. When you pick the peristence
-  // diagram points at this level, set v = v2. QUESTION -- is there any
-  // significnce of the points in those layers? They may give some
-  // layer-characteristic of a diagram and give a marriage between landscapes
-  // and diagrams.
-
-  std::vector<std::pair<double, double>> persistencePoints;
-  if (this->land[0].size()) {
-    std::vector<std::pair<double, double>> localMinimas;
-
-    for (size_t level = 0; level != this->land.size(); ++level) {
-      if (dbg) {
-        Rcpp::Rcerr << "\n\n\n Level : " << level << std::endl;
-        Rcpp::Rcerr << "Here is the list of local minima : \n";
-        for (size_t i = 0; i != localMinimas.size(); ++i) {
-          Rcpp::Rcerr << localMinimas[i] << " ";
-        }
-        Rcpp::Rcerr << "\n";
-        getchar();
-      }
-
-      size_t localMinimaCounter = 0;
-      std::vector<std::pair<double, double>> newLocalMinimas;
-      for (size_t i = 1; i != this->land[level].size() - 1; ++i) {
-        if (dbg) {
-          Rcpp::Rcerr << "Considering a pair : " << this->land[level][i]
-                    << std::endl;
-        }
-        if (this->land[level][i].second == 0)
-          continue;
-
-        if ((this->land[level][i].second > this->land[level][i - 1].second) &&
-            (this->land[level][i].second > this->land[level][i + 1].second)) {
-          // if this is a local maximum. The question is -- is it also a local
-          // minimum of a previous function?
-          bool isThisALocalMinimumOfThePreviousLevel = false;
-
-          if (dbg) {
-            Rcpp::Rcerr << "It is a local maximum. Now we are checking if it is "
-                         "also a local minimum of the previous function."
-                      << std::endl;
-          }
-
-          while ((localMinimaCounter < localMinimas.size()) &&
-                 (localMinimas[localMinimaCounter].first <
-                  this->land[level][i].first)) {
-            if (dbg) {
-              Rcpp::Rcerr << "Adding : " << localMinimas[localMinimaCounter]
-                        << " to new local minima \n";
-            }
-            newLocalMinimas.push_back(localMinimas[localMinimaCounter]);
-            ++localMinimaCounter;
-          }
-
-          if (localMinimaCounter != localMinimas.size()) {
-            if (localMinimas[localMinimaCounter] == this->land[level][i]) {
-              isThisALocalMinimumOfThePreviousLevel = true;
-              ++localMinimaCounter;
-            }
-          }
-          if (!isThisALocalMinimumOfThePreviousLevel) {
-            if (dbg) {
-              Rcpp::Rcerr << "It is not a local minimum of the previous level, "
-                           "so it is a point : "
-                        << birth(this->land[level][i]) << " ,  "
-                        << death(this->land[level][i])
-                        << " in a persistence diagram! \n";
-            }
-            persistencePoints.push_back(std::make_pair(
-                birth(this->land[level][i]), death(this->land[level][i])));
-          }
-          if ((dbg) && (isThisALocalMinimumOfThePreviousLevel)) {
-            Rcpp::Rcerr
-                << "It is a local minimum of the previous, so we do nothing \n";
-          }
-        }
-        if (this->land[level][i].second != 0) {
-          if ((this->land[level][i].second < this->land[level][i - 1].second) &&
-              (this->land[level][i].second < this->land[level][i + 1].second)) {
-            if (dbg) {
-              Rcpp::Rcerr << "This point is a local minimum, so we add it to a "
-                           "list of local minima.\n";
-            }
-            // local minimum
-            if (localMinimas.size()) {
-              while ((localMinimaCounter < localMinimas.size()) &&
-                     (localMinimas[localMinimaCounter].first <
-                      this->land[level][i].first)) {
-                newLocalMinimas.push_back(localMinimas[localMinimaCounter]);
-                ++localMinimaCounter;
-              }
-            }
-            newLocalMinimas.push_back(this->land[level][i]);
-          }
-        }
-
-        // if one is larger and the other is smaller, then such a point should
-        // be consider as both local minimum and maximum.
-        if (((this->land[level][i].second < this->land[level][i - 1].second) &&
-             (this->land[level][i].second > this->land[level][i + 1].second)) ||
-            ((this->land[level][i].second > this->land[level][i - 1].second) &&
-             (this->land[level][i].second < this->land[level][i + 1].second))) {
-          // minimum part:
-          newLocalMinimas.push_back(this->land[level][i]);
-          // maximum part:
-          bool isThisALocalMinimumOfThePreviousLevel = false;
-          if (dbg) {
-            Rcpp::Rcerr << "It is a local maximum and the local minimum."
-                      << std::endl;
-          }
-
-          while ((localMinimaCounter < localMinimas.size()) &&
-                 (localMinimas[localMinimaCounter].first <
-                  this->land[level][i].first)) {
-            newLocalMinimas.push_back(localMinimas[localMinimaCounter]);
-            ++localMinimaCounter;
-          }
-          if (localMinimaCounter != localMinimas.size()) {
-            if (localMinimas[localMinimaCounter] == this->land[level][i]) {
-              isThisALocalMinimumOfThePreviousLevel = true;
-              ++localMinimaCounter;
-            }
-          }
-          if (!isThisALocalMinimumOfThePreviousLevel) {
-            if (dbg) {
-              Rcpp::Rcerr << "It is not a local minimum of the previous level, "
-                           "so it is a point in a persistence diagram! \n";
-            }
-            persistencePoints.push_back(std::make_pair(
-                birth(this->land[level][i]), death(this->land[level][i])));
-          }
-          if ((dbg) && (isThisALocalMinimumOfThePreviousLevel)) {
-            Rcpp::Rcerr
-                << "It is a local minimum of the previous, so we do nothing \n";
-          }
-        }
-      }
-
-      if (dbg) {
-        Rcpp::Rcerr << "Exit the loop for this level, exchanging local minimas "
-                     "lists \n";
-        Rcpp::Rcerr << "localMinimas.size() : " << localMinimas.size()
-                  << std::endl;
-        Rcpp::Rcerr << "localMinimaCounter : " << localMinimaCounter << std::endl;
-      }
-      if (localMinimas.size()) {
-        while (localMinimaCounter < localMinimas.size()) {
-          newLocalMinimas.push_back(localMinimas[localMinimaCounter]);
-          ++localMinimaCounter;
-        }
-      }
-      Rcpp::Rcerr << "here \n";
-      localMinimas.swap(newLocalMinimas);
-      Rcpp::Rcerr << "Done\n";
-    }
-  }
-
-  return PersistenceBarcodes(persistencePoints);
-} // convertToBarcode
 
 inline bool check_if_file_exist(const char *name) {
   return (access(name, F_OK) != -1);
@@ -759,165 +589,6 @@ double PersistenceLandscape::computeNthMoment(unsigned n, double center,
   return result;
 } // computeNthMoment
 
-bool PersistenceLandscape::testLandscape(const PersistenceBarcodes &b) {
-  for (size_t level = 0; level != this->land.size(); ++level) {
-    for (size_t i = 1; i != this->land[level].size() - 1; ++i) {
-      if (this->land[level][i].second < epsi)
-        continue;
-      // check if over this->land[level][i].first-this->land[level][i].second ,
-      // this->land[level][i].first+this->land[level][i].second] there are level
-      // barcodes.
-      unsigned nrOfOverlapping = 0;
-      for (size_t nr = 0; nr != b.barcodes.size(); ++nr) {
-        if ((b.barcodes[nr].first - epsi <=
-             this->land[level][i].first - this->land[level][i].second) &&
-            (b.barcodes[nr].second + epsi >=
-             this->land[level][i].first + this->land[level][i].second)) {
-          ++nrOfOverlapping;
-        }
-      }
-      if (nrOfOverlapping != level + 1) {
-        Rcpp::Rcout << "We have a problem : \n";
-        Rcpp::Rcout << "this->land[level][i].first : "
-                  << this->land[level][i].first << "\n";
-        Rcpp::Rcout << "this->land[level][i].second : "
-                  << this->land[level][i].second << "\n";
-        Rcpp::Rcout << "["
-                  << this->land[level][i].first - this->land[level][i].second
-                  << ","
-                  << this->land[level][i].first + this->land[level][i].second
-                  << "] \n";
-        Rcpp::Rcout << "level : " << level
-                  << " , nrOfOverlapping: " << nrOfOverlapping << std::endl;
-        getchar();
-        for (size_t nr = 0; nr != b.barcodes.size(); ++nr) {
-          if ((b.barcodes[nr].first <=
-               this->land[level][i].first - this->land[level][i].second) &&
-              (b.barcodes[nr].second >=
-               this->land[level][i].first + this->land[level][i].second)) {
-            Rcpp::Rcout << "(" << b.barcodes[nr].first << ","
-                      << b.barcodes[nr].second << ")\n";
-          }
-          /*
-          Rcpp::Rcerr << "( b.barcodes[nr].first-epsi <=
-          this->land[level][i].first-this->land[level][i].second ) : "<< (
-          b.barcodes[nr].first-epsi <=
-          this->land[level][i].first-this->land[level][i].second ) << std::endl;
-          Rcpp::Rcerr << "( b.barcodes[nr].second+epsi >=
-          this->land[level][i].first+this->land[level][i].second ) : " << (
-          b.barcodes[nr].second+epsi >=
-          this->land[level][i].first+this->land[level][i].second ) << std::endl;
-          Rcpp::Rcerr << "( this->land[level][i].first-this->land[level][i].second
-          ) " << ( this->land[level][i].first-this->land[level][i].second )  <<
-          std::endl; Rcpp::Rcout << std::setprecision(20) << "We want : [" <<
-          this->land[level][i].first-this->land[level][i].second << "," <<
-          this->land[level][i].first+this->land[level][i].second << "] \n";
-          Rcpp::Rcout << "(" << b.barcodes[nr].first << "," <<
-          b.barcodes[nr].second << ")\n"; getchar();
-          */
-          // getchar();getchar();getchar();
-        }
-      }
-    }
-  }
-  return true;
-}
-
-bool computeLandscapeOnDiscreteSetOfPointsDBG = false;
-void PersistenceLandscape::computeLandscapeOnDiscreteSetOfPoints(
-    PersistenceBarcodes &b, double dx) {
-  std::pair<double, double> miMa = b.minMax();
-  double bmin = miMa.first;
-  double bmax = miMa.second;
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcerr << "bmin: " << bmin << " , bmax :" << bmax << "\n";
-  }
-
-  // if(computeLandscapeOnDiscreteSetOfPointsDBG){}
-
-  std::vector<std::pair<double, std::vector<double>>> result(
-      (bmax - bmin) / (dx / 2) + 2);
-
-  double x = bmin;
-  int i = 0;
-  while (x <= bmax) {
-    std::vector<double> v;
-    result[i] = std::make_pair(x, v);
-    x += dx / 2.0;
-    ++i;
-  }
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcerr << "Vector initally filled in \n";
-  }
-
-  for (size_t i = 0; i != b.barcodes.size(); ++i) {
-    // adding barcode b.barcodes[i] to out mesh:
-    double beginBar = b.barcodes[i].first;
-    double endBar = b.barcodes[i].second;
-    size_t index = ceil((beginBar - bmin) / (dx / 2));
-    while (result[index].first < beginBar)
-      ++index;
-    while (result[index].first < beginBar)
-      --index;
-    double height = 0;
-    // I know this is silly to add dx/100000 but this is neccesarry to make it
-    // work. Othervise, because of roundoff error, the program gave wrong
-    // results. It took me a while to track this.
-    while (height <= ((endBar - beginBar) / 2.0)) {
-      // go up
-      result[index].second.push_back(height);
-      height += dx / 2;
-      ++index;
-    }
-    height -= dx;
-    while ((height >= 0)) {
-      // Rcpp::Rcerr << "Next iteration\n";
-      // go down
-      result[index].second.push_back(height);
-      height -= dx / 2;
-      ++index;
-    }
-  }
-
-  // Rcpp::Rcerr << "All barcodes has been added to the mesh \n";
-
-  unsigned indexOfLastNonzeroLandscape = 0;
-  i = 0;
-  for (double x = bmin; x <= bmax; x = x + (dx / 2)) {
-    std::sort(result[i].second.begin(), result[i].second.end(),
-              std::greater<double>());
-    if (result[i].second.size() > indexOfLastNonzeroLandscape)
-      indexOfLastNonzeroLandscape = result[i].second.size();
-    ++i;
-  }
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcout << "Now we fill in the suitable vecors in this landscape \n";
-  }
-  std::vector<std::vector<std::pair<double, double>>> land(
-      indexOfLastNonzeroLandscape);
-  for (unsigned dim = 0; dim != indexOfLastNonzeroLandscape; ++dim) {
-    land[dim].push_back(std::make_pair(INT_MIN, 0));
-  }
-
-  i = 0;
-  for (double x = bmin; x <= bmax; x = x + (dx / 2)) {
-    for (size_t nr = 0; nr != result[i].second.size(); ++nr) {
-      land[nr].push_back(std::make_pair(result[i].first, result[i].second[nr]));
-    }
-    ++i;
-  }
-
-  for (unsigned dim = 0; dim != indexOfLastNonzeroLandscape; ++dim) {
-    land[dim].push_back(std::make_pair(INT_MAX, 0));
-  }
-  this->land.clear();
-  this->land.swap(land);
-  this->reduceAlignedPoints();
-}
-
 bool multiplyByIndicatorFunctionBDG = false;
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     std::vector<std::pair<double, double>> indicator) const {
@@ -1013,158 +684,6 @@ operator=(const PersistenceLandscape &oryginal) {
   return *this;
 }
 
-/*
-bool dbg = false;
-PersistenceLandscape::PersistenceLandscape( const PersistenceBarcodes& p )
-{
-    this->dimension = p.dimensionOfBarcode;
-    std::vector< std::pair<double,double> >
-characteristicPoints(p.barcodes.size()); for ( size_t i = 0 ; i !=
-p.barcodes.size() ; ++i )
-    {
-        characteristicPoints[i] =
-std::make_pair((p.barcodes[i].first+p.barcodes[i].second)/2.0 ,
-(p.barcodes[i].second - p.barcodes[i].first)/2.0) ;
-    }
-    std::sort( characteristicPoints.begin() , characteristicPoints.end() ,
-comparePoints );
-
-
-
-    while ( !characteristicPoints.empty() )
-    {
-        if ( dbg )
-        {
-            Rcpp::Rcerr << "Characteristic points at the very beginning :\n";
-            for ( size_t aa = 0 ; aa != characteristicPoints.size() ; ++aa )
-            {
-                Rcpp::Rcerr << "(" << characteristicPoints[aa] << ") , ";
-            }
-            Rcpp::Rcerr << "\n";
-        }
-
-
-        std::vector< std::pair<double,double> > lambda_n;
-        lambda_n.push_back( std::make_pair( INT_MIN , 0 ) );
-        lambda_n.push_back( std::make_pair(birth(characteristicPoints[0]),0) );
-        lambda_n.push_back( characteristicPoints[0] );
-        if ( dbg )
-        {
-            Rcpp::Rcout << "Adding : " << std::make_pair( INT_MIN , 0 ) << " to
-lambda_n \n"; Rcpp::Rcout << "Adding : " <<
-std::make_pair(birth(characteristicPoints[0]),0) << " to lambda_n \n"; Rcpp::Rcout
-<< "Adding : " << characteristicPoints[0] << " to lambda_n \n";
-        }
-
-        size_t q = 1;
-
-        std::list< std::pair<double,double> > newCharacteristicPoints;
-        std::list< std::pair<double,double> >::iterator pos =
-newCharacteristicPoints.end(); while ( q <= characteristicPoints.size()-1 )
-        {
-            size_t p = 0;
-            if ( dbg ){Rcpp::Rcout << "characteristicPoints[q] : " <<
-characteristicPoints[q] << "\n";std::cin.ignore();} while ( (
-q<characteristicPoints.size() ) && ( death(characteristicPoints[q]) <= death(
-lambda_n[lambda_n.size()-1] ) ) )
-            {
-                if ( dbg ){Rcpp::Rcout << "Rewriting new characteristic point : "
-<< characteristicPoints[q] << "\n";} newCharacteristicPoints.push_back(
-characteristicPoints[q] );
-                ++q;
-            }
-
-            if ( q < characteristicPoints.size() )
-            {
-                if ( birth(characteristicPoints[q]) <=
-death(lambda_n[lambda_n.size()-1]) )
-                {
-                    std::pair<double,double> pair =   std::make_pair(
-                                                       0.5*(birth(characteristicPoints[q])+death(lambda_n[lambda_n.size()-1]))
-                                                       ,
-                                                       0.5*((death(lambda_n[lambda_n.size()-1])
-- birth(characteristicPoints[q])) )
-                                                      );
-                    if ( dbg ){Rcpp::Rcout << "Adding : " << pair << " to
-lambda_n\n";}
-
-
-                    p = q+1;
-                    if ( dbg )
-                    {
-                        Rcpp::Rcerr << "Jestesmy zaraz przed petla
-\n";std::cin.ignore(); Rcpp::Rcerr << "(p < characteristicPoints.size() ) : " <<
-(p < characteristicPoints.size() ) << "\n"; Rcpp::Rcerr <<
-"!comparePoints(characteristicPoints[p],pair) : " <<
-comparePoints(characteristicPoints[p],pair) << "\n";
-                    }
-                    while ( (p < characteristicPoints.size() ) &&
-comparePoints(characteristicPoints[p],pair) )
-                    {
-                        if ( dbg )Rcpp::Rcout << "Adding new characteristic point
-in while loop: " << characteristicPoints[p] << "\n";
-                        newCharacteristicPoints.push_back(
-characteristicPoints[p] );
-                        ++p;
-                    }
-                    if ( dbg )Rcpp::Rcout << "Adding new characteristic point: "
-<< pair << "\n"; newCharacteristicPoints.push_back( pair ); lambda_n.push_back(
-pair );
-                }
-                else
-                {
-                    lambda_n.push_back( std::make_pair(
-death(lambda_n[lambda_n.size()-1]) , 0 ) ); lambda_n.push_back( std::make_pair(
-birth(characteristicPoints[q]) , 0 ) ); p = 1; if ( dbg )Rcpp::Rcout << "Aadding :
-(" << death(lambda_n[lambda_n.size()-1]) << ", 0 ) to lambda_n \n"; if ( dbg
-)Rcpp::Rcout << "Aadding : (" << birth(characteristicPoints[q]) << ", 0 ) to
-lambda_n \n";
-                }
-
-                 if ( dbg )Rcpp::Rcout << "Adding at the end of while : (" <<
-characteristicPoints[q] << ") to lambda_n \n"; lambda_n.push_back(
-characteristicPoints[q] ); q += p;
-
-                 if ( dbg )std::cin.ignore();
-            }
-        }
-
-        characteristicPoints.clear();
-        characteristicPoints.insert( characteristicPoints.end() ,
-newCharacteristicPoints.begin() , newCharacteristicPoints.end() );
-
-        if ( dbg )
-        {
-            Rcpp::Rcerr << "newCharacteristicPoints : \n";
-            for ( std::vector< std::pair<double,double> >::iterator it =
-characteristicPoints.begin() ; it != characteristicPoints.end() ; ++it )
-            {
-                Rcpp::Rcerr << "(" << *it << ")  ";
-            }
-            Rcpp::Rcerr << "\n\n";
-        }
-
-
-        lambda_n.push_back( std::make_pair(death(lambda_n[lambda_n.size()-1]),0)
-); if ( dbg )Rcpp::Rcout << "Adding : " <<
-std::make_pair(death(lambda_n[lambda_n.size()-1]),0) << " to lambda_n \n";
-
-        lambda_n.push_back( std::make_pair( INT_MAX , 0 ) );
-
-        if ( dbg )
-        {
-            Rcpp::Rcout << "Adding : " << std::make_pair( INT_MAX , 0 ) << " to
-lambda_n \n"; Rcpp::Rcout << "That is a new iteration of while \n\n\n\n";
-            std::cin.ignore();
-        }
-
-
-        lambda_n.erase(std::unique(lambda_n.begin(), lambda_n.end()),
-lambda_n.end()); this->land.push_back( lambda_n );
-    }
-}
-*/
-
 // TODO -- removewhen the problem is respved
 bool check(unsigned i, std::vector<std::pair<double, double>> v) {
   if ((i >= v.size())) {
@@ -1177,18 +696,19 @@ bool check(unsigned i, std::vector<std::pair<double, double>> v) {
 }
 // if ( check( , ) ){Rcpp::Rcerr << "OUT OF MEMORY \n";}
 
-PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
-                                           bool exact, double grid_diameter,
-                                           double min_x, double max_x) {
+PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &pb,
+                                           bool exact,
+                                           double min_x, double max_x,
+                                           double grid_diameter) {
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
-    this->dimension = p.dimensionOfBarcode;
+    this->dimension = pb.dimensionOfBarcode;
     std::vector<std::pair<double, double>> bars;
-    bars.insert(bars.begin(), p.barcodes.begin(), p.barcodes.end());
+    bars.insert(bars.begin(), pb.barcodes.begin(), pb.barcodes.end());
     std::sort(bars.begin(), bars.end(), comparePoints2);
 
     std::vector<std::pair<double, double>> characteristicPoints(
-        p.barcodes.size());
+        pb.barcodes.size());
 
     for (size_t i = 0; i != bars.size(); ++i) {
       characteristicPoints[i] =
@@ -1206,7 +726,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
       int i = 1;
       std::vector<std::pair<double, double>> newCharacteristicPoints;
       while (i < characteristicPoints.size()) {
-        size_t p = 1;
+        size_t j = 1;
         if ((birth(characteristicPoints[i]) >=
              birth(lambda_n[lambda_n.size() - 1])) &&
             (death(characteristicPoints[i]) >
@@ -1222,22 +742,22 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
                                    2);
             lambda_n.push_back(point);
 
-            while ((i + p < characteristicPoints.size()) &&
+            while ((i + j < characteristicPoints.size()) &&
                    (almostEqual(birth(point),
-                                birth(characteristicPoints[i + p]))) &&
-                   (death(point) <= death(characteristicPoints[i + p]))) {
-              newCharacteristicPoints.push_back(characteristicPoints[i + p]);
+                                birth(characteristicPoints[i + j]))) &&
+                   (death(point) <= death(characteristicPoints[i + j]))) {
+              newCharacteristicPoints.push_back(characteristicPoints[i + j]);
 
-              ++p;
+              ++j;
             }
 
             newCharacteristicPoints.push_back(point);
 
-            while ((i + p < characteristicPoints.size()) &&
-                   (birth(point) <= birth(characteristicPoints[i + p])) &&
-                   (death(point) >= death(characteristicPoints[i + p]))) {
-              newCharacteristicPoints.push_back(characteristicPoints[i + p]);
-              ++p;
+            while ((i + j < characteristicPoints.size()) &&
+                   (birth(point) <= birth(characteristicPoints[i + j])) &&
+                   (death(point) >= death(characteristicPoints[i + j]))) {
+              newCharacteristicPoints.push_back(characteristicPoints[i + j]);
+              ++j;
             }
 
           } else {
@@ -1250,7 +770,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
         } else {
           newCharacteristicPoints.push_back(characteristicPoints[i]);
         }
-        i = i + p;
+        i = i + j;
       }
       lambda_n.push_back(
           std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0));
@@ -1269,7 +789,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
     // in this case useGridInComputations is true, therefore we will build a
     // landscape on a grid.
     double gridDiameter = grid_diameter;
-    this->dimension = p.dimensionOfBarcode;
+    this->dimension = pb.dimensionOfBarcode;
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
     size_t numberOfBins =
         2 * ((minMax.second - minMax.first) / gridDiameter) + 1;
@@ -1295,21 +815,21 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
     }
 
     // for every peristent interval, sample on grid.
-    for (size_t intervalNo = 0; intervalNo != p.size(); ++intervalNo) {
-      // size_t beginn = (size_t)(2*( p.barcodes[intervalNo].first-minMax.first
+    for (size_t intervalNo = 0; intervalNo != pb.size(); ++intervalNo) {
+      // size_t beginn = (size_t)(2*( pb.barcodes[intervalNo].first-minMax.first
       // )/( gridDiameter ))+1;
       size_t beginn = 0;
 
       while (beginn < criticalValuesOnPointsOfGrid.size()) {
         if (fabs(criticalValuesOnPointsOfGrid[beginn].first >
-                 p.barcodes[intervalNo].first) &&
+                 pb.barcodes[intervalNo].first) &&
             fabs(criticalValuesOnPointsOfGrid[beginn].first <
-                 p.barcodes[intervalNo].second)) {
+                 pb.barcodes[intervalNo].second)) {
           criticalValuesOnPointsOfGrid[beginn].second.push_back(
               std::min(fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            p.barcodes[intervalNo].first),
+                            pb.barcodes[intervalNo].first),
                        fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            p.barcodes[intervalNo].second)));
+                            pb.barcodes[intervalNo].second)));
         } else
           criticalValuesOnPointsOfGrid[beginn].second.push_back(0.0);
 
@@ -1344,362 +864,6 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
     }
   }
 }
-
-/*
-
-        //and now it remains to fill in the structure of the peristence
-   landscape:
-        //We are using this extra structure for the following reason: in the
-   naive algorithm we would have to iterate through the whole
-   criticalValuesOnPointsOfGrid
-        //as many times as there are nonzero lambda_n's. But we know that the
-   support of lambda_n contains support of lambda_{n+1}. So, when we already
-   know that the
-        //domain of lambda_n is very restricted, there is no need to look for
-   lambda_{n+1} outside of this domain. That is why we need those bounds for the
-   support of the
-        //previous landscape function.
-        cerr << "HereAA \n";getchar();
-
-        std::vector<double> placesWherePreviousLandscapeIsNonzero;
-        for ( size_t i = 0 ; i != criticalValuesOnPointsOfGrid.size() ; ++i )
-        {
-            if ( (criticalValuesOnPointsOfGrid[i].second.size() ) &&
-   (criticalValuesOnPointsOfGrid[i].second[0] == 0.5) )
-            {
-                if ( dbg ){cerr << "Found a place, where lambda_0 became nonzero
-   : " << i << endl;} placesWherePreviousLandscapeIsNonzero.push_back( i );
-                //if at the next step it again became zero, we need to duplicate
-   this point in the placesWherePreviousLandscapeIsNonzero vector. if (
-   criticalValuesOnPointsOfGrid[i+1].second.size() == 0 )
-                {
-                    placesWherePreviousLandscapeIsNonzero.push_back( i );
-                }
-            }
-        }
-
-        cerr << "Here \n";getchar();
-
-
-        //std::vector< std::vector< std::pair<double,double> > > land;
-        for ( size_t level = 0 ; level != maxNonzeroLambda ; ++level )
-        {
-
-            if ( dbg )
-            {
-                cerr << "placesWherePreviousLandscapeIsNonzero.size() : " <<
-   placesWherePreviousLandscapeIsNonzero.size() << endl; cerr <<
-   "placesWherePreviousLandscapeIsNonzero : \n"; for ( size_t i = 0 ; i !=
-   placesWherePreviousLandscapeIsNonzero.size() ; ++i )
-                {
-                    cerr << placesWherePreviousLandscapeIsNonzero[i] << " ";
-                }
-                cerr << endl;
-                getchar();
-            }
-            cerr << "maxNonzeroLambda : " << maxNonzeroLambda << endl;//aaa
-
-            std::vector<double> newPlacesWherePreviousLandscapeIsNonzero;
-            if ( dbg ){cerr << "Begin construction of lambda_" << level <<
-   endl;}
-
-            std::vector< std::pair<double,double> > lambdaLevel;
-            lambdaLevel.push_back( std::make_pair(INT_MIN,0) );
-            //construct lambda_level. We should do it in a smart way...
-
-            for ( size_t j = 0 ; j <=
-   placesWherePreviousLandscapeIsNonzero.size()-1 ; j+=2 )
-            {
-                if (dbg)cerr << "j : " << j << endl;
-                size_t k = placesWherePreviousLandscapeIsNonzero[j];
-                while ( k <= placesWherePreviousLandscapeIsNonzero[j+1] )
-                {
-                    if (dbg)cerr << "k : " << k << endl;
-                    if (dbg)cerr << "placesWherePreviousLandscapeIsNonzero[j+1]
-   : " << placesWherePreviousLandscapeIsNonzero[j+1] << endl; cerr <<
-   "criticalValuesOnPointsOfGrid[k].second.size() : " <<
-   criticalValuesOnPointsOfGrid[k].second.size() << endl; bool
-   wasCriticalValueAtZeroAdded = false; if (
-   criticalValuesOnPointsOfGrid[k].second.size() > level )
-                    {
-                        if ( criticalValuesOnPointsOfGrid[k].second[level] ==
-   0.5 )
-                        {
-                            //in this case we need to add a critical point at
-   zero before or after this critical point. if ( lambdaLevel.size() == 1 )
-                            {
-                                //this is the first point, we need to add zero
-   critical point lambdaLevel.push_back( std::make_pair(
-   criticalValuesOnPointsOfGrid[k].first-gridDiameter/2 , 0 ) ); if ( dbg ){cerr
-   << "Adding : (" << criticalValuesOnPointsOfGrid[k].first-gridDiameter/2 <<
-   "," << 0<< ")" << endl;} wasCriticalValueAtZeroAdded = true;
-                            }
-                            else
-                            {
-                                //we know that lambdaLevel.size() is always > 1.
-                                if ( lambdaLevel[lambdaLevel.size()-1].second ==
-   0 )
-                                {
-                                    //new connected component of the support
-   just begins lambdaLevel.push_back( std::make_pair(
-   criticalValuesOnPointsOfGrid[k].first-gridDiameter/2 , 0 ) ); if ( dbg ){cerr
-   << "AAAdding : (" << criticalValuesOnPointsOfGrid[k].first-gridDiameter/2 <<
-   "," << 0<< ")" << endl;} wasCriticalValueAtZeroAdded = true;
-                                }
-                            }
-                        }
-                        lambdaLevel.push_back( std::make_pair(
-   criticalValuesOnPointsOfGrid[k].first ,
-   criticalValuesOnPointsOfGrid[k].second[level] ) ); if ( dbg ){cerr << "Level
-   : " << level << " adding a critical point : (" <<
-   criticalValuesOnPointsOfGrid[k].first << ","
-   <<criticalValuesOnPointsOfGrid[k].second[level] << ")\n";getchar();}
-                        getchar();
-
-                        if ( criticalValuesOnPointsOfGrid[k].second[level] ==
-   0.5 )
-                        {
-                            //cerr <<
-   "newPlacesWherePreviousLandscapeIsNonzero.push_back(" << k << ") \n";
-                            newPlacesWherePreviousLandscapeIsNonzero.push_back(k);
-                            if ( wasCriticalValueAtZeroAdded )
-                            {
-                                //if the critical value (x,0) was not added
-   before this point, it have to be added after it. lambdaLevel.push_back(
-   std::make_pair( criticalValuesOnPointsOfGrid[k].first+gridDiameter/2 , 0 ) );
-                                if ( dbg ){cerr << "Adding : (" <<
-   criticalValuesOnPointsOfGrid[k].first+gridDiameter/2 << "," << 0<< ")" <<
-   endl;}
-                            }
-                        }
-                    }
-                    ++k;
-                }
-            }
-            placesWherePreviousLandscapeIsNonzero.swap(
-   newPlacesWherePreviousLandscapeIsNonzero ); if ( dbg ){cerr << "Adding the
-   closing point : (" << INT_MAX << " , " << 0 << ")" << endl;}
-            lambdaLevel.push_back( std::make_pair(INT_MAX,0) );
-            this->land.push_back( lambdaLevel );
-        }
-*/
-
-/*
-bool dbg = false;
-PersistenceLandscape::PersistenceLandscape( const PersistenceBarcodes& p )
-{
-    if (dbg)
-    {
-        Rcpp::Rcerr << "PersistenceLandscape::PersistenceLandscape( const
-PersistenceBarcodes& p ) \n"; Rcpp::Rcerr << "p.barcodes.size() : " <<
-p.barcodes.size() << "\n";
-    }
-
-    this->dimension = p.dimensionOfBarcode;
-    std::vector< std::pair<double,double> >
-characteristicPoints(p.barcodes.size()); for ( size_t i = 0 ; i !=
-p.barcodes.size() ; ++i )
-    {
-        characteristicPoints[i] =
-std::make_pair((p.barcodes[i].first+p.barcodes[i].second)/2.0 ,
-(p.barcodes[i].second - p.barcodes[i].first)/2.0) ;
-    }
-    if (dbg)Rcpp::Rcerr << "Soering\n";
-    std::sort( characteristicPoints.begin() , characteristicPoints.end() ,
-comparePoints );
-
-    std::vector< std::vector< std::pair<double,double> > > persistenceLandscape;
-    while ( !characteristicPoints.empty() )
-    {
-        if (dbg)Rcpp::Rcerr << "Next iteration of the while loop \n";
-        if (dbg)
-        {
-            Rcpp::Rcerr << "characteristicPoints.size() : " <<
-characteristicPoints.size() << "\n"; Rcpp::Rcerr << "Characteristic points : \n";
-            for ( size_t i = 0 ; i != characteristicPoints.size() ; ++i )
-            {
-                Rcpp::Rcout << characteristicPoints[i].first << "," <<
-characteristicPoints[i].second << "\n";
-            }
-            //std::cin.ignore();
-        }
-
-
-        std::vector< std::pair<double,double> > lambda_n;
-        lambda_n.push_back( std::make_pair( INT_MIN , 0 ) );
-        lambda_n.push_back( std::make_pair(birth(characteristicPoints[0]),0) );
-        lambda_n.push_back( characteristicPoints[0] );
-        if (dbg)Rcpp::Rcerr << "Adding to lambda_n : " << std::make_pair( INT_MIN
-, 0 ) << "\n"; if (dbg)Rcpp::Rcerr << "Adding to lambda_n : " <<
-std::make_pair(birth(characteristicPoints[0]),0) << "\n"; if (dbg)Rcpp::Rcerr <<
-"Adding to lambda_n : " << characteristicPoints[0] << "\n";
-
-
-        int i = 1;
-
-        if (dbg)Rcpp::Rcerr << "First characteristic point: " <<
-characteristicPoints[0].first << " , " << characteristicPoints[0].second <<
-std::endl;
-
-        std::list< std::pair<double,double> >  newCharacteristicPoints;
-        while ( i != characteristicPoints.size() )
-        {
-            size_t p = 1;
-            if (dbg)Rcpp::Rcerr << "i : " << i << std::endl;
-            //(death(characteristicPoints[i]) >=
-death(lambda_n[lambda_n.size()-1])) if ( (birth(characteristicPoints[i]) >
-birth(lambda_n[lambda_n.size()-1])) && (death(characteristicPoints[i]) >
-death(lambda_n[lambda_n.size()-1])) )
-            {
-                if (dbg)Rcpp::Rcerr << "I have found the next characteristic point
-: " << characteristicPoints[i].first << " , " << characteristicPoints[i].second
-<< std::endl; if ( birth(characteristicPoints[i]) <
-death(lambda_n[lambda_n.size()-1]) )
-                {
-                    if (dbg)Rcpp::Rcerr << "Creation of a new characteristic point
-:" << (birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2 << "
-, " << (death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2 <<
-std::endl;
-
-                    std::pair<double,double> point = std::make_pair(
-(birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2 ,
-(death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2 );
-
-                    if ( dbg )Rcpp::Rcout << "lambda_n ass : " << std::make_pair(
-(birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2 ,
-(death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2 ) << "\n";
-                    lambda_n.push_back( std::make_pair(
-(birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2 ,
-(death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2 ) );
-
-                    if ( dbg )
-                    {
-                        Rcpp::Rcerr << "Jestesmy zaraz przed petla
-\n";//std::cin.ignore(); Rcpp::Rcerr << "(p < characteristicPoints.size() ) : " <<
-(p < characteristicPoints.size() ) << "\n"; Rcpp::Rcerr <<
-"!comparePoints(characteristicPoints[p],point) : " <<
-comparePoints(characteristicPoints[p],point) << "\n";
-                    }
-                    while ( (i+p < characteristicPoints.size() ) &&
-comparePoints(characteristicPoints[i+p],point) )
-                    {
-                        if ( dbg )Rcpp::Rcout << "Adding new characteristic point
-in while loop: " << characteristicPoints[i+p] << "\n";
-                        newCharacteristicPoints.push_back(
-characteristicPoints[i+p] );
-                        ++p;
-                    }
-                    newCharacteristicPoints.push_back( point );
-                }
-                else
-                {
-                    lambda_n.push_back( std::make_pair(
-death(lambda_n[lambda_n.size()-1]) , 0 ) ); lambda_n.push_back( std::make_pair(
-birth(characteristicPoints[i]) , 0 ) );
-
-                    if (dbg)Rcpp::Rcout << "lamnda_n adding : " << std::make_pair(
-death(lambda_n[lambda_n.size()-1]) , 0 ) << "\n"; if (dbg)Rcpp::Rcout << "lamnda_n
-adding : " << std::make_pair( birth(characteristicPoints[i]) , 0 ) << "\n";
-                }
-                if (dbg)Rcpp::Rcout << "lamnda_n adding : " <<
-characteristicPoints[i] << "\n"; lambda_n.push_back( characteristicPoints[i] );
-            }
-            else
-            {
-                if (dbg)
-                {
-                        Rcpp::Rcerr << "Writing new point as
-newCharacteristicPoints : " << characteristicPoints[i].first << " , " <<
-characteristicPoints[i].second << std::endl;//std::cin.ignore();
-                }
-                newCharacteristicPoints.push_back( characteristicPoints[i] );
-            }
-            i = i+p;
-        }
-        lambda_n.push_back( std::make_pair(death(lambda_n[lambda_n.size()-1]),0)
-); lambda_n.push_back( std::make_pair( INT_MAX , 0 ) );
-
-        //Rcpp::Rcerr << "Lamnda_" << this->land.size() << " has been created\n";
-
-        if ( dbg )
-        {
-            Rcpp::Rcerr << "lambda_" << persistenceLandscape.size() << ": \n";
-            for ( size_t aa = 0  ; aa != lambda_n.size() ; ++aa )
-            {
-                Rcpp::Rcerr << lambda_n[aa].first << " , " << lambda_n[aa].second
-<< std::endl;
-            }
-        }
-        //CHANGE
-        //characteristicPoints = newCharacteristicPoints;
-        characteristicPoints.clear();
-        characteristicPoints.insert( characteristicPoints.begin() ,
-newCharacteristicPoints.begin() , newCharacteristicPoints.end() );
-
-        lambda_n.erase(std::unique(lambda_n.begin(), lambda_n.end()),
-lambda_n.end()); this->land.push_back( lambda_n );
-    }
-}
-
-*/
-
-/*
-PersistenceLandscape::PersistenceLandscape( const PersistenceBarcodes& p )
-{
-    this->dimension = p.dimensionOfBarcode;
-    std::vector< std::pair<double,double> >
-characteristicPoints(p.barcodes.size()); for ( size_t i = 0 ; i !=
-p.barcodes.size() ; ++i )
-    {
-        characteristicPoints[i] =
-std::make_pair((p.barcodes[i].first+p.barcodes[i].second)/2.0 ,
-(p.barcodes[i].second - p.barcodes[i].first)/2.0) ;
-    }
-    std::sort( characteristicPoints.begin() , characteristicPoints.end() ,
-comparePoints ); std::vector< std::vector< std::pair<double,double> > >
-persistenceLandscape; while ( !characteristicPoints.empty() )
-    {
-        std::vector< std::pair<double,double> > lambda_n;
-        lambda_n.push_back( std::make_pair( INT_MIN , 0 ) );
-        lambda_n.push_back( std::make_pair(birth(characteristicPoints[0]),0) );
-        lambda_n.push_back( characteristicPoints[0] );
-        int i = 1;
-        std::vector< std::pair<double,double> >  newCharacteristicPoints;
-        while ( i != characteristicPoints.size() )
-        {
-            //(death(characteristicPoints[i]) >=
-death(lambda_n[lambda_n.size()-1])) if ( (birth(characteristicPoints[i]) >
-birth(lambda_n[lambda_n.size()-1])) && (death(characteristicPoints[i]) >=
-death(lambda_n[lambda_n.size()-1])) )
-            {
-                if ( birth(characteristicPoints[i]) <
-death(lambda_n[lambda_n.size()-1]) )
-                {
-                    newCharacteristicPoints.push_back( std::make_pair(
-                                                                      (birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2
-, (death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2
-                                                                      )
-                                                      );
-                    lambda_n.push_back( std::make_pair(
-(birth(characteristicPoints[i])+death(lambda_n[lambda_n.size()-1]))/2 ,
-(death(lambda_n[lambda_n.size()-1])-birth(characteristicPoints[i]))/2 ) );
-                }
-                lambda_n.push_back( characteristicPoints[i] );
-            }
-            else
-            {
-                newCharacteristicPoints.push_back( characteristicPoints[i] );
-            }
-            ++i;
-        }
-        lambda_n.push_back( std::make_pair(death(lambda_n[lambda_n.size()-1]),0)
-); lambda_n.push_back( std::make_pair( INT_MAX , 0 ) );
-
-        characteristicPoints = newCharacteristicPoints;
-        lambda_n.erase(std::unique(lambda_n.begin(), lambda_n.end()),
-lambda_n.end()); this->land.push_back( lambda_n );
-    }
-}*/
 
 double PersistenceLandscape::computeIntegralOfLandscape() const {
   double result = 0;
@@ -2594,222 +1758,6 @@ PersistenceLandscape::generateBettiNumbersHistogram() const {
   }
   return result;
 } // generateBettiNumbersHistogram
-
-/*
-double computeInnerProduct( const PersistenceLandscape& l1 , const
-PersistenceLandscape& l2 )
-{
-    bool dbg = true;
-    double result = 0;
-
-    for ( size_t level = 0 ; level != std::min( l1.size() , l2.size() ) ;
-++level )
-    {
-        if ( dbg ){cerr << "Compute inner product in the level : " << level <<
-endl;getchar();}
-
-        //we start from 1 and go all the way to size-1 since we do not want to
-bother with +-infty. size_t l1It = 1; size_t l2It = 1;
-
-
-        double lastX = INT_MIN;
-        while ( ( l1It <= l1.land[level].size()-2 ) && ( l2It <=
-l2.land[level].size()-2 ) )
-        {
-            //first let us move the pointers to the point where the overlap:
-            while ( ( l1It < l1.land[level].size()-2 ) && (
-l1.land[level][l1It+1].first < l2.land[level][l2It].first ) )
-            {
-                lastX = l1.land[level][l1It+1].first;
-                ++l1It;
-            }
-            while ( ( l2It < l2.land[level].size()-2 ) && (
-l2.land[level][l2It+1].first < l1.land[level][l1It].first ) )
-            {
-                lastX = l2.land[level][l2It+1].first;
-                ++l2It;
-
-            }
-            //now they should overlap
-
-            //if ( (l1It > l1.land[level].size()-2) || ( l2It >
-l2.land[level].size()-2 ) )break;
-
-            if ( dbg )
-            {
-                cerr << "L1It : " << l1It << ", l2It : " << l2It << endl;
-            }
-
-
-            double x1 = l1.land[level][l1It].first;
-            double x2 = l2.land[level][l2It].first;
-
-            if ( x1 > x2 )
-            {
-                //swap x1 and x2
-                double b = x1;
-                x1 = x2;
-                x2 = b;
-            }
-
-            if ( x1 == lastX )
-            {
-                x1 = x2;
-                if ( l1.land[level][l1It+1].first <=
-l2.land[level][l2It+1].first )
-                {
-                    x2 = l1.land[level][l1It+1].first;
-                }
-                else
-                {
-                    x2 = l2.land[level][l2It+1].first;
-                }
-            }
-            lastX = x1;
-
-            double a,b,c,d;
-            a=b=c=d=0;
-
-            if ( l1.land[level][l1It].first < l2.land[level][l2It].first )
-            {
-                a = (l1.land[level][l1It+1].second -
-l1.land[level][l1It].second)/(l1.land[level][l1It+1].first -
-l1.land[level][l1It].first); b = l1.land[level][l1It].second -
-a*l1.land[level][l1It].first; c = (l2.land[level][l2It].second -
-l2.land[level][l2It-1].second)/(l2.land[level][l2It].first -
-l2.land[level][l2It-1].first); d = l2.land[level][l2It-1].second -
-c*l2.land[level][l2It-1].first;
-            }
-            else
-            {
-                if ( l1.land[level][l1It].first > l2.land[level][l2It].first )
-                {
-                    a = (l1.land[level][l1It].second -
-l1.land[level][l1It-1].second)/(l1.land[level][l1It].first -
-l1.land[level][l1It-1].first); b = l1.land[level][l1It-1].second -
-a*l1.land[level][l1It-1].first; c = (l2.land[level][l2It+1].second -
-l2.land[level][l2It].second)/(l2.land[level][l2It+1].first -
-l2.land[level][l2It].first); d = l2.land[level][l2It].second -
-c*l2.land[level][l2It].first;
-                }
-                else
-                {
-                    //in this case those guys have to be equal:
-                    a = (l1.land[level][l1It+1].second -
-l1.land[level][l1It].second)/(l1.land[level][l1It+1].first -
-l1.land[level][l1It].first); b = l1.land[level][l1It].second -
-a*l1.land[level][l1It].first; c = (l2.land[level][l2It+1].second -
-l2.land[level][l2It].second)/(l2.land[level][l2It+1].first -
-l2.land[level][l2It].first); d = l2.land[level][l2It].second -
-c*l2.land[level][l2It].first;
-
-                    x2 = std::min( l1.land[level][l1It+1].first ,
-l2.land[level][l2It+1].first );
-                }
-            }
-
-            if ( dbg )
-            {
-                cerr << "a : " << a << ", b : " << b << " , c: " << c << ", d :
-" << d << endl; cerr << "x1 : " << x1 << " , x2 : " << x2 << endl; cerr <<
-"lastX : "  << lastX << endl; getchar();
-            }
-
-            double contributionFromThisPart
-            =
-            (a*c*x2*x2*x2/3 + (a*d+b*c)*x2*x2/2 + b*d*x2) - (a*c*x1*x1*x1/3 +
-(a*d+b*c)*x1*x1/2 + b*d*x1);
-
-            result += contributionFromThisPart;
-
-            if ( dbg )
-            {
-                //cerr << "l1.land[level][" << l1It << "].first : " <<
-l1.land[level][l1It].first << endl;
-                //cerr << "l1.land[level][" << l1It+1 << "].first : " <<
-l1.land[level][l1It+1].first << endl;
-
-                //cerr << "l2.land[level][" << l2It << "].first : " <<
-l2.land[level][l2It].first << endl;
-                //cerr << "l2.land[level][" << l2It+1 << "].first : " <<
-l2.land[level][l2It+1].first << endl;
-
-                //cerr << "a*c*x2*x2*x2/3 + (a*d+b*c)*x2*x2/2 + b*d*x2 : " <<
-a*c*x2*x2*x2/3 + (a*d+b*c)*x2*x2/2 + b*d*x2 << endl;
-                //cerr << "a*c*x1*x1*x1/3 + (a*d+b*c)*x1*x1/2 + b*d*x1 : " <<
-a*c*x1*x1*x1/3 + (a*d+b*c)*x1*x1/2 + b*d*x1 << endl;
-                //cerr << "a*c*x2*x2*x2/3 + (a*d+b*c)*x2*x2/2 + b*d*x2 -
-a*c*x1*x1*x1/3 + (a*d+b*c)*x1*x1/2 + b*d*x1 : " << ((a*c*x2*x2*x2/3 +
-(a*d+b*c)*x2*x2/2 + b*d*x2) - (a*c*x1*x1*x1/3 + (a*d+b*c)*x1*x1/2 + b*d*x1)) <<
-endl; cerr << "contributionFromThisPart : " << contributionFromThisPart << endl;
-                cerr << "result : " << result << endl;
-                getchar();
-            }
-
-
-            if ( l1.land[level][l1It].first < l2.land[level][l2It].first )
-            {
-                if ( l1.land[level][l1It+1].first <=
-l2.land[level][l2It+1].first )
-                {
-                    ++l1It;
-                    if ( dbg ){cerr << "Incrementing l1It \n";}
-                }
-                else
-                {
-                    ++l2It;
-                    if ( dbg ){cerr << "Incrementing l2It \n";}
-                }
-            }
-            else
-            {
-                if ( l1.land[level][l1It].first > l2.land[level][l2It].first )
-                {
-                    if ( l2.land[level][l2It+1].first <=
-l1.land[level][l1It+1].first )
-                    {
-                        ++l2It;
-                        if ( dbg ){cerr << "Incrementing l2It \n";}
-                    }
-                    else
-                    {
-                        ++l1It;
-                        if ( dbg ){cerr << "Incrementing l1It \n";}
-                    }
-                }
-                else
-                {
-                    //they are equal, so I need to increase both:
-
-                    if ( l2.land[level][l2It+1].first ==
-l1.land[level][l1It+1].first )
-                    {
-                        ++l1It;
-                        ++l2It;
-                        if ( dbg ){cerr << "Increasing both\n";}
-                    }
-                    else
-                    {
-                        if ( l1.land[level][l1It+1].first <
-l2.land[level][l2It+1].first )
-                        {
-                            ++l1It;if ( dbg ){cerr << "Incrementing l1It \n";}
-                        }
-                        else
-                        {
-                            ++l2It;
-                            if ( dbg ){cerr << "Incrementing l2It \n";}
-                        }
-                    }
-                }
-            }
-            if ( dbg )getchar();
-        }
-    }
-
-    return result;
-}
-*/
 
 double computeInnerProduct(const PersistenceLandscape &l1,
                            const PersistenceLandscape &l2) {
