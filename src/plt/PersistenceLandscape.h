@@ -56,7 +56,7 @@ double birth(std::pair<double, double> a) { return a.first - a.second; }
 
 double death(std::pair<double, double> a) { return a.first + a.second; }
 
-// functions used in PersistenceLandscape( const PersistenceBarcodes& p )
+// functions used in PersistenceLandscape( const PersistenceBarcodes& pb )
 // constructor:
 bool comparePointsDBG = false;
 bool comparePoints(std::pair<double, double> f, std::pair<double, double> s) {
@@ -167,7 +167,7 @@ class PersistenceLandscape {
 public:
   
   PersistenceLandscape() { this->dimension = 0; }
-  PersistenceLandscape(const PersistenceBarcodes &p, bool exact = true,
+  PersistenceLandscape(const PersistenceBarcodes &pb, bool exact = true,
                        double min_x = 0, double max_x = 10, double dx = 0.01);
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
@@ -696,19 +696,19 @@ bool check(unsigned i, std::vector<std::pair<double, double>> v) {
 }
 // if ( check( , ) ){Rcpp::Rcerr << "OUT OF MEMORY \n";}
 
-PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
+PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &pb,
                                            bool exact,
                                            double min_x, double max_x,
                                            double grid_diameter) {
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
-    this->dimension = p.dimensionOfBarcode;
+    this->dimension = pb.dimensionOfBarcode;
     std::vector<std::pair<double, double>> bars;
-    bars.insert(bars.begin(), p.barcodes.begin(), p.barcodes.end());
+    bars.insert(bars.begin(), pb.barcodes.begin(), pb.barcodes.end());
     std::sort(bars.begin(), bars.end(), comparePoints2);
 
     std::vector<std::pair<double, double>> characteristicPoints(
-        p.barcodes.size());
+        pb.barcodes.size());
 
     for (size_t i = 0; i != bars.size(); ++i) {
       characteristicPoints[i] =
@@ -726,7 +726,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
       int i = 1;
       std::vector<std::pair<double, double>> newCharacteristicPoints;
       while (i < characteristicPoints.size()) {
-        size_t p = 1;
+        size_t j = 1;
         if ((birth(characteristicPoints[i]) >=
              birth(lambda_n[lambda_n.size() - 1])) &&
             (death(characteristicPoints[i]) >
@@ -742,22 +742,22 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
                                    2);
             lambda_n.push_back(point);
 
-            while ((i + p < characteristicPoints.size()) &&
+            while ((i + j < characteristicPoints.size()) &&
                    (almostEqual(birth(point),
-                                birth(characteristicPoints[i + p]))) &&
-                   (death(point) <= death(characteristicPoints[i + p]))) {
-              newCharacteristicPoints.push_back(characteristicPoints[i + p]);
+                                birth(characteristicPoints[i + j]))) &&
+                   (death(point) <= death(characteristicPoints[i + j]))) {
+              newCharacteristicPoints.push_back(characteristicPoints[i + j]);
 
-              ++p;
+              ++j;
             }
 
             newCharacteristicPoints.push_back(point);
 
-            while ((i + p < characteristicPoints.size()) &&
-                   (birth(point) <= birth(characteristicPoints[i + p])) &&
-                   (death(point) >= death(characteristicPoints[i + p]))) {
-              newCharacteristicPoints.push_back(characteristicPoints[i + p]);
-              ++p;
+            while ((i + j < characteristicPoints.size()) &&
+                   (birth(point) <= birth(characteristicPoints[i + j])) &&
+                   (death(point) >= death(characteristicPoints[i + j]))) {
+              newCharacteristicPoints.push_back(characteristicPoints[i + j]);
+              ++j;
             }
 
           } else {
@@ -770,7 +770,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
         } else {
           newCharacteristicPoints.push_back(characteristicPoints[i]);
         }
-        i = i + p;
+        i = i + j;
       }
       lambda_n.push_back(
           std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0));
@@ -789,7 +789,7 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
     // in this case useGridInComputations is true, therefore we will build a
     // landscape on a grid.
     double gridDiameter = grid_diameter;
-    this->dimension = p.dimensionOfBarcode;
+    this->dimension = pb.dimensionOfBarcode;
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
     size_t numberOfBins =
         2 * ((minMax.second - minMax.first) / gridDiameter) + 1;
@@ -815,21 +815,21 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
     }
 
     // for every peristent interval, sample on grid.
-    for (size_t intervalNo = 0; intervalNo != p.size(); ++intervalNo) {
-      // size_t beginn = (size_t)(2*( p.barcodes[intervalNo].first-minMax.first
+    for (size_t intervalNo = 0; intervalNo != pb.size(); ++intervalNo) {
+      // size_t beginn = (size_t)(2*( pb.barcodes[intervalNo].first-minMax.first
       // )/( gridDiameter ))+1;
       size_t beginn = 0;
 
       while (beginn < criticalValuesOnPointsOfGrid.size()) {
         if (fabs(criticalValuesOnPointsOfGrid[beginn].first >
-                 p.barcodes[intervalNo].first) &&
+                 pb.barcodes[intervalNo].first) &&
             fabs(criticalValuesOnPointsOfGrid[beginn].first <
-                 p.barcodes[intervalNo].second)) {
+                 pb.barcodes[intervalNo].second)) {
           criticalValuesOnPointsOfGrid[beginn].second.push_back(
               std::min(fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            p.barcodes[intervalNo].first),
+                            pb.barcodes[intervalNo].first),
                        fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            p.barcodes[intervalNo].second)));
+                            pb.barcodes[intervalNo].second)));
         } else
           criticalValuesOnPointsOfGrid[beginn].second.push_back(0.0);
 

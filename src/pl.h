@@ -65,15 +65,6 @@ exactPersistenceLandscapeToR( std::vector<std::vector<std::pair<double, double>>
   return out_d;
 }
 
-std::vector<std::pair<double, double>> rDataProcess(NumericMatrix pd,
-                                                    double max) {
-  std::vector<std::pair<double, double>> output;
-  for (int i = 0; i < pd.nrow(); i++)
-    output.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max)));
-
-  return output;
-}
-
 std::vector<std::vector<std::pair<double, double>>>
 addDiscreteLandscapes(const PersistenceLandscape &l1,
                       const PersistenceLandscape &l2) {
@@ -189,15 +180,18 @@ public:
   // TODO: Better defaults.
   // Natural defaults are inferred in R through `landscape()`.
   // Should C++ defaults be removed? -JCB
-  PersistenceLandscapeInterface(NumericMatrix persistence_diagram,
+  PersistenceLandscapeInterface(NumericMatrix pd,
                                 bool exact = false,
                                 double min_pl = 0, double max_pl = 10,
                                 double dx = 0.01, double max_y = 1000)
       : exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {
     // Initalize a PersistenceLandscape object.
-    auto pd = PersistenceBarcodes(rDataProcess(persistence_diagram, max_y));
+    std::vector<std::pair<double, double>> barcode;
+    for (int i = 0; i < pd.nrow(); i++)
+      barcode.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
+    auto pb = PersistenceBarcodes(barcode);
     PersistenceLandscapeInterface::pl_raw =
-        PersistenceLandscape(pd, exact, min_pl, max_pl, 2 * dx);
+        PersistenceLandscape(pb, exact, min_pl, max_pl, 2 * dx);
   }
 
   PersistenceLandscapeInterface(PersistenceLandscape pl, bool exact,
