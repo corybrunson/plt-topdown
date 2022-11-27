@@ -166,13 +166,12 @@ double functionValue(std::pair<double, double> p1, std::pair<double, double> p2,
 class PersistenceLandscape {
 public:
   
-  PersistenceLandscape() { this->dimension = 0; }
+  PersistenceLandscape(){}
   PersistenceLandscape(const PersistenceBarcodes &pb, bool exact = true,
                        double min_x = 0, double max_x = 10, double dx = 0.01);
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
-  PersistenceLandscape(char *filename);
-
+  
   PersistenceLandscape(std::vector<std::vector<std::pair<double, double>>>
                            landscapePointsWithoutInfinities);
   std::vector<std::vector<std::pair<double, double>>>
@@ -339,8 +338,6 @@ public:
 
   friend class vectorSpaceOfPersistenceLandscapes;
 
-  unsigned dim() const { return this->dimension; }
-
   double minimalNonzeroPoint(unsigned l) const {
     if (this->land.size() < l)
       return INT_MAX;
@@ -373,7 +370,6 @@ public:
 
 private:
   bool exact;
-  unsigned dimension;
 };
 
 PersistenceLandscape::PersistenceLandscape(
@@ -388,7 +384,6 @@ PersistenceLandscape::PersistenceLandscape(
     // v.push_back(std::make_pair(INT_MAX,0));
     this->land.push_back(v);
   }
-  this->dimension = 0;
 }
 
 std::vector<std::vector<std::pair<double, double>>>
@@ -404,80 +399,6 @@ PersistenceLandscape::gimmeProperLandscapePoints() {
 
 inline bool check_if_file_exist(const char *name) {
   return (access(name, F_OK) != -1);
-}
-
-PersistenceLandscape::PersistenceLandscape(char *filename) {
-  bool dbg = false;
-
-  if (dbg) {
-    Rcpp::Rcerr << "Using constructor : PersistenceLandscape(char* filename)"
-              << std::endl;
-  }
-
-  if (!check_if_file_exist(filename)) {
-    Rcpp::Rcout << "The file : " << filename
-              << " do not exist. The program will now terminate \n";
-    throw "File not exist, please consult output of the program for further "
-          "details.";
-  }
-
-  // this constructor reads persistence landscape form a file. This file have to
-  // be created by this software beforehead
-  std::ifstream in;
-  in.open(filename);
-  unsigned dimension;
-  in >> dimension;
-
-  this->dimension = dimension;
-  std::string line;
-  getline(in, line);
-
-  std::vector<std::pair<double, double>> landscapeAtThisLevel;
-
-  bool isThisAFirsLine = true;
-  while (!in.eof()) {
-    getline(in, line);
-    if (!(line.length() == 0 || line[0] == '#')) {
-      std::stringstream lineSS;
-      lineSS << line;
-      double beginn, endd;
-      lineSS >> beginn;
-      lineSS >> endd;
-      // if ( beginn > endd )
-      //{
-      //    double b = beginn;
-      //    beginn = endd;
-      //    endd = b;
-      //}
-      landscapeAtThisLevel.push_back(std::make_pair(beginn, endd));
-      if (dbg) {
-        Rcpp::Rcerr << "Reading a pont : " << beginn << " , " << endd
-                  << std::endl;
-      }
-    } else {
-      if (dbg) {
-        Rcpp::Rcout << "IGNORE LINE\n";
-        getchar();
-      }
-      if (!isThisAFirsLine) {
-        landscapeAtThisLevel.push_back(std::make_pair(INT_MAX, 0));
-        this->land.push_back(landscapeAtThisLevel);
-        std::vector<std::pair<double, double>> newLevelOdLandscape;
-        landscapeAtThisLevel.swap(newLevelOdLandscape);
-      }
-      landscapeAtThisLevel.push_back(std::make_pair(INT_MIN, 0));
-      isThisAFirsLine = false;
-    }
-  }
-  if (landscapeAtThisLevel.size() > 1) {
-    // seems that the last line of the file is not finished with the newline
-    // sign. We need to put what we have in landscapeAtThisLevel to the
-    // constructed landscape.
-    landscapeAtThisLevel.push_back(std::make_pair(INT_MAX, 0));
-    this->land.push_back(landscapeAtThisLevel);
-  }
-
-  in.close();
 }
 
 bool operatorEqualDbg = false;
@@ -657,7 +578,6 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
 PersistenceLandscape::PersistenceLandscape(
     const PersistenceLandscape &oryginal) {
   // Rcpp::Rcerr << "Running copy constructor \n";
-  this->dimension = oryginal.dimension;
   std::vector<std::vector<std::pair<double, double>>> land(
       oryginal.land.size());
   for (size_t i = 0; i != oryginal.land.size(); ++i) {
@@ -671,7 +591,6 @@ PersistenceLandscape::PersistenceLandscape(
 
 PersistenceLandscape PersistenceLandscape::
 operator=(const PersistenceLandscape &oryginal) {
-  this->dimension = oryginal.dimension;
   std::vector<std::vector<std::pair<double, double>>> land(
       oryginal.land.size());
   for (size_t i = 0; i != oryginal.land.size(); ++i) {
@@ -702,7 +621,6 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &pb,
                                            double grid_diameter) {
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
-    this->dimension = pb.dimensionOfBarcode;
     std::vector<std::pair<double, double>> bars;
     bars.insert(bars.begin(), pb.barcodes.begin(), pb.barcodes.end());
     std::sort(bars.begin(), bars.end(), comparePoints2);
@@ -789,7 +707,6 @@ PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &pb,
     // in this case useGridInComputations is true, therefore we will build a
     // landscape on a grid.
     double gridDiameter = grid_diameter;
-    this->dimension = pb.dimensionOfBarcode;
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
     size_t numberOfBins =
         2 * ((minMax.second - minMax.first) / gridDiameter) + 1;
@@ -1322,7 +1239,6 @@ PersistenceLandscape::multiplyLanscapeByRealNumberNotOverwrite(double x) const {
     result[dim] = lambda_dim;
   }
   PersistenceLandscape res;
-  res.dimension = this->dimension;
   // CHANGE
   // res.land = result;
   res.land.swap(result);

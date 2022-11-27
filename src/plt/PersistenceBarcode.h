@@ -61,12 +61,7 @@ class PersistenceBarcodes {
 public:
   PersistenceBarcodes(){};
   PersistenceBarcodes(const PersistenceBarcodes &orgyginal);
-  PersistenceBarcodes(const char *filename);
-  PersistenceBarcodes(const char *filename, double begin, double step);
   PersistenceBarcodes(std::vector<std::pair<double, double>>);
-  PersistenceBarcodes(const char *filename, unsigned dimensionOfBarcode);
-  PersistenceBarcodes(std::vector<std::pair<double, double>>,
-                      unsigned dimensionOfBarcode);
   PersistenceBarcodes operator=(const PersistenceBarcodes &rhs);
 
   void addPair(double b, double d) {
@@ -89,8 +84,7 @@ public:
   }
   size_t size() const { return this->barcodes.size(); }
   bool empty() const { return (this->barcodes.size() == 0); }
-  unsigned dim() const { return this->dimensionOfBarcode; }
-
+  
   // iterators
   typedef std::vector<std::pair<double, double>>::iterator bIterator;
   bIterator bBegin() { return this->barcodes.begin(); }
@@ -106,7 +100,6 @@ public:
   // TODO uncomment
   // private:
   std::vector<std::pair<double, double>> barcodes;
-  unsigned dimensionOfBarcode;
 };
 
 bool comparePairs(const std::pair<double, double> &f,
@@ -152,7 +145,6 @@ size_t minn(size_t f, size_t s) {
 }
 
 PersistenceBarcodes::PersistenceBarcodes(const PersistenceBarcodes &orgyginal) {
-  this->dimensionOfBarcode = orgyginal.dimensionOfBarcode;
   this->barcodes.insert(this->barcodes.end(), orgyginal.barcodes.begin(),
                         orgyginal.barcodes.end());
 }
@@ -161,7 +153,6 @@ PersistenceBarcodes PersistenceBarcodes::
 operator=(const PersistenceBarcodes &rhs) {
   // Rcpp::Rcout << "Before : " << this->barcodes.size() << "\n";
 
-  this->dimensionOfBarcode = rhs.dimensionOfBarcode;
   this->barcodes.clear();
   this->barcodes.insert(this->barcodes.begin(), rhs.barcodes.begin(),
                         rhs.barcodes.end());
@@ -194,162 +185,9 @@ double PersistenceBarcodes::computeLandscapeIntegralFromBarcodes() {
   return result;
 }
 
-// TODO2 -- consider adding some instructions to remove anything that is not
-// numeric from the input stream.
-PersistenceBarcodes::PersistenceBarcodes(const char *filename) {
-  bool dbg = false;
-  // cerr << "PersistenceBarcodes::PersistenceBarcodes(const char* filename)
-  // \n";
-  this->dimensionOfBarcode = 0;
-  std::ifstream read;
-  read.open(filename);
-  if (!read.good()) {
-    std::ostringstream errMessage;
-    cerr
-        << "In constructor PersistenceBarcodes(const char* filename). Filename "
-        << filename << " do not exist \n";
-    errMessage
-        << "In constructor PersistenceBarcodes(const char* filename). Filename "
-        << filename << " do not exist \n";
-    std::string errMessageStr = errMessage.str();
-    const char *err = errMessageStr.c_str();
-    throw(err);
-  } else {
-    if (dbg) {
-      Rcpp::Rcerr << "Reading file : " << filename << std::endl;
-      Rcpp::Rcerr << "areThereInfiniteIntervals : " << areThereInfiniteIntervals
-                << std::endl;
-    }
-
-    while (read.good()) {
-      double begin, end;
-      std::string line;
-      std::getline(read, line);
-
-      if (line.size()) {
-        stringstream s;
-        s << line;
-        s >> begin;
-        s >> end;
-      } else {
-        break;
-      }
-
-      if (end < begin) {
-        if (!areThereInfiniteIntervals) {
-          double z = end;
-          end = begin;
-          begin = z;
-        } else {
-          // in this case there are infinite intervals, so we need to check if
-          // end != infty
-          if (end != infty) {
-            double z = end;
-            end = begin;
-            begin = z;
-          }
-        }
-      }
-
-      if (dbg) {
-        Rcpp::Rcerr << "Reading interval : " << begin << " " << end << std::endl;
-      }
-
-      // if ( (!areThereInfiniteIntervals) && (end != infty) )
-      if (!areThereInfiniteIntervals) {
-        if (begin != end) {
-          // TODO -- if you want to cut the data, comment the line in below.
-          this->barcodes.push_back(std::make_pair(begin, end));
-          // TODO - This is a correction that allows cutting of all the bars
-          // which born before whereToCut value.
-          /*
-          double whereToCut = 2;
-          if ( end > whereToCut )
-          {
-              if ( begin > whereToCut )
-              {
-                  this->barcodes.push_back( std::make_pair( begin,end ) );
-              }
-              else
-              {
-                  //in this case begin <= whereToCut and end > whereToCut
-                  this->barcodes.push_back( std::make_pair( whereToCut,end ) );
-              }
-          }
-          */
-        }
-      } else {
-        if (dbg) {
-          Rcpp::Rcerr
-              << "There are infinite intervals. The vaue of infinity is : "
-              << infty << std::endl;
-        }
-        if (end != infty) {
-          this->barcodes.push_back(std::make_pair(begin, end));
-        } else {
-          if (dbg) {
-            Rcpp::Rcerr << "The endpoint is infinity \n";
-          }
-          // we have here infinite interval.
-          if (shallInfiniteBarcodesBeIgnored) {
-            this->barcodes.push_back(std::make_pair(begin, end));
-          } else {
-            this->barcodes.push_back(std::make_pair(begin, valueOfInfinity));
-          }
-        }
-      }
-    }
-    read.close();
-  }
-}
-
-PersistenceBarcodes::PersistenceBarcodes(const char *filename, double bbegin,
-                                         double step) {
-  extern double infty;
-  this->dimensionOfBarcode = 0;
-  std::ifstream read;
-  read.open(filename);
-  if (!read.good()) {
-    std::ostringstream errMessage;
-    errMessage
-        << "In constructor PersistenceBarcodes(const char* filename). Filename "
-        << filename << " do not exist \n";
-    std::string errMessageStr = errMessage.str();
-    const char *err = errMessageStr.c_str();
-    throw(err);
-  }
-  while (read.good()) {
-    double begin, end;
-    read >> begin;
-    read >> end;
-
-    if (end != infty) {
-      if (end < begin) {
-        double z = end;
-        end = begin;
-        begin = z;
-      }
-      if (!read.good())
-        break;
-      if (begin != end) {
-        this->barcodes.push_back(
-            std::make_pair(bbegin + begin * step, bbegin + end * step));
-      }
-    }
-    /*
-   else
-   {
-       //we have here infinite interval:
-       this->barcodes.push_back( std::make_pair( begin,INT_MAX ) );
-   }*/
-  }
-  read.close();
-}
-
 PersistenceBarcodes::PersistenceBarcodes(
     std::vector<std::pair<double, double>> bars) {
   extern double infty;
-  this->dimensionOfBarcode = 0;
   unsigned sizeOfBarcode = 0;
   for (size_t i = 0; i != bars.size(); ++i) {
     if (bars[i].second != infty) {
@@ -380,18 +218,6 @@ PersistenceBarcodes::PersistenceBarcodes(
   // CHANGE
   // this->barcodes = barcodes;
   this->barcodes.swap(barcodes);
-}
-
-PersistenceBarcodes::PersistenceBarcodes(const char *filename,
-                                         unsigned dimensionOfBarcode) {
-  *this = PersistenceBarcodes(filename);
-  this->dimensionOfBarcode = dimensionOfBarcode;
-}
-
-PersistenceBarcodes::PersistenceBarcodes(
-    std::vector<std::pair<double, double>> vect, unsigned dimensionOfBarcode) {
-  *this = PersistenceBarcodes(vect);
-  this->dimensionOfBarcode = dimensionOfBarcode;
 }
 
 #endif
