@@ -647,18 +647,42 @@ PersistenceLandscape::PersistenceLandscape(
   bool exact,
   double min_x, double max_x,
   double grid_diameter) {
+  
+  // Adapted from constructor:
+  // `PersistenceBarcodes(std::vector<std::pair<double, double>> bars)`
+  std::vector<std::pair<double, double>> pd = pb;
+  unsigned nb = 0;
+  for (size_t i = 0; i != pd.size(); ++i) {
+    if (pd[i].second != infty) {
+      ++nb;
+    }
+    if (pd[i].second < pd[i].first) {
+      double sec = pd[i].second;
+      pd[i].second = pd[i].first;
+      pd[i].first = sec;
+    }
+  }
+  unsigned nr = 0;
+  for (size_t i = 0; i != pd.size(); ++i) {
+    if (pd[i].second != infty) {
+      // this is a finite interval
+      pd[nr] = std::make_pair(pd[i].first, pd[i].second);
+      ++nr;
+    }
+  }
+  
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
     // std::vector<std::pair<double, double>> bars;
     // bars.insert(bars.begin(), pb.begin(), pb.end());
-    // std::sort(bars.begin(), bars.end(), comparePoints2);
+    // std::sort(pb.begin(), pb.end(), comparePoints2);
 
-    std::vector<std::pair<double, double>> characteristicPoints(pb.size());
+    std::vector<std::pair<double, double>> characteristicPoints(pd.size());
 
-    for (size_t i = 0; i != pb.size(); ++i) {
+    for (size_t i = 0; i != pd.size(); ++i) {
       characteristicPoints[i] =
-          std::make_pair((pb[i].first + pb[i].second) / 2.0,
-                         (pb[i].second - pb[i].first) / 2.0);
+          std::make_pair((pd[i].first + pd[i].second) / 2.0,
+                         (pd[i].second - pd[i].first) / 2.0);
     }
 
     std::vector<std::vector<std::pair<double, double>>> persistenceLandscape;
@@ -759,21 +783,21 @@ PersistenceLandscape::PersistenceLandscape(
     }
 
     // for every peristent interval, sample on grid.
-    for (size_t intervalNo = 0; intervalNo != pb.size(); ++intervalNo) {
-      // size_t beginn = (size_t)(2*( pb[intervalNo].first-minMax.first
+    for (size_t intervalNo = 0; intervalNo != pd.size(); ++intervalNo) {
+      // size_t beginn = (size_t)(2*( pd[intervalNo].first-minMax.first
       // )/( gridDiameter ))+1;
       size_t beginn = 0;
 
       while (beginn < criticalValuesOnPointsOfGrid.size()) {
         if (fabs(criticalValuesOnPointsOfGrid[beginn].first >
-                 pb[intervalNo].first) &&
+                 pd[intervalNo].first) &&
             fabs(criticalValuesOnPointsOfGrid[beginn].first <
-                 pb[intervalNo].second)) {
+                 pd[intervalNo].second)) {
           criticalValuesOnPointsOfGrid[beginn].second.push_back(
               std::min(fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            pb[intervalNo].first),
+                            pd[intervalNo].first),
                        fabs(criticalValuesOnPointsOfGrid[beginn].first -
-                            pb[intervalNo].second)));
+                            pd[intervalNo].second)));
         } else
           criticalValuesOnPointsOfGrid[beginn].second.push_back(0.0);
 
