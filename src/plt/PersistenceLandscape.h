@@ -165,11 +165,10 @@ double functionValue(std::pair<double, double> p1, std::pair<double, double> p2,
 // Modified by Jose Bouza to accept exact/discrete constructor param.
 class PersistenceLandscape {
 public:
-  bool testLandscape(const PersistenceBarcodes &b); // for tests only!
-
+  
   PersistenceLandscape() { this->dimension = 0; }
   PersistenceLandscape(const PersistenceBarcodes &p, bool exact = true,
-                       double dx = 0.01, double min_x = 0, double max_x = 10);
+                       double min_x = 0, double max_x = 10, double dx = 0.01);
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
   PersistenceLandscape(char *filename);
@@ -203,7 +202,7 @@ public:
   friend std::ostream &operator<<(std::ostream &out,
                                   PersistenceLandscape &land);
 
-  void computeLandscapeOnDiscreteSetOfPoints(PersistenceBarcodes &b, double dx);
+  // void computeLandscapeOnDiscreteSetOfPoints(PersistenceBarcodes &b, double dx);
 
   typedef std::vector<std::pair<double, double>>::iterator lDimIterator;
   lDimIterator lDimBegin(unsigned dim) {
@@ -759,165 +758,6 @@ double PersistenceLandscape::computeNthMoment(unsigned n, double center,
   return result;
 } // computeNthMoment
 
-bool PersistenceLandscape::testLandscape(const PersistenceBarcodes &b) {
-  for (size_t level = 0; level != this->land.size(); ++level) {
-    for (size_t i = 1; i != this->land[level].size() - 1; ++i) {
-      if (this->land[level][i].second < epsi)
-        continue;
-      // check if over this->land[level][i].first-this->land[level][i].second ,
-      // this->land[level][i].first+this->land[level][i].second] there are level
-      // barcodes.
-      unsigned nrOfOverlapping = 0;
-      for (size_t nr = 0; nr != b.barcodes.size(); ++nr) {
-        if ((b.barcodes[nr].first - epsi <=
-             this->land[level][i].first - this->land[level][i].second) &&
-            (b.barcodes[nr].second + epsi >=
-             this->land[level][i].first + this->land[level][i].second)) {
-          ++nrOfOverlapping;
-        }
-      }
-      if (nrOfOverlapping != level + 1) {
-        Rcpp::Rcout << "We have a problem : \n";
-        Rcpp::Rcout << "this->land[level][i].first : "
-                  << this->land[level][i].first << "\n";
-        Rcpp::Rcout << "this->land[level][i].second : "
-                  << this->land[level][i].second << "\n";
-        Rcpp::Rcout << "["
-                  << this->land[level][i].first - this->land[level][i].second
-                  << ","
-                  << this->land[level][i].first + this->land[level][i].second
-                  << "] \n";
-        Rcpp::Rcout << "level : " << level
-                  << " , nrOfOverlapping: " << nrOfOverlapping << std::endl;
-        getchar();
-        for (size_t nr = 0; nr != b.barcodes.size(); ++nr) {
-          if ((b.barcodes[nr].first <=
-               this->land[level][i].first - this->land[level][i].second) &&
-              (b.barcodes[nr].second >=
-               this->land[level][i].first + this->land[level][i].second)) {
-            Rcpp::Rcout << "(" << b.barcodes[nr].first << ","
-                      << b.barcodes[nr].second << ")\n";
-          }
-          /*
-          Rcpp::Rcerr << "( b.barcodes[nr].first-epsi <=
-          this->land[level][i].first-this->land[level][i].second ) : "<< (
-          b.barcodes[nr].first-epsi <=
-          this->land[level][i].first-this->land[level][i].second ) << std::endl;
-          Rcpp::Rcerr << "( b.barcodes[nr].second+epsi >=
-          this->land[level][i].first+this->land[level][i].second ) : " << (
-          b.barcodes[nr].second+epsi >=
-          this->land[level][i].first+this->land[level][i].second ) << std::endl;
-          Rcpp::Rcerr << "( this->land[level][i].first-this->land[level][i].second
-          ) " << ( this->land[level][i].first-this->land[level][i].second )  <<
-          std::endl; Rcpp::Rcout << std::setprecision(20) << "We want : [" <<
-          this->land[level][i].first-this->land[level][i].second << "," <<
-          this->land[level][i].first+this->land[level][i].second << "] \n";
-          Rcpp::Rcout << "(" << b.barcodes[nr].first << "," <<
-          b.barcodes[nr].second << ")\n"; getchar();
-          */
-          // getchar();getchar();getchar();
-        }
-      }
-    }
-  }
-  return true;
-}
-
-bool computeLandscapeOnDiscreteSetOfPointsDBG = false;
-void PersistenceLandscape::computeLandscapeOnDiscreteSetOfPoints(
-    PersistenceBarcodes &b, double dx) {
-  std::pair<double, double> miMa = b.minMax();
-  double bmin = miMa.first;
-  double bmax = miMa.second;
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcerr << "bmin: " << bmin << " , bmax :" << bmax << "\n";
-  }
-
-  // if(computeLandscapeOnDiscreteSetOfPointsDBG){}
-
-  std::vector<std::pair<double, std::vector<double>>> result(
-      (bmax - bmin) / (dx / 2) + 2);
-
-  double x = bmin;
-  int i = 0;
-  while (x <= bmax) {
-    std::vector<double> v;
-    result[i] = std::make_pair(x, v);
-    x += dx / 2.0;
-    ++i;
-  }
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcerr << "Vector initally filled in \n";
-  }
-
-  for (size_t i = 0; i != b.barcodes.size(); ++i) {
-    // adding barcode b.barcodes[i] to out mesh:
-    double beginBar = b.barcodes[i].first;
-    double endBar = b.barcodes[i].second;
-    size_t index = ceil((beginBar - bmin) / (dx / 2));
-    while (result[index].first < beginBar)
-      ++index;
-    while (result[index].first < beginBar)
-      --index;
-    double height = 0;
-    // I know this is silly to add dx/100000 but this is neccesarry to make it
-    // work. Othervise, because of roundoff error, the program gave wrong
-    // results. It took me a while to track this.
-    while (height <= ((endBar - beginBar) / 2.0)) {
-      // go up
-      result[index].second.push_back(height);
-      height += dx / 2;
-      ++index;
-    }
-    height -= dx;
-    while ((height >= 0)) {
-      // Rcpp::Rcerr << "Next iteration\n";
-      // go down
-      result[index].second.push_back(height);
-      height -= dx / 2;
-      ++index;
-    }
-  }
-
-  // Rcpp::Rcerr << "All barcodes has been added to the mesh \n";
-
-  unsigned indexOfLastNonzeroLandscape = 0;
-  i = 0;
-  for (double x = bmin; x <= bmax; x = x + (dx / 2)) {
-    std::sort(result[i].second.begin(), result[i].second.end(),
-              std::greater<double>());
-    if (result[i].second.size() > indexOfLastNonzeroLandscape)
-      indexOfLastNonzeroLandscape = result[i].second.size();
-    ++i;
-  }
-
-  if (computeLandscapeOnDiscreteSetOfPointsDBG) {
-    Rcpp::Rcout << "Now we fill in the suitable vecors in this landscape \n";
-  }
-  std::vector<std::vector<std::pair<double, double>>> land(
-      indexOfLastNonzeroLandscape);
-  for (unsigned dim = 0; dim != indexOfLastNonzeroLandscape; ++dim) {
-    land[dim].push_back(std::make_pair(INT_MIN, 0));
-  }
-
-  i = 0;
-  for (double x = bmin; x <= bmax; x = x + (dx / 2)) {
-    for (size_t nr = 0; nr != result[i].second.size(); ++nr) {
-      land[nr].push_back(std::make_pair(result[i].first, result[i].second[nr]));
-    }
-    ++i;
-  }
-
-  for (unsigned dim = 0; dim != indexOfLastNonzeroLandscape; ++dim) {
-    land[dim].push_back(std::make_pair(INT_MAX, 0));
-  }
-  this->land.clear();
-  this->land.swap(land);
-  this->reduceAlignedPoints();
-}
-
 bool multiplyByIndicatorFunctionBDG = false;
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     std::vector<std::pair<double, double>> indicator) const {
@@ -1178,8 +1018,9 @@ bool check(unsigned i, std::vector<std::pair<double, double>> v) {
 // if ( check( , ) ){Rcpp::Rcerr << "OUT OF MEMORY \n";}
 
 PersistenceLandscape::PersistenceLandscape(const PersistenceBarcodes &p,
-                                           bool exact, double grid_diameter,
-                                           double min_x, double max_x) {
+                                           bool exact,
+                                           double min_x, double max_x,
+                                           double grid_diameter) {
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
     this->dimension = p.dimensionOfBarcode;
