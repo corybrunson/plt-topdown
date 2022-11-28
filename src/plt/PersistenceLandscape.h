@@ -167,7 +167,8 @@ class PersistenceLandscape {
 public:
   
   PersistenceLandscape(){}
-  PersistenceLandscape(const std::vector<std::pair<double, double>> &pb, bool exact = true,
+  PersistenceLandscape(const std::vector<std::pair<double, double>> &diagram,
+                       bool exact = true,
                        double min_x = 0, double max_x = 10, double dx = 0.01);
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
@@ -643,14 +644,14 @@ bool check(unsigned i, std::vector<std::pair<double, double>> v) {
 // }
 
 PersistenceLandscape::PersistenceLandscape(
-  const std::vector<std::pair<double, double>> &pb,
+  const std::vector<std::pair<double, double>> &diagram,
   bool exact,
   double min_x, double max_x,
   double grid_diameter) {
   
   // Adapted from constructor:
   // `PersistenceBarcodes(std::vector<std::pair<double, double>> bars)`
-  std::vector<std::pair<double, double>> pd = pb;
+  std::vector<std::pair<double, double>> pd = diagram;
   unsigned nb = 0;
   for (size_t i = 0; i != pd.size(); ++i) {
     if (pd[i].second != infty) {
@@ -673,16 +674,16 @@ PersistenceLandscape::PersistenceLandscape(
   
   if (exact) {
     // this is a general algorithm to construct persistence landscapes.
-    // std::vector<std::pair<double, double>> bars;
-    // bars.insert(bars.begin(), pb.begin(), pb.end());
-    // std::sort(pb.begin(), pb.end(), comparePoints2);
+    std::vector<std::pair<double, double>> pds;
+    pds.insert(pds.begin(), pd.begin(), pd.end());
+    std::sort(pds.begin(), pds.end(), comparePoints2);
 
-    std::vector<std::pair<double, double>> characteristicPoints(pd.size());
+    std::vector<std::pair<double, double>> characteristicPoints(pds.size());
 
-    for (size_t i = 0; i != pd.size(); ++i) {
+    for (size_t i = 0; i != pds.size(); ++i) {
       characteristicPoints[i] =
-          std::make_pair((pd[i].first + pd[i].second) / 2.0,
-                         (pd[i].second - pd[i].first) / 2.0);
+          std::make_pair((pds[i].first + pds[i].second) / 2.0,
+                         (pds[i].second - pds[i].first) / 2.0);
     }
 
     std::vector<std::vector<std::pair<double, double>>> persistenceLandscape;
