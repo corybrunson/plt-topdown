@@ -49,6 +49,7 @@ Collate:
     'plt-package.r'
     'PersistenceLandscape.r'
     'Ops.r'
+    'PersistenceLandscapeClass.R'
     'landscape-operations.r'
     'landscape.r'
     'persistence.r'
