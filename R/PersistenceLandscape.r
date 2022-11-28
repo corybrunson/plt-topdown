@@ -24,6 +24,7 @@
 #' @export Rcpp_PersistenceLandscape
 #' @exportClass PersistenceLandscape
 #' @exportClass Rcpp_PersistenceLandscape
+
 PersistenceLandscape <- setClass("PersistenceLandscape")
 Rcpp_PersistenceLandscape <- setClass("Rcpp_PersistenceLandscape")
 
