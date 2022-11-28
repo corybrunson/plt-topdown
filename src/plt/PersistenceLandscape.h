@@ -199,8 +199,8 @@ public:
                                           std::pair<double, double>,
                                           std::pair<double, double>));
   double computeValueAtAGivenPoint(unsigned level, double x) const;
-  friend std::ostream &operator<<(std::ostream &out,
-                                  PersistenceLandscape &land);
+  // friend std::ostream &operator<<(std::ostream &out,
+  //                                 PersistenceLandscape &land);
 
   typedef std::vector<std::pair<double, double>>::iterator lDimIterator;
   lDimIterator lDimBegin(unsigned dim) {
