@@ -18,6 +18,7 @@
 #'   [grDevices::colorRampPalette()].
 #' @param ... Additional parameters passed to [base::plot()]. Values passed to
 #'   `type` or `col` will be ignored with a message.
+#' @param silent Logical; whether to silence messages.
 #' @example inst/examples/ex-plot.r
 #' @export
 setMethod(
@@ -25,11 +26,20 @@ setMethod(
   c(x = "Rcpp_PersistenceLandscape"),
   function(
     x, replace_inf = NULL, n_levels = NULL,
-    palette = "viridis", alpha = NULL, rev = FALSE, ...
+    palette = "viridis", alpha = NULL, rev = FALSE, ...,
+    silent = TRUE
   ) {
     # pre-process internal representation of landscape
     internal <- x$getInternal()
-    if (is.null(n_levels)) n_levels <- pl_num_envelopes(x)
+    n_env <- pl_num_envelopes(x)
+    if (is.null(n_levels)) {
+      n_levels <- n_env
+    # } else if (n_levels > n_env) {
+    } else if (n_levels < n_env && ! silent) {
+      warning("`", deparse(substitute(x)), "` has more than `n_levels = ",
+              n_levels,
+              "` envelopes; lower envelopes will not be drawn.")
+    }
     if (! is.null(replace_inf)) {
       if (is.atomic(internal)) {
         internal[internal == Inf] <- replace_inf
@@ -50,6 +60,8 @@ setMethod(
       n = n_levels,
       palette = palette, alpha = alpha, rev = rev
     )
+    # reset `n_levels` if necessary
+    if (n_levels > n_env) n_levels <- n_env
     
     # reconcile defaults with dots
     win_dots <- intersect(
