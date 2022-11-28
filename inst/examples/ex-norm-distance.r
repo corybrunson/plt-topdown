@@ -123,7 +123,7 @@ for (i in seq(11L)) {
   pls_n <- c(pls_n, list(pl))
 }
 
-pls_n_avg <- mean_landscape(pls_n)
+pls_n_avg <- pl_mean(pls_n)
 plot(pls_n_avg)
 
 pl_norm(pls_n_avg, 1)
