@@ -29,8 +29,7 @@ setMethod(
     palette = "viridis", alpha = NULL, rev = FALSE, ...,
     silent = TRUE
   ) {
-    # pre-process internal representation of landscape
-    internal <- x$getInternal()
+    # pre-process parameters
     n_env <- pl_num_envelopes(x)
     if (is.null(n_levels)) {
       n_levels <- n_env
@@ -40,8 +39,12 @@ setMethod(
               n_levels,
               "` envelopes; lower envelopes will not be drawn.")
     }
+    
+    # pre-process internal representation of landscape
+    x_exact <- pl_is_exact(x)
+    internal <- x$getInternal()
     if (! is.null(replace_inf)) {
-      if (is.atomic(internal)) {
+      if (! x_exact) {
         internal[internal == Inf] <- replace_inf
         internal[internal == -Inf] <- -replace_inf
       } else {

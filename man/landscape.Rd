@@ -13,10 +13,10 @@ landscape(
   pd,
   degree = NULL,
   exact = FALSE,
-  min_b = NULL,
-  max_b = NULL,
+  min_x = NULL,
+  max_x = NULL,
   by = NULL,
-  max_d = NULL
+  max_y = NULL
 )
 
 pl_is_exact(pl)
@@ -41,13 +41,13 @@ $(d+1)$th matrix in the list will be selected.)}
 \item{exact}{Set to \code{TRUE} for exact computation, \code{FALSE} (default) for
 discrete.}
 
-\item{min_b, max_b}{Domain thresholds for discrete PL; if not specified, then
+\item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
 taken to be the support of the PL.}
 
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{max_d}{Numeric; the threshold used to compute the persistence
+\item{max_y}{Numeric; the threshold used to compute the persistence
 diagram (could be infinite).}
 
 \item{pl}{A persistence landscape as returned by \code{landscape()}.}
@@ -84,7 +84,7 @@ pd <- as_persistence(TDA::ripsDiag(points, maxdimension = 2L, maxscale = 3))
 print(dim(pd$pairs[[2L]]))
 
 # compute persistence landscape for 1-dimensional cycles
-pl <- landscape(pd, degree = 1L, max_d = pd$threshold)
+pl <- landscape(pd, degree = 1L, max_y = pd$threshold)
 print(pl)
 
 # landscape dimensions
@@ -95,7 +95,7 @@ print(pl$getInternal())
 plot(pl)
 
 # custom parameters
-pl <- landscape(pd, degree = 1L, by = 0.1, max_b = 2, max_d = pd$threshold)
+pl <- landscape(pd, degree = 1L, by = 0.1, max_x = 2, max_y = pd$threshold)
 print(pl)
 plot(pl)
 }

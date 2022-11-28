@@ -61,8 +61,8 @@ pl_norm_exact(ple1, p = 2)
 pl_norm_exact(ple1, p = 1)
 
 # two discrete persistence landscapes
-pl1 <- landscape(pd1, degree = 1, min_b = 0, max_b = 1.5, by = 0.01)
-pl2 <- landscape(pd2, degree = 1, min_b = 0, max_b = 1.5, by = 0.01)
+pl1 <- landscape(pd1, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
+pl2 <- landscape(pd2, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
 
 # norm for discrete landscapes
 pl_norm_discrete <- function(pl, p = 2) {
