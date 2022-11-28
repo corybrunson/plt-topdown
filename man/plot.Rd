@@ -13,7 +13,8 @@
   palette = "viridis",
   alpha = NULL,
   rev = FALSE,
-  ...
+  ...,
+  silent = TRUE
 )
 
 \S4method{show}{Rcpp_PersistenceLandscape}(object)
@@ -38,6 +39,8 @@ interpolate.}
 
 \item{...}{Additional parameters passed to \code{\link[base:plot]{base::plot()}}. Values passed to
 \code{type} or \code{col} will be ignored with a message.}
+
+\item{silent}{Logical; whether to silence messages.}
 
 \item{object}{A \link{PersistenceLandscape} object.}
 }
