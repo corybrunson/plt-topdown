@@ -10,8 +10,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures/README-"
 )
-# devtools::load_all()
-library(plt)
+# library(plt)
+devtools::load_all()
 ```
 
 # plt
@@ -40,8 +40,11 @@ Alternatively, you can clone or download the code repository and install the pac
 devtools::install()
 ```
 
-You should now be able to load the package normally from an R session using
-`library("plt")`.
+You should now be able to load the package normally from an R session:
+
+```{r, eval=FALSE}
+library(plt)
+```
 
 ## Quickstart Guide
 
@@ -67,6 +70,7 @@ The generic conversion function `as_persistence()` includes methods for outputs 
 To begin an illustration, we noisily sample 60 points from a figure eight and compute the persistence diagram of the point cloud:
 
 ```{r}
+set.seed(513611L)
 pc <- tdaunif::sample_lemniscate_gerono(60, sd = .1)
 pd <- ripserr::vietoris_rips(pc, max_dim = 1, threshold = 2, p = 2)
 print(pd)
@@ -101,11 +105,13 @@ print(pl1$getInternal())
 
 The length of this list is the number of levels of the landscape.
 
-An alternative, approximate construction computes the value of each level of the landscape at each point on a 1-dimensional grid, ranging from `min_b` to `max_b` at increments of `by`.
+An alternative, approximate construction computes the value of each level of the landscape at each point on a 1-dimensional grid, ranging from `min_x` to `max_x` at increments of `by`.
 A landscape constructed using a discrete approximation is stored as a 3-dimensional array of dimensions (levels, values, 2), with one level per feature (some of which may be trivial) and one value per grid point, stored as $x,y$ pairs along the third dimension.
 
 ```{r}
-pl1d <- landscape(pd, degree = 1, min_b = 0, max_b = 2, by = 0.01)
+b_ran <- pl_support(pl1)
+pl1d <- landscape(pd, degree = 1,
+                  min_x = b_ran[[1L]], max_x = b_ran[[2L]], by = 0.02)
 print(dim(pl1d$getInternal()))
 print(pl1d$getInternal())
 ```
@@ -113,6 +119,7 @@ print(pl1d$getInternal())
 Exactly computed landscapes can be converted to discrete landscape objects, but the other direction is not well-defined:
 
 ```{r}
+# TODO: Export method with `min_x,max_x,by` parameters.
 pl1$getDiscrete()
 try(pl1d$getExact())
 ```
@@ -123,8 +130,10 @@ try(pl1d$getExact())
 It uses **grDevices** to build color palettes, and as such its default palette is viridis; but the user may supply the name of a recognized palette or a sequence of colors between which to interpolate:
 
 ```{r}
-plot(pl1, palette = "terrain")
-plot(pl1d, palette = "terrain")
+n_env <- max(pl_num_envelopes(pl1), pl_num_envelopes(pl1d))
+par(mfrow = c(2L, 1L), mar = c(2, 2, 0, 2))
+plot(pl1, palette = "terrain", n_levels = n_env, asp = 1)
+plot(pl1d, palette = "terrain", n_levels = n_env, asp = 1)
 ```
 
 ### Vector Operations
