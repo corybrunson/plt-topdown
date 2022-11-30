@@ -13,7 +13,7 @@
 "_PACKAGE"
 
 # load {Rcpp} module(s) (can be done anywhere, will activate at load time)
-# Rcpp::loadModule("PersistenceLandscape", TRUE)
+Rcpp::loadModule("PersistenceLandscape", loadNow = TRUE)
 
 Rcpp::exposeClass(
   "PersistenceLandscape",
