@@ -50,6 +50,7 @@ Collate:
     'PersistenceLandscape.r'
     'Ops.r'
     'PersistenceLandscapeClass.R'
+    'RcppExports.R'
     'landscape-operations.r'
     'landscape.r'
     'persistence.r'

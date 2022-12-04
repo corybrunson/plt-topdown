@@ -309,6 +309,7 @@ private:
   double dx = 0.001;
 };
 
+// [[Rcpp::export]]
 PersistenceLandscapeInterface PLaverage(List p){
 
     PersistenceLandscapeInterface out = as<PersistenceLandscapeInterface>(p[0]);
@@ -320,16 +321,19 @@ PersistenceLandscapeInterface PLaverage(List p){
     return out.scale(1.0/p.size());
 }
 
+// [[Rcpp::export]]
 PersistenceLandscapeInterface PLsum(PersistenceLandscapeInterface p1,
                                     PersistenceLandscapeInterface p2) {
   return p1.add(p2);
 }
 
+// [[Rcpp::export]]
 PersistenceLandscapeInterface PLscale(double scale,
                                       PersistenceLandscapeInterface p) {
   return p.scale(scale);
 }
 
+// [[Rcpp::export]]
 double PLinner(PersistenceLandscapeInterface p1,
                PersistenceLandscapeInterface p2) {
   return p1.inner(p2);
