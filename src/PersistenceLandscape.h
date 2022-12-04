@@ -28,23 +28,21 @@
 #ifndef PERISTENCELANDSCAPE_H
 #define PERISTENCELANDSCAPE_H
 
-#include "Configure.h"
+// #include "Configure.h"
 // #include "PersistenceBarcode.h"
 #include <algorithm>
 #include <climits>
 #include <cmath>
 #include <cstdarg>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <limits>
 #include <list>
-#include <sstream>
 #include <unistd.h>
 #include <vector>
 #include <Rcpp.h>
 
-extern double epsi;
+using namespace std;
+
+double epsi = 0.000005;
 
 inline bool almostEqual(double a, double b) {
   if (fabs(a - b) < epsi)
@@ -654,7 +652,7 @@ PersistenceLandscape::PersistenceLandscape(
   std::vector<std::pair<double, double>> pd = diagram;
   unsigned nb = 0;
   for (size_t i = 0; i != pd.size(); ++i) {
-    if (pd[i].second != infty) {
+    if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       ++nb;
     }
     if (pd[i].second < pd[i].first) {
@@ -665,7 +663,7 @@ PersistenceLandscape::PersistenceLandscape(
   }
   unsigned nr = 0;
   for (size_t i = 0; i != pd.size(); ++i) {
-    if (pd[i].second != infty) {
+    if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       // this is a finite interval
       pd[nr] = std::make_pair(pd[i].first, pd[i].second);
       ++nr;
