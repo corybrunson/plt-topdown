@@ -3,6 +3,23 @@
 
     ## ℹ Loading plt
 
+    ## Exports from /Users/jason.brunson/Documents/software/plt/src/interface.cpp:
+    ## 
+    ## /Users/jason.brunson/Documents/software/plt/src/RcppExports.cpp updated.
+
+    ## Re-compiling plt
+
+    ##   ─  installing *source* package ‘plt’ ...
+    ##      ** using staged installation
+    ##      ** libs
+    ##      clang++ -mmacosx-version-min=10.13 -std=gnu++14 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.2/Resources/library/Rcpp/include' -I/usr/local/include   -fPIC  -Wall -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -c RcppExports.cpp -o RcppExports.o
+    ##      clang++ -mmacosx-version-min=10.13 -std=gnu++14 -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG  -I'/Library/Frameworks/R.framework/Versions/4.2/Resources/library/Rcpp/include' -I/usr/local/include   -fPIC  -Wall -g -O2  -UNDEBUG -Wall -pedantic -g -O0 -c interface.cpp -o interface.o
+    ##      clang++ -mmacosx-version-min=10.13 -std=gnu++14 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -single_module -multiply_defined suppress -L/Library/Frameworks/R.framework/Resources/lib -L/usr/local/lib -o plt.so RcppExports.o interface.o -F/Library/Frameworks/R.framework/.. -framework R -Wl,-framework -Wl,CoreFoundation
+    ##      installing to /private/var/folders/k6/l4mq9ctj3219429xnvqpdbxm8tckkx/T/Rtmp6gOdE0/devtools_install_5c9710f7e60/00LOCK-plt/00new/plt/libs
+    ##      ** checking absolute paths in shared objects and dynamic libraries
+    ##   ─  DONE (plt)
+    ## 
+
 # plt
 
 Persistence landscapes are a vectorization of persistence data (also

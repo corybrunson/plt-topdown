@@ -1,5 +1,4 @@
-#include "plt/PersistenceBarcode.h"
-#include "plt/PersistenceLandscape.h"
+#include "PersistenceLandscape.h"
 #include <Rcpp.h>
 #include <limits>
 
@@ -186,12 +185,12 @@ public:
                                 double dx = 0.01, double max_y = 1000)
       : exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {
     // Initalize a PersistenceLandscape object.
-    std::vector<std::pair<double, double>> barcode;
+    std::vector<std::pair<double, double>> bars;
     for (int i = 0; i < pd.nrow(); i++)
-      barcode.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
-    auto pb = PersistenceBarcodes(barcode);
+      bars.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
+    // auto pb = PersistenceBarcodes(bars);
     PersistenceLandscapeInterface::pl_raw =
-        PersistenceLandscape(pb, exact, min_pl, max_pl, 2 * dx);
+        PersistenceLandscape(bars, exact, min_pl, max_pl, 2 * dx);
   }
 
   PersistenceLandscapeInterface(PersistenceLandscape pl, bool exact,

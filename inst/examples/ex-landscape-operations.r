@@ -24,14 +24,14 @@ set.seed(492869L)
 # compute landscape for a large sample
 pt <- tdaunif::sample_torus_tube(1000, 5)
 pd <- as_persistence(ripserr::vietoris_rips(pt, max_dim = 2, threshold = 2))
-pl <- landscape(pd, degree = 1, exact = FALSE, by = 0.1, max_x = 2)
+pl <- landscape(pd, degree = 1, exact = FALSE, by = 0.1, min_x = 0, max_x = 2)
 
 # compute landscapes for a large sample of small samples
 pl_list <- c()
 for (i in seq(100)) {
   pti <- tdaunif::sample_torus_tube(100, 5)
   pdi <- as_persistence(ripserr::vietoris_rips(pti, max_dim = 2, threshold = 2))
-  pli <- landscape(pdi, degree = 1, exact = FALSE, by = 0.1, max_x = 2)
+  pli <- landscape(pdi, degree = 1, exact = FALSE, by = 0.1, min_x = 0, max_x = 2)
   pl_list <- c(pl_list, pli)
 }
 
