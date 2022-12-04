@@ -1,4 +1,4 @@
-#include "plt/PersistenceLandscape.h"
+#include "PersistenceLandscape.h"
 #include <Rcpp.h>
 #include <limits>
 
