@@ -34,8 +34,8 @@ integrate_power <- function(x, p) {
 # persistence data for two point clouds
 x1 <- tdaunif::sample_torus_tube(120, 2.5)
 x2 <- tdaunif::sample_torus_tube(60, 2.5)
-pd1 <- as_persistence(ripserr::vietoris_rips(x1, max_dim = 1, threshold = 2))
-pd2 <- as_persistence(ripserr::vietoris_rips(x2, max_dim = 1, threshold = 2))
+pd1 <- as_persistence(ripserr::vietoris_rips(x1, dim = 1, threshold = 2))
+pd2 <- as_persistence(ripserr::vietoris_rips(x2, dim = 1, threshold = 2))
 
 # two exact persistence landscapes
 ple1 <- landscape(pd1, degree = 1, exact = TRUE)
@@ -118,7 +118,7 @@ for (i in seq(11L)) {
     tdaunif::sample_circle(n = 50L, sd = .15/2) +
       matrix(rep(c(2 * m, 0), each = 50L), ncol = 2L)
   }))
-  pd <- as_persistence(ripserr::vietoris_rips(A, max_dim = 1, threshold = n * 2))
+  pd <- as_persistence(ripserr::vietoris_rips(A, dim = 1, threshold = n * 2))
   pl <- landscape(pd, degree = 1L, exact = TRUE)
   pls_n <- c(pls_n, list(pl))
 }

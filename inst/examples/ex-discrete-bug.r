@@ -33,7 +33,7 @@ pt <- structure(
 )
 
 # compute persistence
-pd <- as_persistence(ripserr::vietoris_rips(pt, max_dim = 2L, threshold = 2))
+pd <- as_persistence(ripserr::vietoris_rips(pt, dim = 2L, threshold = 2))
 print(pd)
 
 # compute persistence landscapes for 0-cycles
