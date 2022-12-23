@@ -54,7 +54,7 @@ RCPP_MODULE(Landscape) {
   ;
 
   // TODO: Decide whether to use these or R wrappers in
-  // 'landscape-operations.r`. -JCB
+  // 'landscape-operations.r'. -JCB
   Rcpp::function("PLsum", &PLsum);
   Rcpp::function("PLscale", &PLscale);
   Rcpp::function("PLinner", &PLinner);
