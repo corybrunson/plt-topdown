@@ -424,7 +424,8 @@ double PersistenceLandscape::computeNthMoment(unsigned n, double center,
       double x2 = this->land[level][i].first;
 
       // double first =
-      // b*(pow((x2-center),(double)(n+1))/(n+1)-pow((x1-center),(double)(n+1))/(n+1));
+      // b*(pow((x2-center),(double)(n+1))/(n+1)-
+      // pow((x1-center),(double)(n+1))/(n+1));
       // double second = a/(n+1)*((x2*pow((x2-center),(double)(n+1))) -
       // (x1*pow((x1-center),(double)(n+1))) )
       //              +
@@ -904,7 +905,8 @@ void PersistenceLandscape::reduceAlignedPoints(
       std::pair<double, double> res = computeParametersOfALine(
           this->land[dim][nr], this->land[dim][nr + 1]);
       // if (reduceAlignedPointsBDG) {
-      //   Rcpp::Rcout << "Considering points : " << this->land[dim][nr] << " and "
+      //   Rcpp::Rcout << "Considering points : "
+      //             << this->land[dim][nr] << " and "
       //             << this->land[dim][nr + 1] << std::endl;
       //   Rcpp::Rcout << "Adding : " << this->land[dim][nr] << " to lambda_n."
       //             << std::endl;
@@ -944,9 +946,11 @@ void PersistenceLandscape::reduceAlignedPoints(
     // if (reduceAlignedPointsBDG) {
     //   Rcpp::Rcout << "Out  of main while loop, done with this dimension "
     //             << std::endl;
-    //   Rcpp::Rcout << "Adding : " << this->land[dim][this->land[dim].size() - 2]
+    //   Rcpp::Rcout << "Adding : "
+    //             << this->land[dim][this->land[dim].size() - 2]
     //             << " to lamnda_n " << std::endl;
-    //   Rcpp::Rcout << "Adding : " << this->land[dim][this->land[dim].size() - 1]
+    //   Rcpp::Rcout << "Adding : "
+    //             << this->land[dim][this->land[dim].size() - 1]
     //             << " to lamnda_n " << std::endl;
     //   std::cin.ignore();
     // }
