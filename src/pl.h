@@ -9,11 +9,12 @@ int TDIndex(int X, int Y, int Z, int x, int y, int z) {
 }
 
 int TDIndex2(int X, int Y, int x, int y) {
-  return x+X*y;
+  return x + X * y;
 }
 
 NumericVector discretePersistenceLandscapeToR(
-    std::vector<std::vector<std::pair<double,double>>> input) {
+    std::vector<std::vector<std::pair<double, double>>> input) {
+  
   Dimension d(input.size(), input[0].size(), 2);
   NumericVector out(input.size() * input[0].size() * 2);
   NumericVector out_d(d);
@@ -38,12 +39,12 @@ NumericVector discretePersistenceLandscapeToR(
 
 std::vector<NumericVector> exactPersistenceLandscapeToR(
     std::vector<std::vector<std::pair<double, double>>> input) {
+  
   std::vector<NumericVector> out_d;
   
   for (int j = 0; j < input.size(); j++) {
     Dimension d(input[j].size(), 2);
     NumericVector out(input[j].size() * 2);
-    
     
     for (int i = 0; i < input[j].size(); i++) {
       out[TDIndex2(input[j].size(), 2, i, 0)] =
@@ -62,7 +63,6 @@ std::vector<NumericVector> exactPersistenceLandscapeToR(
     out_d.push_back(out);
   }
   
-  
   return out_d;
 }
 
@@ -77,7 +77,8 @@ std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
     std::vector<std::pair<double, double>> level_out;
     for (int j = 0; j < min_index; j++)
       level_out.push_back(std::make_pair(
-          l1.land[i][j].first, l1.land[i][j].second + l2.land[i][j].second));
+          l1.land[i][j].first,
+          l1.land[i][j].second + l2.land[i][j].second));
     
     for (; min_index < l1.land[i].size(); min_index++)
       level_out.push_back(l1.land[i][min_index]);
@@ -100,7 +101,9 @@ std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
 std::vector<std::vector<std::pair<double, double>>> scaleDiscreteLandscapes(
     double scale,
     PersistenceLandscape l) {
+  
   std::vector<std::vector<std::pair<double, double>>> out;
+  
   for (std::vector<std::pair<double, double>> level : l.land) {
     std::vector<std::pair<double, double>> level_out;
     for (std::pair<double, double> pair : level)
@@ -119,6 +122,7 @@ std::vector<std::vector<std::pair<double, double>>> exactLandscapeToDiscrete(
     double min_x,
     double max_x,
     double dx) {
+  
   std::vector<std::vector<std::pair<double, double>>> out;
   
   for (unsigned i = 0; i < l.land.size(); i++) {
@@ -159,8 +163,10 @@ double innerProductDiscreteLandscapes(
     PersistenceLandscape l1,
     PersistenceLandscape l2,
     double dx) {
+  
   int min_level = std::min(l1.land.size(), l2.land.size());
   double integral_buffer = 0;
+  
   for (int i = 0; i < min_level; i++) {
     int min_index = std::min(l1.land[i].size(), l2.land[i].size());
     for (int j = 0; j < min_index; j++)
@@ -174,13 +180,14 @@ std::vector<std::pair<double, double>> generateGrid(
     double start,
     double end,
     double dx) {
+  
   std::vector<std::pair<double, double>> grid;
+  
   for (double current = start; current < end; current += dx)
     grid.push_back(std::make_pair(current, 0));
   
   return grid;
 }
-
 
 class PersistenceLandscapeInterface {
 public:
@@ -191,15 +198,18 @@ public:
   PersistenceLandscapeInterface(
     NumericMatrix pd,
     bool exact = false,
-    double min_pl = 0, double max_pl = 10,
+    double min_pl = 0, double max_pl = 1,
     double dx = 0.01,
     double max_y = 1000)
     : exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {
+    
     // Initalize a PersistenceLandscape object.
     std::vector<std::pair<double, double>> bars;
+    
     for (int i = 0; i < pd.nrow(); i++)
       bars.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
     // auto pb = PersistenceBarcodes(bars);
+    
     PersistenceLandscapeInterface::pl_raw =
       PersistenceLandscape(bars, exact, min_pl, max_pl, 2 * dx);
   }
@@ -215,7 +225,6 @@ public:
     if (!exact) {
       stop("Error: Can not convert a discrete PL to an exact PL.");
     }
-    
     else {
       return exactPersistenceLandscapeToR(pl_raw.land);
     }
@@ -226,6 +235,7 @@ public:
       return discretePersistenceLandscapeToR(
         exactLandscapeToDiscrete(pl_raw.land, 0, max_pl, dx));
     } else {
+      // TODO: Allow this function to change the resolution.
       return discretePersistenceLandscapeToR(pl_raw.land);
     }
   }
@@ -256,6 +266,7 @@ public:
   // Adds this to another PL
   PersistenceLandscapeInterface add(
       const PersistenceLandscapeInterface &other) {
+    
     PersistenceLandscape pl_out;
     
     // both landscapes are exact
@@ -320,10 +331,11 @@ public:
   
   double inner(
       PersistenceLandscapeInterface &other) {
+    
     double scaler_out;
+    
     if (exact)
       scaler_out = computeInnerProduct(pl_raw, other.pl_raw);
-    
     else
       scaler_out = innerProductDiscreteLandscapes(pl_raw, other.pl_raw, dx);
     
@@ -332,10 +344,11 @@ public:
   
   PersistenceLandscapeInterface scale(
       double scale) {
+    
     PersistenceLandscape pl_out;
+    
     if (exact)
       pl_out = scale * pl_raw;
-    
     else
       pl_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
     
@@ -354,8 +367,8 @@ private:
   PersistenceLandscape pl_raw;
   bool exact;
   double min_pl = 0;
-  double max_pl = 2;
-  double dx = 0.001;
+  double max_pl = 1;
+  double dx = 0.01;
   
 };
 
@@ -396,13 +409,11 @@ bool checkPairOfDiscreteLandscapes(
   return true;
 }
 
-// For opeartions on two landscapes we need to know if the output will be
+// For operations on two landscapes we need to know if the output will be
 // discrete or exact. The rules are:
-
 // Exact + Exact = Exact
 // Discrete + Discrete = Discrete
 // Exact + Discrete = Discrete
-
 // This function is for the third case, where we will need to convert one of the
 // exact PLs to a discrete PL. The two bools correspond to the two operands, and
 // are 1 (true) if we need to convert the operand to discrete. In all other
@@ -410,6 +421,7 @@ bool checkPairOfDiscreteLandscapes(
 std::pair<bool,bool> operationOnPairOfLanscapesConversion(
     PersistenceLandscapeInterface &pl1,
     const PersistenceLandscapeInterface &pl2) {
+  
   bool p1 = 0;
   bool p2 = 0;
   

@@ -791,12 +791,12 @@ double PersistenceLandscape::computeIntegralOfLandscape() const {
 std::pair<double, double>
 computeParametersOfALine(std::pair<double, double> p1,
                          std::pair<double, double> p2) {
-  // p1.second = a*p1.first + b => b = p1.second - a*p1.first
-  // p2.second = a*p2.first + b = a*p2.first + p1.second - a*p1.first =
-  // p1.second + a*( p2.first - p1.first )
-  //=>
-  //(p2.second-p1.second)/( p2.first - p1.first )  = a
-  // b = p1.second - a*p1.first.
+  // p1.second = a * p1.first + b => b = p1.second - a * p1.first
+  // p2.second = a * p2.first + b = a * p2.first + p1.second - a * p1.first =
+  // p1.second + a * ( p2.first - p1.first )
+  // =>
+  // ( p2.second - p1.second ) / ( p2.first - p1.first ) = a
+  // b = p1.second - a * p1.first
   double a = (p2.second - p1.second) / (p2.first - p1.first);
   double b = p1.second - a * p1.first;
   return std::make_pair(a, b);
@@ -806,8 +806,8 @@ double PersistenceLandscape::computeIntegralOfLandscape(double p) const {
   double result = 0;
   for (size_t i = 0; i != this->land.size(); ++i) {
     for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
-      // In this interval, the landscape has a form f(x) = ax+b. We want to
-      // compute integral of (ax+b)^p = 1/a * (ax+b)^{p+1}/(p+1)
+      // In this interval, the landscape has a form f(x) = ax + b. We want to
+      // compute integral of (ax + b)^p = 1 / a * (ax + b)^{p + 1} / (p + 1)
       std::pair<double, double> coef =
           computeParametersOfALine(this->land[i][nr], this->land[i][nr - 1]);
       double a = coef.first;
