@@ -82,8 +82,11 @@ setMethod(
     }
     
     # plot last level
-    xyran <-
-      apply(accessLevel(internal, 1L), 2L, function(v) range(v[! is.infinite(v)]))
+    xyran <- apply(
+      accessLevel(internal, 1L),
+      2L,
+      function(v) range(v[! is.infinite(v)])
+    )
     def_dots <- list(type = "l", xlim = xyran[, 1L], ylim = xyran[, 2L],
                      xlab = "x", ylab = NA, lwd = 2)
     level_n <- accessLevel(internal, n_levels)

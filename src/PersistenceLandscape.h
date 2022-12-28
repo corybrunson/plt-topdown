@@ -145,9 +145,7 @@ public:
   
   PersistenceLandscape(std::vector<std::vector<std::pair<double, double>>>
                            landscapePointsWithoutInfinities);
-  std::vector<std::vector<std::pair<double, double>>>
-  gimmeProperLandscapePoints();
-
+  
   double computeIntegralOfLandscape() const;
   double computeIntegralOfLandscape(double p)
       const; // this function compute integral of p-th power of landscape.
@@ -353,17 +351,6 @@ PersistenceLandscape::PersistenceLandscape(
     // v.push_back(std::make_pair(INT_MAX,0));
     this->land.push_back(v);
   }
-}
-
-std::vector<std::vector<std::pair<double, double>>>
-PersistenceLandscape::gimmeProperLandscapePoints() {
-  std::vector<std::vector<std::pair<double, double>>> result;
-  for (size_t level = 0; level != this->land.size(); ++level) {
-    std::vector<std::pair<double, double>> v(this->land[level].begin() + 1,
-                                             this->land[level].end() - 1);
-    result.push_back(v);
-  }
-  return result;
 }
 
 inline bool check_if_file_exist(const char *name) {
