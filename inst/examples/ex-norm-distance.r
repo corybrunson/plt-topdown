@@ -1,4 +1,7 @@
 
+# value taken from 'PersistenceLandscape.h'
+epsi <- 0.000005
+
 # insert critical points (y = 0)
 insert_critical <- function(x) {
   wz <- which(sign(x[-1L, 2L]) != 0 & sign(x[-nrow(x), 2L]) != 0 &
@@ -16,33 +19,27 @@ insert_critical <- function(x) {
 # calculate the p-norm, via integration, of a piecewise linear function
 integrate_power <- function(x, p) {
   # ignore flatlines (assume y = 0 from `-Inf` and to `Inf`)
-  if (any(diff(x[, 1L]) <= 0)) stop("Abscissa  coordinates are not increasing.")
+  if (any(diff(x[, 1L]) <= 0)) warning("Zero-length interval encountered.")
   if (x[1L, 1L] == -Inf) x <- x[-1L, , drop = FALSE]
   if (x[nrow(x), 1L] == Inf) x <- x[-nrow(x), , drop = FALSE]
   # insert critical points if necessary
   x <- insert_critical(x)
   # calculate integral of y ^ p analytically
   integrand <- ifelse(
-    x[-1L, 2L] == x[-nrow(x), 2L],
+    # consider intervals with near-constant height as rectangles
+    abs( ( x[-1L, 2L] - x[-nrow(x), 2L] ) / (p+1) ) < epsi,
     x[-1L, 2L] ^ p,
     ( x[-1L, 2L] ^ (p+1) - x[-nrow(x), 2L] ^ (p+1) ) /
       ( x[-1L, 2L] - x[-nrow(x), 2L] ) / (p+1)
   )
+  # print(abs(integrand) * ( x[-1L, 1L] - x[-nrow(x), 1L] ))
   sum(abs(integrand) * ( x[-1L, 1L] - x[-nrow(x), 1L] ))
 }
 
-# persistence data for two point clouds
-x1 <- tdaunif::sample_torus_tube(120, 2.5)
-x2 <- tdaunif::sample_torus_tube(60, 2.5)
-pd1 <- as_persistence(ripserr::vietoris_rips(x1, dim = 1, threshold = 2))
-pd2 <- as_persistence(ripserr::vietoris_rips(x2, dim = 1, threshold = 2))
-
-# two exact persistence landscapes
-ple1 <- landscape(pd1, degree = 1, exact = TRUE)
-ple2 <- landscape(pd2, degree = 1, exact = TRUE)
-
 # norm for exact landscapes
 pl_norm_exact <- function(pl, p = 2) {
+  p <- plt:::ensure_p(p)
+  # calculate norm
   if (p == Inf) {
     max(vapply(pl$getInternal(), function(x) max(abs(x[, 2L])), 0))
   } else {
@@ -53,32 +50,16 @@ pl_norm_exact <- function(pl, p = 2) {
   }
 }
 
-# inf norm
-pl_norm_exact(ple1, p = Inf)
-# 2 norm
-pl_norm_exact(ple1, p = 2)
-# 1 norm
-pl_norm_exact(ple1, p = 1)
-
-# two discrete persistence landscapes
-pl1 <- landscape(pd1, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
-pl2 <- landscape(pd2, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
-
 # norm for discrete landscapes
 pl_norm_discrete <- function(pl, p = 2) {
+  p <- plt:::ensure_p(p)
+  # calculate norm
   if (p == Inf) {
     max(abs(pl$getInternal()[, , 2L]))
   } else {
     sum(apply(pl$getInternal(), 1L, integrate_power, p = p)) ^ (1/p)
   }
 }
-
-# inf norm
-pl_norm_discrete(pl1, p = Inf)
-# 2 norm
-pl_norm_discrete(pl1, p = 2)
-# 1 norm
-pl_norm_discrete(pl1, p = 1)
 
 # norm for landscapes
 pl_norm <- function(pl, p = 2) {
@@ -96,7 +77,41 @@ pl_dist <- function(pl1, pl2, p = 2) {
   pl_norm(pl = pl, p = p)
 }
 
-# arithmetic difference
+# persistence data for two point clouds
+x1 <- tdaunif::sample_torus_tube(120, 2.5)
+x2 <- tdaunif::sample_torus_tube(60, 2.5)
+# FIXME: reprex
+set.seed(0)
+x1 <- tdaunif::sample_circle(12)
+x2 <- tdaunif::sample_circle(12)
+pd1 <- as_persistence(ripserr::vietoris_rips(x1, dim = 1, threshold = 2))
+pd2 <- as_persistence(ripserr::vietoris_rips(x2, dim = 1, threshold = 2))
+
+# two exact persistence landscapes
+ple1 <- landscape(pd1, degree = 1, exact = TRUE)
+ple2 <- landscape(pd2, degree = 1, exact = TRUE)
+
+# inf norm
+pl_norm_exact(ple1, p = Inf)
+# 2 norm
+pl_norm_exact(ple1, p = 2)
+# 1 norm
+pl_norm_exact(ple1, p = 1)
+
+# two discrete persistence landscapes
+pl1 <- landscape(pd1, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
+pl2 <- landscape(pd2, degree = 1, min_x = 0, max_x = 1.5, by = 0.01)
+
+# inf norm
+pl_norm_discrete(pl1, p = Inf)
+# 2 norm
+pl_norm_discrete(pl1, p = 2)
+# 1 norm
+pl_norm_discrete(pl1, p = 1)
+
+# arithmetic differences
+ple12 <- ple2 - ple1
+plot(ple12)
 pl12 <- pl2 - pl1
 plot(pl12)
 dim(pl12$getInternal())
@@ -107,6 +122,22 @@ pl_dist(pl1, pl2, p = Inf)
 pl_dist(pl1, pl2, p = 2)
 # L^1 distance
 pl_dist(pl1, pl2, p = 1)
+
+# benchmark comparison of distance functions
+ps <- c(Inf, 1 + 2 ^ seq(8L, -2L, -2L), 1)
+# exact
+bench::mark(
+  cpp = vapply(ps, function(p) pl_distance(ple1, ple2, p), 0),
+  R = vapply(ps, function(p) pl_dist(ple1, ple2, p), 0),
+  check = TRUE
+)
+# discrete
+bench::mark(
+  # FIXME: Discrete integrals disagree for p > 38.
+  cpp = vapply(ps, function(p) pl_distance(pl1, pl2, p), 0),
+  R = vapply(ps, function(p) pl_dist(pl1, pl2, p), 0),
+  check = FALSE
+)
 
 # toy example from Bubenik & Dłotko (2017)
 

@@ -51,6 +51,9 @@ RCPP_MODULE(Landscape) {
   .method("inner",
           &PersistenceLandscapeInterface::inner,
           "Takes the inner product of this PL with another.")
+  .method("distance",
+          &PersistenceLandscapeInterface::distance,
+          "Takes the p-norm distance between this PL and another.")
   ;
 
   // TODO: Decide whether to use these or R wrappers in
@@ -58,5 +61,6 @@ RCPP_MODULE(Landscape) {
   Rcpp::function("PLsum", &PLsum);
   Rcpp::function("PLscale", &PLscale);
   Rcpp::function("PLinner", &PLinner);
+  Rcpp::function("PLdistance", &PLdistance);
   Rcpp::function("PLaverage", &PLaverage);
 }

@@ -272,7 +272,7 @@ public:
   double computeNormOfLandscape(int i) {
     PersistenceLandscape l;
     if (i != -1) {
-      return computeDiscanceOfLandscapes(*this, l, i);
+      return computeDistanceOfLandscapes(*this, l, i);
     } else {
       return computeMaxNormDiscanceOfLandscapes(*this, l);
     }
@@ -289,7 +289,7 @@ public:
       const PersistenceLandscape &first, const PersistenceLandscape &second,
       unsigned &nrOfLand, double &x, double &y1, double &y2);
 
-  friend double computeDiscanceOfLandscapes(const PersistenceLandscape &first,
+  friend double computeDistanceOfLandscapes(const PersistenceLandscape &first,
                                             const PersistenceLandscape &second,
                                             unsigned p);
 
@@ -598,6 +598,7 @@ PersistenceLandscape::PersistenceLandscape(
     if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       ++nb;
     }
+    // TODO: Harmonize this step with extended persistence data.
     if (pd[i].second < pd[i].first) {
       double sec = pd[i].second;
       pd[i].second = pd[i].first;
@@ -700,6 +701,7 @@ PersistenceLandscape::PersistenceLandscape(
     // in this case useGridInComputations is true, therefore we will build a
     // landscape on a grid.
     double gridDiameter = grid_diameter;
+    // REVIEW: Why create `minMax` rather than use `min_x` and `max_x`? -JCB
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
     size_t numberOfBins =
         2 * ((minMax.second - minMax.first) / gridDiameter) + 1;
@@ -778,11 +780,14 @@ PersistenceLandscape::PersistenceLandscape(
 double PersistenceLandscape::computeIntegralOfLandscape() const {
   double result = 0;
   for (size_t i = 0; i != this->land.size(); ++i) {
-    for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
-      // it suffices to compute every planar integral and then sum them ap for
-      // each lambda_n
+    // REVIEW: Handle exact and discrete cases differently. -JCB
+    int infs = this->land[i][0].first == INT_MIN;
+    // it suffices to compute every planar integral and then sum them ap for
+    // each lambda_n
+    // for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
+    for (size_t nr = 1 + infs; nr != this->land[i].size() - infs; ++nr) {
       result += 0.5 * (this->land[i][nr].first - this->land[i][nr - 1].first) *
-                (this->land[i][nr].second + this->land[i][nr - 1].second);
+        (this->land[i][nr].second + this->land[i][nr - 1].second);
     }
   }
   return result;
@@ -805,23 +810,32 @@ computeParametersOfALine(std::pair<double, double> p1,
 double PersistenceLandscape::computeIntegralOfLandscape(double p) const {
   double result = 0;
   for (size_t i = 0; i != this->land.size(); ++i) {
-    for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
+    // REVIEW: Handle exact and discrete cases differently. -JCB
+    int infs = this->land[i][0].first == INT_MIN;
+    // for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
+    for (size_t nr = 1 + infs; nr != this->land[i].size() - infs; ++nr) {
       // In this interval, the landscape has a form f(x) = ax + b. We want to
       // compute integral of (ax + b)^p = 1 / a * (ax + b)^{p + 1} / (p + 1)
       std::pair<double, double> coef =
           computeParametersOfALine(this->land[i][nr], this->land[i][nr - 1]);
       double a = coef.first;
-      double b = coef.second;
-
+      // double b = coef.second;
+      
       if (this->land[i][nr].first == this->land[i][nr - 1].first)
         continue;
-      if (a != 0) {
+      // REVIEW: Debug discrepancy with R implementation. -JCB
+      // if (a != 0) {
+      if (fabs(a) > epsi) {
+        // REVIEW: Simplify this formula:
+        // result += 1 / (a * (p + 1)) *
+        //   (pow((a * this->land[i][nr].first + b), p + 1) -
+        //   pow((a * this->land[i][nr - 1].first + b), p + 1));
         result += 1 / (a * (p + 1)) *
-                  (pow((a * this->land[i][nr].first + b), p + 1) -
-                   pow((a * this->land[i][nr - 1].first + b), p + 1));
+          (pow(this->land[i][nr].second, p + 1) -
+          pow(this->land[i][nr - 1].second, p + 1));
       } else {
         result += (this->land[i][nr].first - this->land[i][nr - 1].first) *
-                  (pow(this->land[i][nr].second, p));
+          (pow(this->land[i][nr].second, p));
       }
     }
   }
@@ -1096,16 +1110,24 @@ PersistenceLandscape PersistenceLandscape::abs() {
   PersistenceLandscape result;
   for (size_t level = 0; level != this->land.size(); ++level) {
     std::vector<std::pair<double, double>> lambda_n;
-    lambda_n.push_back(std::make_pair(INT_MIN, 0));
+    // REVIEW: Try to prevent operations from infinitizing endpoints. -JCB
+    // if (this->land[level][0].first == INT_MIN) {
+    //   lambda_n.push_back(std::make_pair(INT_MIN, 0));
+    // } else {
+    //   lambda_n.push_back(std::make_pair(this->land[level][0].first,
+    //                                     fabs(this->land[level][0].second)));
+    // }
+    lambda_n.push_back(std::make_pair(this->land[level][0].first,
+                                      fabs(this->land[level][0].second)));
     for (size_t i = 1; i != this->land[level].size(); ++i) {
       // if a line segment between this->land[level][i-1] and
       // this->land[level][i] crosses the x-axis, then we have to add one
-      // landscape point t oresult
-      if ((this->land[level][i - 1].second) * (this->land[level][i].second) <
-          0) {
+      // landscape point to result
+      if ((this->land[level][i - 1].second) *
+          (this->land[level][i].second) < 0) {
         double zero = findZeroOfALineSegmentBetweenThoseTwoPoints(
-            this->land[level][i - 1], this->land[level][i]);
-
+          this->land[level][i - 1], this->land[level][i]);
+        
         lambda_n.push_back(std::make_pair(zero, 0));
         lambda_n.push_back(std::make_pair(this->land[level][i].first,
                                           fabs(this->land[level][i].second)));
@@ -1189,7 +1211,19 @@ operationOnPairOfLandscapes(const PersistenceLandscape &land1,
                                         oper(0, land2.land[i][q].second)));
       ++q;
     }
-    lambda_n.push_back(std::make_pair(INT_MAX, 0));
+    // REVIEW: Try to prevent operations from infinitizing endpoints. -JCB
+    if (land1.land[i][p].first == land2.land[i][q].first) {
+      if (land2.land[i][q].first == INT_MAX) {
+        lambda_n.push_back(std::make_pair(INT_MAX, 0));
+      } else {
+        lambda_n.push_back(std::make_pair(land1.land[i][p].first,
+                                          oper(land1.land[i][p].second,
+                                               land2.land[i][q].second)));
+      }
+    } else {
+      // REVIEW: Is there a better option in this case? -JCB
+      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+    }
     // CHANGE
     // result.land[i] = lambda_n;
     result.land[i].swap(lambda_n);
@@ -1351,27 +1385,28 @@ double computeMaximalDistanceNonSymmetric(const PersistenceLandscape &pl1,
   return maxDist;
 }
 
-double computeDiscanceOfLandscapes(const PersistenceLandscape &first,
+double computeDistanceOfLandscapes(const PersistenceLandscape &first,
                                    const PersistenceLandscape &second,
                                    unsigned p) {
-  // This is what we want to compute: (\int_{- \infty}^{+\infty}| first-second
-  // |^p)^(1/p). We will do it one step at a time:
-
-  // first-second :
-  PersistenceLandscape lan = first - second;
-
-  //| first-second |:
-  lan = lan.abs();
-
-  //\int_{- \infty}^{+\infty}| first-second |^p
+  // This is what we want to compute:
+  // ( \int_{- \infty}^{+\infty} | first - second |^p )^(1/p)
+  // We will do it one step at a time:
+  
+  // first - second
+  PersistenceLandscape diff = first - second;
+  
+  // | first - second |
+  diff = diff.abs();
+  
+  // \int_{- \infty}^{+\infty} | first-second |^p
   double result;
   if (p != 1) {
-    result = lan.computeIntegralOfLandscape(p);
+    result = diff.computeIntegralOfLandscape(p);
   } else {
-    result = lan.computeIntegralOfLandscape();
+    result = diff.computeIntegralOfLandscape();
   }
 
-  //(\int_{- \infty}^{+\infty}| first-second |^p)^(1/p)
+  // ( \int_{- \infty}^{+\infty} | first - second |^p )^(1/p)
   return pow(result, 1 / (double)p);
 }
 

@@ -7,6 +7,7 @@
 \alias{pl_scale}
 \alias{pl_mean}
 \alias{pl_inner_product}
+\alias{pl_distance}
 \title{Hilbert Space Operations on Persistence Landscapes}
 \usage{
 pl_sum(pl1, pl2)
@@ -16,6 +17,8 @@ pl_scale(pl, mult = 1)
 pl_mean(pl_list)
 
 pl_inner_product(pl1, pl2)
+
+pl_distance(pl1, pl2, p = 2)
 }
 \arguments{
 \item{pl, pl1, pl2}{Persistent landscapes.}
@@ -23,6 +26,8 @@ pl_inner_product(pl1, pl2)
 \item{mult}{Double; a real-valued scale factor.}
 
 \item{pl_list}{A list of persistent landscapes.}
+
+\item{p}{Positive number; the distance norm.}
 }
 \value{
 A persistence landscape (an object of S4 class

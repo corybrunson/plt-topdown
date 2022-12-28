@@ -26,6 +26,7 @@ NumericVector discretePersistenceLandscapeToR(
       out[TDIndex(input.size(), input[0].size(), 2, j, i, 1)] =
         input[j][i].second;
       
+      // REVIEW: Why is this needed for discrete landscapes? -JCB
       if (input[j][i].first == INT_MAX)
         out[TDIndex(input.size(), input[0].size(), 2, j, i, 0)] = R_PosInf;
       if (input[j][i].first == INT_MIN)
@@ -329,6 +330,19 @@ public:
                                          dx);
   }
   
+  PersistenceLandscapeInterface scale(
+      double scale) {
+    
+    PersistenceLandscape pl_out;
+    
+    if (exact)
+      pl_out = scale * pl_raw;
+    else
+      pl_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
+    
+    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+  }
+  
   double inner(
       PersistenceLandscapeInterface &other) {
     
@@ -342,17 +356,19 @@ public:
     return scaler_out;
   }
   
-  PersistenceLandscapeInterface scale(
-      double scale) {
+  double distance(
+      PersistenceLandscapeInterface &other,
+      unsigned p) {
     
-    PersistenceLandscape pl_out;
+    double dist_out;
     
-    if (exact)
-      pl_out = scale * pl_raw;
+    if (p == 0)
+      // `p = 0` encodes `p = Inf`
+      dist_out = computeMaxNormDiscanceOfLandscapes(pl_raw, other.pl_raw);
     else
-      pl_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
+      dist_out = computeDistanceOfLandscapes(pl_raw, other.pl_raw, p);
     
-    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+    return dist_out;
   }
   
   friend bool checkPairOfDiscreteLandscapes(
@@ -399,6 +415,13 @@ double PLinner(
     PersistenceLandscapeInterface p1,
     PersistenceLandscapeInterface p2) {
   return p1.inner(p2);
+}
+
+double PLdistance(
+    PersistenceLandscapeInterface p1,
+    PersistenceLandscapeInterface p2,
+    unsigned p) {
+  return p1.distance(p2, p);
 }
 
 bool checkPairOfDiscreteLandscapes(
