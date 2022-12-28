@@ -54,52 +54,6 @@ double birth(std::pair<double, double> a) { return a.first - a.second; }
 
 double death(std::pair<double, double> a) { return a.first + a.second; }
 
-// functions used in PersistenceLandscape( const PersistenceBarcodes& pb )
-// constructor:
-bool comparePoints(
-    std::pair<double, double> f,
-    std::pair<double, double> s) {
-  double differenceBirth = birth(f) - birth(s);
-  if (differenceBirth < 0)
-    differenceBirth *= -1;
-  double differenceDeath = death(f) - death(s);
-  if (differenceDeath < 0)
-    differenceDeath *= -1;
-
-  if ((differenceBirth < epsi) && (differenceDeath < epsi)) {
-    return false;
-  }
-  if ((differenceBirth < epsi)) {
-    // consider birth points the same. If we are here, we know that death points
-    // are NOT the same
-    if (death(f) < death(s)) {
-      return true;
-    }
-    return false;
-  }
-  if (differenceDeath < epsi) {
-    // we consider death points the same and since we are here, the birth points
-    // are not the same!
-    if (birth(f) < birth(s)) {
-      return false;
-    }
-    return true;
-  }
-
-  if (birth(f) > birth(s)) {
-    return false;
-  }
-  if (birth(f) < birth(s)) {
-    return true;
-  }
-  // if this is true, we assume that death(f)<=death(s) -- othervise I have had
-  // a lot of roundoff problems here!
-  if ((death(f) <= death(s))) {
-    return false;
-  }
-  return true;
-}
-
 // this function assumes birth-death coords
 bool comparePoints2(
     std::pair<double, double> f,
@@ -152,8 +106,9 @@ public:
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
   
-  PersistenceLandscape(std::vector<std::vector<std::pair<double, double>>>
-                           landscapePointsWithoutInfinities);
+  PersistenceLandscape(
+    std::vector<std::vector<std::pair<double, double>>>
+    landscapePointsWithoutInfinities);
   
   double computeIntegralOfLandscape() const;
   double computeIntegralOfLandscape(double p)
@@ -178,29 +133,13 @@ public:
           std::pair<double, double>,
           std::pair<double, double>));
   double computeValueAtAGivenPoint(unsigned level, double x) const;
-  // friend std::ostream &operator<<(std::ostream &out,
-  //                                 PersistenceLandscape &land);
-
-  typedef std::vector<std::pair<double, double>>::iterator lDimIterator;
-  lDimIterator lDimBegin(unsigned dim) {
-    if (dim > this->land.size())
-      throw("Calling lDimIterator in a dimension higher that dimension of "
-            "landscape");
-    return this->land[dim].begin();
-  }
-  lDimIterator lDimEnd(unsigned dim) {
-    if (dim > this->land.size())
-      throw("Calling lDimIterator in a dimension higher that dimension of "
-            "landscape");
-    return this->land[dim].end();
-  }
-
+  
   PersistenceLandscape multiplyLanscapeByRealNumber(double x) const;
   
   // Friendzone:
 
-  // this is a general algorithm to perform linear operations on persisntece
-  // lapscapes. It perform it by doing operations on landscape points.
+  // This is a general algorithm to perform linear operations on persistence
+  // landscapes. It perform it by doing operations on landscape points.
   friend PersistenceLandscape operationOnPairOfLandscapes(
       const PersistenceLandscape &land1,
       const PersistenceLandscape &land2,
@@ -308,10 +247,13 @@ public:
     const PersistenceLandscape &pl2);
   
   friend double computeMaximalDistanceNonSymmetric(
-      const PersistenceLandscape &pl1, const PersistenceLandscape &pl2,
-      unsigned &nrOfLand, double &x, double &y1, double &y2);
-  // this function additionally returns integer n and double x, y1, y2 such that
-  // the maximal distance is obtained betwenn lambda_n's on a coordinate x such
+      const PersistenceLandscape &pl1,
+      const PersistenceLandscape &pl2,
+      unsigned &nrOfLand,
+      double &x,
+      double &y1, double &y2);
+  // This function additionally returns integer n and double x, y1, y2 such that
+  // the maximal distance is obtained between lambda_n's on a coordinate x such
   // that the value of the first landscape is y1, and the vale of the second
   // landscape is y2.
 
@@ -339,14 +281,13 @@ public:
       const PersistenceLandscape &l1,
       const PersistenceLandscape &l2);
   
-  // this function compute n-th moment of lambda_level
   double computeNthMoment(
       unsigned p,
       double center,
       unsigned level) const;
   
-  // those are two new functions to generate histograms of Betti numbers across
-  // the filtration values.
+  // These are two functions to generate histograms of Betti numbers across the
+  // filtration values.
   std::vector<std::pair<double, unsigned>>
   generateBettiNumbersHistogram() const;
   std::vector<std::vector<std::pair<double, double>>> land;
@@ -391,7 +332,7 @@ bool PersistenceLandscape::operator==(const PersistenceLandscape &rhs) const {
   return true;
 }
 
-// this function find maximum of lambda_n
+// This function finds the maximum value of the level lambda.
 double PersistenceLandscape::findMax(
     unsigned lambda) const {
   if (this->land.size() < lambda)
@@ -404,7 +345,7 @@ double PersistenceLandscape::findMax(
   return maximum;
 }
 
-// this function compute n-th moment of lambda_level
+// This function computes the n^th moment of the level lambda.
 double PersistenceLandscape::computeNthMoment(
     unsigned p,
     double center,
@@ -550,7 +491,7 @@ operator=(const PersistenceLandscape &oryginal) {
   return *this;
 }
 
-// TODO -- removewhen the problem is respved
+// TODO -- remove when the problem is resolved
 bool check(
     unsigned i,
     std::vector<std::pair<double, double>> v) {

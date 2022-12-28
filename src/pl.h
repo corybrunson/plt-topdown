@@ -363,6 +363,13 @@ public:
     return scalar_out;
   }
   
+  double sup(unsigned level) {
+    
+    double sup_out = pl_raw.findMax(level);
+    
+    return sup_out;
+  }
+  
   double moment(
       unsigned n,
       double center,

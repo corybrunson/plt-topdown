@@ -9,15 +9,15 @@
 #' @param pl,pl1,pl2 Persistent landscapes.
 #' @param pl_list A list of persistent landscapes.
 #' @param mult Double; a real-valued scale factor.
+#' @param level Positive integer; the envelope of the persistence landscape
+#'   (up to) whose moment to calculate.
 #' @param p Positive integer or infinity; the power used to compute a norm or
 #'   moment.
 #' @param center Double; where to center the moment.
-#' @param level Positive integer; the envelope of the persistence landscape
-#'   (up to) whose moment to calculate.
 #' @return A persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape').
 #' @seealso PersistenceLandscape-methods
-#' @example inst/examples/ex-landscape-operations.r
+#' @example inst/examples/ex-operations.r
 NULL
 
 #' @rdname arithmetic-operations
@@ -52,6 +52,18 @@ pl_mean <- function(pl_list) {
 pl_inner <- function(pl1, pl2) {
   # PLinner(pl1, pl2)
   pl1$inner(pl2)
+}
+
+#' @rdname arithmetic-operations
+#' @export
+pl_max <- function(pl, level = 1L) {
+  pl$sup(level)
+}
+
+#' @rdname arithmetic-operations
+#' @export
+pl_vmax <- function(pl, level = 1L) {
+  vapply(seq(level), function(l) pl$sup(level = l), double())
 }
 
 #' @rdname arithmetic-operations
