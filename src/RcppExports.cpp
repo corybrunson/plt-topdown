@@ -21,64 +21,11 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// PLsum
-PersistenceLandscapeInterface PLsum(PersistenceLandscapeInterface p1, PersistenceLandscapeInterface p2);
-RcppExport SEXP _plt_PLsum(SEXP p1SEXP, SEXP p2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p1(p1SEXP);
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p2(p2SEXP);
-    rcpp_result_gen = Rcpp::wrap(PLsum(p1, p2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PLscale
-PersistenceLandscapeInterface PLscale(double scale, PersistenceLandscapeInterface p);
-RcppExport SEXP _plt_PLscale(SEXP scaleSEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type scale(scaleSEXP);
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(PLscale(scale, p));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PLinner
-double PLinner(PersistenceLandscapeInterface p1, PersistenceLandscapeInterface p2);
-RcppExport SEXP _plt_PLinner(SEXP p1SEXP, SEXP p2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p1(p1SEXP);
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p2(p2SEXP);
-    rcpp_result_gen = Rcpp::wrap(PLinner(p1, p2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PLdistance
-double PLdistance(PersistenceLandscapeInterface p1, PersistenceLandscapeInterface p2, unsigned p);
-RcppExport SEXP _plt_PLdistance(SEXP p1SEXP, SEXP p2SEXP, SEXP pSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p1(p1SEXP);
-    Rcpp::traits::input_parameter< PersistenceLandscapeInterface >::type p2(p2SEXP);
-    Rcpp::traits::input_parameter< unsigned >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(PLdistance(p1, p2, p));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 RcppExport SEXP _rcpp_module_boot_class_PersistenceLandscape();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_plt_PLaverage", (DL_FUNC) &_plt_PLaverage, 1},
-    {"_plt_PLsum", (DL_FUNC) &_plt_PLsum, 2},
-    {"_plt_PLscale", (DL_FUNC) &_plt_PLscale, 2},
-    {"_plt_PLinner", (DL_FUNC) &_plt_PLinner, 2},
-    {"_plt_PLdistance", (DL_FUNC) &_plt_PLdistance, 3},
     {"_rcpp_module_boot_class_PersistenceLandscape", (DL_FUNC) &_rcpp_module_boot_class_PersistenceLandscape, 0},
     {NULL, NULL, 0}
 };
