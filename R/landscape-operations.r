@@ -54,10 +54,7 @@ pl_distance <- function(pl1, pl2, p = 2) {
 # pre-process power
 ensure_p <- function(p) {
   # only allow positive integer powers
-  if (p < 1) stop("`p` must be a positive integer or infinity.")
-  if (p != Inf && p %% 1 != 0) {
-    p <- as.integer(p)
-    warning("`p` must be an integer; coercing to p = ", p, ".")
-  }
+  if (p < 1 || (p != Inf && p %% 1 != 0))
+    stop("`p` must be a positive integer or infinity.")
   p
 }
