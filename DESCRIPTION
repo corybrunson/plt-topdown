@@ -42,7 +42,10 @@ Suggests:
     tdaunif,
     TDA,
     ripserr,
-    testthat
+    testthat,
+    knitr,
+    rmarkdown,
+    bench
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
 Collate: 
@@ -57,3 +60,4 @@ Collate:
     'plot.r'
     'show.r'
     'utils.r'
+VignetteBuilder: knitr

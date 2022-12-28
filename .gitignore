@@ -15,3 +15,4 @@ src/*.dll
 # ignore
 ignore
 
+inst/doc
