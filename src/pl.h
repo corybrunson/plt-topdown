@@ -364,7 +364,7 @@ public:
     
     if (p == 0)
       // `p = 0` encodes `p = Inf`
-      dist_out = computeMaxNormDiscanceOfLandscapes(pl_raw, other.pl_raw);
+      dist_out = computeMaxNormDistanceOfLandscapes(pl_raw, other.pl_raw);
     else
       dist_out = computeDistanceOfLandscapes(pl_raw, other.pl_raw, p);
     
