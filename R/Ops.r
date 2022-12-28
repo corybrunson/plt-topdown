@@ -9,7 +9,7 @@
 #' @return A persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape').
 #' @seealso landscape-operations
-#' @example inst/examples/ex-PersistenceLandscape-methods.r
+#' @example inst/examples/ex-Ops.r
 NULL
 
 #' @rdname Rcpp_PersistenceLandscape-methods

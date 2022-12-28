@@ -390,8 +390,8 @@ double PersistenceLandscape::findMax(unsigned lambda) const {
 double PersistenceLandscape::computeNthMoment(unsigned n, double center,
                                               unsigned level) const {
   if (n < 1) {
-    cerr << "Cannot compute n-th moment for  n = " << n
-         << ". The program will now terminate \n";
+    Rcpp::Rcerr << "Cannot compute n-th moment for  n = " << n
+                << ". The program will now terminate \n";
     throw("Cannot compute n-th moment. The program will now terminate \n");
   }
   double result = 0;
