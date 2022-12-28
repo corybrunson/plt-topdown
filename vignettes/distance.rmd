@@ -90,7 +90,7 @@ pl_norm_discrete <- function(pl, p = 2) {
 ```
 
 ```{r norm for landscapes}
-pl_norm <- function(pl, p = 2) {
+pl_norm_R <- function(pl, p = 2) {
   stopifnot(is.numeric(p), p >= 1)
   switch(
     pl_str(pl),
@@ -103,7 +103,7 @@ pl_norm <- function(pl, p = 2) {
 ```{r L^p distance between two comparable landscapes}
 pl_dist <- function(pl1, pl2, p = 2) {
   pl <- pl2 - pl1
-  pl_norm(pl = pl, p = p)
+  pl_norm_R(pl = pl, p = p)
 }
 ```
 
@@ -205,7 +205,7 @@ for (i in seq(11L)) {
 pls_n_avg <- pl_mean(pls_n)
 plot(pls_n_avg)
 
-pl_norm(pls_n_avg, 1)
-pl_norm(pls_n_avg, 2)
-pl_norm(pls_n_avg, Inf)
+pl_norm_R(pls_n_avg, 1)
+pl_norm_R(pls_n_avg, 2)
+pl_norm_R(pls_n_avg, Inf)
 ```

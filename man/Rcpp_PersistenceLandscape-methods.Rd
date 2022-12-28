@@ -103,5 +103,5 @@ print(pl_diff \%*\% pl_diff)
 }
 }
 \seealso{
-landscape-operations
+arithmetic-operations
 }
