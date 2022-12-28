@@ -40,5 +40,5 @@ pl_avg <- pl_mean(pl_list)
 
 # compute the distance between the landscapes
 pl_diff <- pl$add(pl_avg$scale(-1))
-print(pl_inner_product(pl_diff, pl_diff))
+print(pl_inner(pl_diff, pl_diff))
 }

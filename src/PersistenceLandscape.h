@@ -290,8 +290,7 @@ public:
     return this->computeValueAtAGivenPoint(level, x);
   }
   
-  friend double
-    computeMaxNormDistanceOfLandscapes(
+  friend double computeMaxNormDistanceOfLandscapes(
       const PersistenceLandscape &first,
       const PersistenceLandscape &second);
   
@@ -304,8 +303,7 @@ public:
       const PersistenceLandscape &second,
       unsigned p);
   
-  friend double
-  computeMaximalDistanceNonSymmetric(
+  friend double computeMaximalDistanceNonSymmetric(
     const PersistenceLandscape &pl1,
     const PersistenceLandscape &pl2);
   
@@ -337,12 +335,16 @@ public:
 
   double findMax(unsigned lambda) const;
 
-  friend double computeInnerProduct(const PersistenceLandscape &l1,
-                                    const PersistenceLandscape &l2);
-
+  friend double computeInnerProduct(
+      const PersistenceLandscape &l1,
+      const PersistenceLandscape &l2);
+  
   // this function compute n-th moment of lambda_level
-  double computeNthMoment(unsigned n, double center, unsigned level) const;
-
+  double computeNthMoment(
+      unsigned p,
+      double center,
+      unsigned level) const;
+  
   // those are two new functions to generate histograms of Betti numbers across
   // the filtration values.
   std::vector<std::pair<double, unsigned>>
@@ -404,13 +406,13 @@ double PersistenceLandscape::findMax(
 
 // this function compute n-th moment of lambda_level
 double PersistenceLandscape::computeNthMoment(
-    unsigned n,
+    unsigned p,
     double center,
     unsigned level) const {
-  if (n < 1) {
-    Rcpp::Rcerr << "Cannot compute n-th moment for  n = " << n
+  if (p < 1) {
+    Rcpp::Rcerr << "Cannot compute p-th moment for  p = " << p
                 << ". The program will now terminate \n";
-    throw("Cannot compute n-th moment. The program will now terminate \n");
+    throw("Cannot compute p-th moment. The program will now terminate \n");
   }
   double result = 0;
   if (this->land.size() > level) {
@@ -429,31 +431,31 @@ double PersistenceLandscape::computeNthMoment(
       double x2 = this->land[level][i].first;
 
       // double first =
-      // b*(pow((x2-center),(double)(n+1))/(n+1)-
-      // pow((x1-center),(double)(n+1))/(n+1));
-      // double second = a/(n+1)*((x2*pow((x2-center),(double)(n+1))) -
-      // (x1*pow((x1-center),(double)(n+1))) )
+      // b*(pow((x2-center),(double)(p+1))/(p+1)-
+      // pow((x1-center),(double)(p+1))/(p+1));
+      // double second = a/(p+1)*((x2*pow((x2-center),(double)(p+1))) -
+      // (x1*pow((x1-center),(double)(p+1))) )
       //              +
-      //              a/(n+1)*( pow((x2-center),(double)(n+2))/(n+2) -
-      //              pow((x1-center),(double)(n+2))/(n+2) );
+      //              a/(p+1)*( pow((x2-center),(double)(p+2))/(p+2) -
+      //              pow((x1-center),(double)(p+2))/(p+2) );
       // result += first;
       // result += second;
-
-      double first = a / (n + 2) *
-                     (pow((x2 - center), (double)(n + 2)) -
-                      pow((x1 - center), (double)(n + 2)));
-      double second = center / (n + 1) *
-                      (pow((x2 - center), (double)(n + 1)) -
-                       pow((x1 - center), (double)(n + 1)));
-      double third = b / (n + 1) *
-                     (pow((x2 - center), (double)(n + 1)) -
-                      pow((x1 - center), (double)(n + 1)));
-
+      
+      double first = a / (p + 2) *
+        (pow((x2 - center), (double)(p + 2)) -
+        pow((x1 - center), (double)(p + 2)));
+      double second = center / (p + 1) *
+        (pow((x2 - center), (double)(p + 1)) -
+        pow((x1 - center), (double)(p + 1)));
+      double third = b / (p + 1) *
+        (pow((x2 - center), (double)(p + 1)) -
+        pow((x1 - center), (double)(p + 1)));
+      
       result += first + second + third;
     }
   }
   return result;
-} // computeNthMoment
+}
 
 bool multiplyByIndicatorFunctionDBG = false;
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
@@ -605,7 +607,7 @@ PersistenceLandscape::PersistenceLandscape(
     if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       ++nb;
     }
-    // TODO: Harmonize this step with extended persistence data.
+    // TODO: Harmonize this step with extended persistence data. -JCB
     if (pd[i].second < pd[i].first) {
       double sec = pd[i].second;
       pd[i].second = pd[i].first;
@@ -622,7 +624,7 @@ PersistenceLandscape::PersistenceLandscape(
   }
   
   if (exact) {
-    // this is a general algorithm to construct persistence landscapes.
+    // This is a general algorithm to construct persistence landscapes.
     std::vector<std::pair<double, double>> pds;
     pds.insert(pds.begin(), pd.begin(), pd.end());
     std::sort(pds.begin(), pds.end(), comparePoints2);
@@ -705,8 +707,7 @@ PersistenceLandscape::PersistenceLandscape(
       this->land.push_back(lambda_n);
     }
   } else {
-    // in this case useGridInComputations is true, therefore we will build a
-    // landscape on a grid.
+    // In this case we will build a landscape on a grid.
     double gridDiameter = grid_diameter;
     // REVIEW: Why create `minMax` rather than use `min_x` and `max_x`? -JCB
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
@@ -1007,7 +1008,7 @@ double penalty(
     std::pair<double, double> B,
     std::pair<double, double> C) {
   return fabs(functionValue(A, C, B.first) - B.second);
-} // penalty
+}
 
 unsigned PersistenceLandscape::reducePoints(
     double tollerance,
@@ -1257,7 +1258,7 @@ PersistenceLandscape operationOnPairOfLandscapes(
     }
   }
   return result;
-} // operationOnPairOfLandscapes
+}
 
 double computeMaximalDistanceNonSymmetric(
     const PersistenceLandscape &pl1,
@@ -1540,7 +1541,7 @@ PersistenceLandscape::generateBettiNumbersHistogram() const {
   result.swap(resultNew);
 
   return result;
-} // generateBettiNumbersHistogram
+}
 
 double computeInnerProduct(
     const PersistenceLandscape &l1,

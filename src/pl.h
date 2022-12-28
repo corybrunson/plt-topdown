@@ -195,7 +195,7 @@ public:
   // Creates PL from PD (in the form of a 2-column numeric matrix)
   // TODO: Better defaults.
   // Natural defaults are inferred in R through `landscape()`.
-  // Should C++ defaults be removed? -JCB
+  // Should C++ defaults be harmonized? -JCB
   PersistenceLandscapeInterface(
     NumericMatrix pd,
     bool exact = false,
@@ -204,7 +204,7 @@ public:
     double max_y = 1000)
     : exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {
     
-    // Initalize a PersistenceLandscape object.
+    // Initialize a PersistenceLandscape object.
     std::vector<std::pair<double, double>> bars;
     
     for (int i = 0; i < pd.nrow(); i++)
@@ -268,11 +268,11 @@ public:
   PersistenceLandscapeInterface add(
       const PersistenceLandscapeInterface &other) {
     
-    PersistenceLandscape pl_out;
+    PersistenceLandscape add_out;
     
     // both landscapes are exact
     if (PersistenceLandscapeInterface::exact && other.isExact())
-      pl_out = pl_raw + other.pl_raw;
+      add_out = pl_raw + other.pl_raw;
     
     // neither landscape is exact
     else if (!PersistenceLandscapeInterface::exact && !other.isExact()) {
@@ -280,7 +280,7 @@ public:
       if (!checkPairOfDiscreteLandscapes(*this, other)) {
         stop("Error: Persistence Landscape Properties Do Not Match.");
       }
-      pl_out =
+      add_out =
         PersistenceLandscape(addDiscreteLandscapes(pl_raw, other.pl_raw));
     }
     
@@ -296,7 +296,7 @@ public:
           other.min_pl,
           other.max_pl,
           other.dx);
-        pl_out = PersistenceLandscape(addDiscreteLandscapes(
+        add_out = PersistenceLandscape(addDiscreteLandscapes(
           conversion1,
           other.pl_raw));
       }
@@ -308,12 +308,12 @@ public:
           PersistenceLandscapeInterface::min_pl,
           PersistenceLandscapeInterface::max_pl,
           PersistenceLandscapeInterface::dx);
-        pl_out = PersistenceLandscape(addDiscreteLandscapes(
+        add_out = PersistenceLandscape(addDiscreteLandscapes(
           conversion2,
           PersistenceLandscapeInterface::pl_raw));
         // REVIEW: This is an alternative formulation that seems to still work
         // but not fix the bug.
-        // pl_out = PersistenceLandscape(addDiscreteLandscapes(
+        // add_out = PersistenceLandscape(addDiscreteLandscapes(
         //   this->pl_raw,
         //   conversion2));
       }
@@ -324,7 +324,7 @@ public:
     bool out_exact = exact & other.isExact();
     double out_min = min(min_pl, other.getMin());
     double out_max = max(max_pl, other.getMax());
-    return PersistenceLandscapeInterface(pl_out,
+    return PersistenceLandscapeInterface(add_out,
                                          out_exact,
                                          out_min, out_max,
                                          dx);
@@ -333,27 +333,44 @@ public:
   PersistenceLandscapeInterface scale(
       double scale) {
     
-    PersistenceLandscape pl_out;
+    PersistenceLandscape scale_out;
     
     if (exact)
-      pl_out = scale * pl_raw;
+      scale_out = scale * pl_raw;
     else
-      pl_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
+      scale_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
     
-    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+    return PersistenceLandscapeInterface(scale_out, exact, min_pl, max_pl, dx);
+  }
+  
+  PersistenceLandscapeInterface abs() {
+    
+    PersistenceLandscape abs_out = pl_raw.abs();
+    
+    return PersistenceLandscapeInterface(abs_out, exact, min_pl, max_pl, dx);
   }
   
   double inner(
       PersistenceLandscapeInterface &other) {
     
-    double scaler_out;
+    double scalar_out;
     
     if (exact)
-      scaler_out = computeInnerProduct(pl_raw, other.pl_raw);
+      scalar_out = computeInnerProduct(pl_raw, other.pl_raw);
     else
-      scaler_out = innerProductDiscreteLandscapes(pl_raw, other.pl_raw, dx);
+      scalar_out = innerProductDiscreteLandscapes(pl_raw, other.pl_raw, dx);
     
-    return scaler_out;
+    return scalar_out;
+  }
+  
+  double moment(
+      unsigned n,
+      double center,
+      unsigned level) {
+    
+    double moment_out = pl_raw.computeNthMoment(n, center, level);
+    
+    return moment_out;
   }
   
   double distance(
@@ -369,6 +386,14 @@ public:
       dist_out = computeDistanceOfLandscapes(pl_raw, other.pl_raw, p);
     
     return dist_out;
+  }
+  
+  double norm(
+      unsigned p) {
+    
+    double norm_out = pl_raw.computeNormOfLandscape(p);
+    
+    return norm_out;
   }
   
   friend bool checkPairOfDiscreteLandscapes(
@@ -403,6 +428,11 @@ PersistenceLandscapeInterface PLsum(
     PersistenceLandscapeInterface p1,
     PersistenceLandscapeInterface p2) {
   return p1.add(p2);
+}
+
+PersistenceLandscapeInterface PLabs(
+    PersistenceLandscapeInterface pl) {
+  return pl.abs();
 }
 
 PersistenceLandscapeInterface PLscale(

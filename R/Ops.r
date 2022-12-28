@@ -8,7 +8,7 @@
 #' @param e1,e2,x,y Arguments of unary and binary operators.
 #' @return A persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape').
-#' @seealso landscape-operations
+#' @seealso arithmetic-operations
 #' @example inst/examples/ex-Ops.r
 NULL
 

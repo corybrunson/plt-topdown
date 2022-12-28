@@ -48,12 +48,21 @@ RCPP_MODULE(Landscape) {
   .method("scale",
           &PersistenceLandscapeInterface::scale,
           "Multiplies this PL by a scalar.")
+  .method("abs",
+          &PersistenceLandscapeInterface::abs,
+          "Takes the absolute value of this PL.")
   .method("inner",
           &PersistenceLandscapeInterface::inner,
           "Takes the inner product of this PL with another.")
+  .method("moment",
+          &PersistenceLandscapeInterface::moment,
+          "Computes the n^th moment of one level of this PL.")
   .method("distance",
           &PersistenceLandscapeInterface::distance,
           "Takes the p-distance between this PL and another.")
+  .method("norm",
+          &PersistenceLandscapeInterface::norm,
+          "Computes the p-norm of this PL.")
   ;
 
   // TODO: Decide whether to use these or R wrappers in
