@@ -1,12 +1,20 @@
 ---
 title: "Distance between Persistence Landscapes"
-author: "Jason Cory Brunson"
-date: "`r Sys.Date()`"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{distance between persistence landscapes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
 library(plt)
 ```
 
@@ -33,7 +41,7 @@ insert_critical <- function(x) {
 }
 ```
 
-```{r calculate the p-norm, via integration, of a piecewise linear function}
+```{r calculate the p-norm via integration of a piecewise-linear function}
 integrate_power <- function(x, p) {
   # ignore flatlines (assume y = 0 from `-Inf` and to `Inf`)
   # if (any(diff(x[, 1L]) <= 0)) warning("Zero-length interval encountered.")
