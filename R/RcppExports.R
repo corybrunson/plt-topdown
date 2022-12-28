@@ -17,3 +17,7 @@ PLinner <- function(p1, p2) {
     .Call(`_plt_PLinner`, p1, p2)
 }
 
+PLdistance <- function(p1, p2, p) {
+    .Call(`_plt_PLdistance`, p1, p2, p)
+}
+

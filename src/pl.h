@@ -421,6 +421,7 @@ double PLinner(
   return p1.inner(p2);
 }
 
+// [[Rcpp::export]]
 double PLdistance(
     PersistenceLandscapeInterface p1,
     PersistenceLandscapeInterface p2,
