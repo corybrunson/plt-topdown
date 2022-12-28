@@ -6,8 +6,9 @@
 #' @aliases hilbert-space-operations
 #' @include PersistenceLandscape.r
 #' @param pl,pl1,pl2 Persistent landscapes.
-#' @param mult Double; a real-valued scale factor.
 #' @param pl_list A list of persistent landscapes.
+#' @param mult Double; a real-valued scale factor.
+#' @param p Positive number; the distance norm.
 #' @return A persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape').
 #' @seealso PersistenceLandscape-methods
@@ -39,4 +40,24 @@ pl_mean <- function(pl_list) {
 pl_inner_product <- function(pl1, pl2) {
   # PLinner(pl1, pl2)
   pl1$inner(pl2)
+}
+
+#' @rdname landscape-operations
+#' @export
+pl_distance <- function(pl1, pl2, p = 2) {
+  p <- ensure_p(p)
+  if (p == Inf) p <- 0
+  # PLdistance(pl1, pl2)
+  pl1$distance(pl2, p)
+}
+
+# pre-process power
+ensure_p <- function(p) {
+  # only allow positive integer powers
+  if (p < 1) stop("`p` must be a positive integer or infinity.")
+  if (p != Inf && p %% 1 != 0) {
+    p <- as.integer(p)
+    warning("`p` must be an integer; coercing to p = ", p, ".")
+  }
+  p
 }
