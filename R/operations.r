@@ -101,6 +101,12 @@ pl_norm <- function(pl, p = 2) {
   pl$norm(p)
 }
 
+#' @rdname arithmetic-operations
+#' @export
+pl_indicate <- function(pl, indicator) {
+  pl$indicator_form(indicator)
+}
+
 # pre-process power
 ensure_p <- function(p) {
   # only allow positive integer powers

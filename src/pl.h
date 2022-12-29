@@ -403,6 +403,21 @@ public:
     return norm_out;
   }
   
+  PersistenceLandscapeInterface indicator_form(
+      List indicator) {
+    
+    // Encode the list of vectors as a vector of pairs.
+    std::vector<std::pair<double, double>> ind;
+    for (size_t i = 0; i != indicator.length(); ++i) {
+      std::vector<double> supp = indicator[i];
+      ind.push_back(std::make_pair(supp[0], supp[1]));
+    }
+    
+    PersistenceLandscape form_out = pl_raw.multiplyByIndicatorFunction(ind);
+    
+    return PersistenceLandscapeInterface(form_out, exact, min_pl, max_pl, dx);
+  }
+  
   friend bool checkPairOfDiscreteLandscapes(
       PersistenceLandscapeInterface &l1,
       const PersistenceLandscapeInterface &l2);
@@ -420,53 +435,24 @@ private:
   
 };
 
-PersistenceLandscapeInterface PLaverage(List p) {
-  
-  PersistenceLandscapeInterface out = as<PersistenceLandscapeInterface>(p[0]);
-  
-  for (int i = 1; i < p.size(); i++) {
-    out = out.add(as<PersistenceLandscapeInterface>(p[i]));
-  }
-  
-  return out.scale(1.0/p.size());
-}
-
-PersistenceLandscapeInterface PLsum(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2) {
-  return p1.add(p2);
-}
-
-PersistenceLandscapeInterface PLabs(
-    PersistenceLandscapeInterface pl) {
-  return pl.abs();
-}
-
-PersistenceLandscapeInterface PLscale(
-    double scale,
-    PersistenceLandscapeInterface p) {
-  return p.scale(scale);
-}
-
-double PLinner(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2) {
-  return p1.inner(p2);
-}
-
-double PLdistance(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2,
-    unsigned p) {
-  return p1.distance(p2, p);
-}
-
 bool checkPairOfDiscreteLandscapes(
     PersistenceLandscapeInterface &l1,
     const PersistenceLandscapeInterface &l2) {
   if (l1.min_pl != l2.min_pl || l1.max_pl != l2.max_pl || l1.dx != l2.dx)
     return false;
   return true;
+}
+
+PersistenceLandscapeInterface PLaverage(List pl_list) {
+  
+  PersistenceLandscapeInterface
+  avg_out = as<PersistenceLandscapeInterface>(pl_list[0]);
+  
+  for (int i = 1; i < pl_list.size(); i++) {
+    avg_out = avg_out.add(as<PersistenceLandscapeInterface>(pl_list[i]));
+  }
+  
+  return avg_out.scale(1.0 / pl_list.size());
 }
 
 // For operations on two landscapes we need to know if the output will be

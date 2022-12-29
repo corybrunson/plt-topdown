@@ -66,13 +66,10 @@ RCPP_MODULE(Landscape) {
   .method("norm",
           &PersistenceLandscapeInterface::norm,
           "Computes the p-norm of this PL.")
+  .method("indicator_form",
+          &PersistenceLandscapeInterface::indicator_form,
+          "Multiplies this PL by a level-indexed set of indicator functions.")
   ;
 
-  // TODO: Decide whether to use these or R wrappers in
-  // 'landscape-operations.r'. -JCB
-  // Rcpp::function("PLsum", &PLsum);
-  // Rcpp::function("PLscale", &PLscale);
-  // Rcpp::function("PLinner", &PLinner);
-  // Rcpp::function("PLdistance", &PLdistance);
   Rcpp::function("PLaverage", &PLaverage);
 }

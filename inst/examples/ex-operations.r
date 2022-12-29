@@ -42,3 +42,10 @@ pl_avg <- pl_mean(pl_list)
 pl_diff <- pl$add(pl_avg$scale(-1))
 print(pl_inner(pl_diff, pl_diff))
 }
+
+# multiply by an indicator function
+# FIXME
+plot(pl)
+f <- list(c(.5, 1.5), c(.25, .75), c(.125, .875))
+plf <- pl$indicator_form(f)
+plot(plf)

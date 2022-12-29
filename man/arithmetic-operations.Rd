@@ -13,6 +13,7 @@
 \alias{pl_moments}
 \alias{pl_distance}
 \alias{pl_norm}
+\alias{pl_indicate}
 \title{Arithmetic Operations on Persistence Landscapes}
 \usage{
 pl_sum(pl1, pl2)
@@ -36,6 +37,8 @@ pl_moments(pl, p = 1L, center = 0, level = NULL)
 pl_distance(pl1, pl2, p = 2)
 
 pl_norm(pl, p = 2)
+
+pl_indicate(pl, indicator)
 }
 \arguments{
 \item{pl, pl1, pl2}{Persistent landscapes.}
@@ -107,6 +110,9 @@ pl_avg <- pl_mean(pl_list)
 pl_diff <- pl$add(pl_avg$scale(-1))
 print(pl_inner(pl_diff, pl_diff))
 }
+
+# multiply by an indicator function
+
 }
 \seealso{
 PersistenceLandscape-methods

@@ -111,14 +111,17 @@ public:
     landscapePointsWithoutInfinities);
   
   double computeIntegralOfLandscape() const;
-  double computeIntegralOfLandscape(double p)
-      const; // this function compute integral of p-th power of landscape.
+  // This function computes the integral of the p^th power of a landscape.
+  double computeIntegralOfLandscape(double p) const;
+  
   double computeIntegralOfLandscapeMultipliedByIndicatorFunction(
       std::vector<std::pair<double, double>> indicator) const;
+  // This function computes the integral of the p^th power of a landscape
+  // multiplied by an indicator function.
   double computeIntegralOfLandscapeMultipliedByIndicatorFunction(
       std::vector<std::pair<double, double>> indicator,
-      double p) const; // this function compute integral of p-th power of
-                       // landscape multiplied by the indicator function.
+      double p) const;
+  
   PersistenceLandscape multiplyByIndicatorFunction(
       std::vector<std::pair<double, double>> indicator) const;
   
@@ -351,9 +354,9 @@ double PersistenceLandscape::computeNthMoment(
     double center,
     unsigned level) const {
   if (p < 1) {
-    Rcpp::Rcerr << "Cannot compute p-th moment for  p = " << p
+    Rcpp::Rcerr << "Cannot compute p^th moment for  p = " << p
                 << ". The program will now terminate \n";
-    throw("Cannot compute p-th moment. The program will now terminate \n");
+    throw("Cannot compute p^th moment. The program will now terminate \n");
   }
   double result = 0;
   if (this->land.size() > level) {
@@ -398,7 +401,9 @@ double PersistenceLandscape::computeNthMoment(
   return result;
 }
 
-bool multiplyByIndicatorFunctionDBG = false;
+// The `indicator` function is a vector of pairs. Its length is the number of
+// envelopes on which it may be nonzero. See Section 3.6 of Bubenik (2015).
+bool multiplyByIndicatorFunctionDBG = true;
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     std::vector<std::pair<double, double>> indicator) const {
   PersistenceLandscape result;
@@ -801,9 +806,9 @@ PersistenceLandscape::computeIntegralOfLandscapeMultipliedByIndicatorFunction(
 
 double
 PersistenceLandscape::computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-    std::vector<std::pair<double, double>> indicator, double p)
-    // This function compute integral of p-th power of landscape.
-    const {
+    std::vector<std::pair<double, double>> indicator,
+    // This function computes the integral of the p^th power of a landscape.
+    double p) const {
   PersistenceLandscape l = this->multiplyByIndicatorFunction(indicator);
   return l.computeIntegralOfLandscape(p);
 }
@@ -840,7 +845,7 @@ unsigned PersistenceLandscape::removePairsOfLocalMaximumMinimumOfEpsPersistence(
   return numberOfReducedPairs;
 }
 
-// this procedure redue all critical points of low persistence.
+// This procedure reduces all critical points of low persistence.
 void PersistenceLandscape::reduceAllPairsOfLowPersistenceMaximaMinima(
     double epsilon) {
   unsigned numberOfReducedPoints = 1;
