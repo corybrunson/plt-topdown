@@ -279,7 +279,9 @@ public:
   size_t size() const { return this->land.size(); }
 
   double findMax(unsigned lambda) const;
-
+  
+  double findMin(unsigned lambda) const;
+  
   friend double computeInnerProduct(
       const PersistenceLandscape &l1,
       const PersistenceLandscape &l2);
@@ -335,7 +337,7 @@ bool PersistenceLandscape::operator==(const PersistenceLandscape &rhs) const {
   return true;
 }
 
-// This function finds the maximum value of the level lambda.
+// This function finds the maximum value at the level lambda.
 double PersistenceLandscape::findMax(
     unsigned lambda) const {
   if (this->land.size() < lambda)
@@ -346,6 +348,19 @@ double PersistenceLandscape::findMax(
       maximum = this->land[lambda][i].second;
   }
   return maximum;
+}
+
+// This function finds the minimum value at the level lambda.
+double PersistenceLandscape::findMin(
+    unsigned lambda) const {
+  if (this->land.size() < lambda)
+    return 0;
+  double minimum = INT_MAX;
+  for (size_t i = 0; i != this->land[lambda].size(); ++i) {
+    if (this->land[lambda][i].second < minimum)
+      minimum = this->land[lambda][i].second;
+  }
+  return minimum;
 }
 
 // This function computes the n^th moment of the level lambda.

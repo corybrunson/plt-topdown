@@ -54,8 +54,11 @@ RCPP_MODULE(Landscape) {
   .method("inner",
           &PersistenceLandscapeInterface::inner,
           "Takes the inner product of this PL with another.")
-  .method("sup",
-          &PersistenceLandscapeInterface::sup,
+  .method("infimum",
+          &PersistenceLandscapeInterface::infimum,
+          "Finds the minimum value of one level of this PL.")
+  .method("supremum",
+          &PersistenceLandscapeInterface::supremum,
           "Finds the maximum value of one level of this PL.")
   .method("moment",
           &PersistenceLandscapeInterface::moment,

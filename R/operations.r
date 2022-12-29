@@ -1,16 +1,16 @@
 #' @title Arithmetic Operations on Persistence Landscapes
 #' @description Calculate sums, scalar multiples, absolute values, means, inner
-#'   products, moments, distances, and norms of persistent landscapes. These
-#'   operations arise from the Hilbert space structure on persistence
-#'   landscapes ().
+#'   products, extrema, moments, distances, norms, and products with indicator
+#'   functions of persistent landscapes. These operations arise from the Hilbert
+#'   space structure on persistence landscapes ().
 #'
 #' @name arithmetic-operations
 #' @include PersistenceLandscape.r
 #' @param pl,pl1,pl2 Persistent landscapes.
 #' @param pl_list A list of persistent landscapes.
 #' @param mult Double; a real-valued scale factor.
-#' @param level Positive integer; the envelope of the persistence landscape
-#'   (up to) whose moment to calculate.
+#' @param level Positive integer; the envelope of the persistence landscape (up
+#'   to) whose moment to calculate.
 #' @param p Positive integer or infinity; the power used to compute a norm or
 #'   moment.
 #' @param center Double; where to center the moment.
@@ -56,14 +56,41 @@ pl_inner <- function(pl1, pl2) {
 
 #' @rdname arithmetic-operations
 #' @export
+pl_min <- function(pl, level = 1L) {
+  pl$infimum(level)
+}
+
+#' @rdname arithmetic-operations
+#' @export
 pl_max <- function(pl, level = 1L) {
-  pl$sup(level)
+  pl$supremum(level)
+}
+
+#' @rdname arithmetic-operations
+#' @export
+pl_range <- function(pl, level = 1L) {
+  c(pl$infimum(level), pl$supremum(level))
+}
+
+#' @rdname arithmetic-operations
+#' @export
+pl_vmin <- function(pl, level = 1L) {
+  vapply(seq(level), function(l) pl$infimum(level = l), double())
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_vmax <- function(pl, level = 1L) {
-  vapply(seq(level), function(l) pl$sup(level = l), double())
+  vapply(seq(level), function(l) pl$supremum(level = l), double())
+}
+
+#' @rdname arithmetic-operations
+#' @export
+pl_vrange <- function(pl, level = 1L) {
+  cbind(
+    vapply(seq(level), function(l) pl$infimum(level = l), double()),
+    vapply(seq(level), function(l) pl$supremum(level = l), double())
+  )
 }
 
 #' @rdname arithmetic-operations
@@ -75,7 +102,7 @@ pl_moment <- function(pl, p = 1L, center = 0, level = 1L) {
 
 #' @rdname arithmetic-operations
 #' @export
-pl_moments <- function(pl, p = 1L, center = 0, level = NULL) {
+pl_vmoment <- function(pl, p = 1L, center = 0, level = NULL) {
   p <- ensure_p(p)
   if (is.null(level)) level <- pl_num_envelopes(pl)
   vapply(

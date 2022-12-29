@@ -7,10 +7,14 @@
 \alias{pl_abs}
 \alias{pl_mean}
 \alias{pl_inner}
+\alias{pl_min}
 \alias{pl_max}
+\alias{pl_range}
+\alias{pl_vmin}
 \alias{pl_vmax}
+\alias{pl_vrange}
 \alias{pl_moment}
-\alias{pl_moments}
+\alias{pl_vmoment}
 \alias{pl_distance}
 \alias{pl_norm}
 \alias{pl_indicate}
@@ -26,13 +30,21 @@ pl_mean(pl_list)
 
 pl_inner(pl1, pl2)
 
+pl_min(pl, level = 1L)
+
 pl_max(pl, level = 1L)
+
+pl_range(pl, level = 1L)
+
+pl_vmin(pl, level = 1L)
 
 pl_vmax(pl, level = 1L)
 
+pl_vrange(pl, level = 1L)
+
 pl_moment(pl, p = 1L, center = 0, level = 1L)
 
-pl_moments(pl, p = 1L, center = 0, level = NULL)
+pl_vmoment(pl, p = 1L, center = 0, level = NULL)
 
 pl_distance(pl1, pl2, p = 2)
 
@@ -47,8 +59,8 @@ pl_indicate(pl, indicator)
 
 \item{pl_list}{A list of persistent landscapes.}
 
-\item{level}{Positive integer; the envelope of the persistence landscape
-(up to) whose moment to calculate.}
+\item{level}{Positive integer; the envelope of the persistence landscape (up
+to) whose moment to calculate.}
 
 \item{p}{Positive integer or infinity; the power used to compute a norm or
 moment.}
@@ -61,9 +73,9 @@ A persistence landscape (an object of S4 class
 }
 \description{
 Calculate sums, scalar multiples, absolute values, means, inner
-products, moments, distances, and norms of persistent landscapes. These
-operations arise from the Hilbert space structure on persistence
-landscapes ().
+products, extrema, moments, distances, norms, and products with indicator
+functions of persistent landscapes. These operations arise from the Hilbert
+space structure on persistence landscapes ().
 }
 \examples{
 # scale a landscape
@@ -112,7 +124,11 @@ print(pl_inner(pl_diff, pl_diff))
 }
 
 # multiply by an indicator function
-
+# FIXME
+plot(pl)
+f <- list(c(.5, 1.5), c(.25, .75), c(.125, .875))
+plf <- pl$indicator_form(f)
+plot(plf)
 }
 \seealso{
 PersistenceLandscape-methods
