@@ -1,4 +1,4 @@
-#include "pl.h"
+#include "PersistenceLandscapeInterface.h"
 #include <Rcpp.h>
 
 using namespace Rcpp;
@@ -63,15 +63,21 @@ RCPP_MODULE(Landscape) {
   .method("moment",
           &PersistenceLandscapeInterface::moment,
           "Computes the n^th moment of one level of this PL.")
+  .method("integral",
+          &PersistenceLandscapeInterface::integral,
+          "Computes the integral of this PL.")
   .method("distance",
           &PersistenceLandscapeInterface::distance,
           "Takes the p-distance between this PL and another.")
   .method("norm",
           &PersistenceLandscapeInterface::norm,
           "Computes the p-norm of this PL.")
+  .method("indicator",
+          &PersistenceLandscapeInterface::indicator,
+          "Multiplies this PL by a level-indexed set of indicator functions.")
   .method("indicator_form",
           &PersistenceLandscapeInterface::indicator_form,
-          "Multiplies this PL by a level-indexed set of indicator functions.")
+          "Computes the integral of the productof this PL with an indicator.")
   ;
 
   Rcpp::function("PLaverage", &PLaverage);

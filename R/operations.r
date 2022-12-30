@@ -130,8 +130,8 @@ pl_norm <- function(pl, p = 2) {
 
 #' @rdname arithmetic-operations
 #' @export
-pl_indicate <- function(pl, indicator) {
-  pl$indicator_form(indicator)
+pl_indicate <- function(pl, supports) {
+  pl$indicator(supports)
 }
 
 # pre-process power

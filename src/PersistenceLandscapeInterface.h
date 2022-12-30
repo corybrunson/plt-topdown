@@ -381,6 +381,19 @@ public:
     return moment_out;
   }
   
+  double integral(
+      unsigned p) {
+    
+    double int_out;
+    
+    if (p == 1)
+      int_out = pl_raw.computeIntegralOfLandscape();
+    else
+      int_out = pl_raw.computeIntegralOfLandscape(p);
+    
+    return int_out;
+  }
+  
   double distance(
       PersistenceLandscapeInterface &other,
       unsigned p) {
@@ -404,7 +417,7 @@ public:
     return norm_out;
   }
   
-  PersistenceLandscapeInterface indicator_form(
+  PersistenceLandscapeInterface indicator(
       List indicator) {
     
     // Encode the list of vectors as a vector of pairs.
@@ -414,9 +427,32 @@ public:
       ind.push_back(std::make_pair(supp[0], supp[1]));
     }
     
-    PersistenceLandscape form_out = pl_raw.multiplyByIndicatorFunction(ind);
+    PersistenceLandscape pl_out = pl_raw.multiplyByIndicatorFunction(ind);
     
-    return PersistenceLandscapeInterface(form_out, exact, min_pl, max_pl, dx);
+    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+  }
+  
+  double indicator_form(
+      List indicator,
+      unsigned p) {
+    
+    // Encode the list of vectors as a vector of pairs.
+    std::vector<std::pair<double, double>> ind;
+    for (size_t i = 0; i != indicator.length(); ++i) {
+      std::vector<double> supp = indicator[i];
+      ind.push_back(std::make_pair(supp[0], supp[1]));
+    }
+    
+    double form_out;
+    
+    if (p == 1)
+      form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
+        ind);
+    else
+      form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
+        ind, p);
+    
+    return form_out;
   }
   
   friend bool checkPairOfDiscreteLandscapes(

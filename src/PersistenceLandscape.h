@@ -593,6 +593,7 @@ PersistenceLandscape::PersistenceLandscape(
   
   if (exact) {
     // This is a general algorithm to construct persistence landscapes.
+    
     std::vector<std::pair<double, double>> pds;
     pds.insert(pds.begin(), pd.begin(), pd.end());
     std::sort(pds.begin(), pds.end(), comparePoints2);
@@ -674,7 +675,9 @@ PersistenceLandscape::PersistenceLandscape(
 
       this->land.push_back(lambda_n);
     }
+    
   } else {
+    
     // In this case we will build a landscape on a grid.
     double gridDiameter = grid_diameter;
     // REVIEW: Why create `minMax` rather than use `min_x` and `max_x`? -JCB
@@ -755,6 +758,7 @@ PersistenceLandscape::PersistenceLandscape(
 
 double PersistenceLandscape::computeIntegralOfLandscape() const {
   double result = 0;
+  
   for (size_t i = 0; i != this->land.size(); ++i) {
     // REVIEW: Handle exact and discrete cases differently. -JCB
     int infs = this->land[i][0].first == INT_MIN;
@@ -766,6 +770,7 @@ double PersistenceLandscape::computeIntegralOfLandscape() const {
         (this->land[i][nr].second + this->land[i][nr - 1].second);
     }
   }
+  
   return result;
 }
 
@@ -786,6 +791,7 @@ std::pair<double, double> computeParametersOfALine(
 double PersistenceLandscape::computeIntegralOfLandscape(
     double p) const {
   double result = 0;
+  
   for (size_t i = 0; i != this->land.size(); ++i) {
     // REVIEW: Handle exact and discrete cases differently. -JCB
     int infs = this->land[i][0].first == INT_MIN;
@@ -816,6 +822,7 @@ double PersistenceLandscape::computeIntegralOfLandscape(
       }
     }
   }
+  
   return result;
 }
 
@@ -1375,10 +1382,10 @@ double computeDistanceOfLandscapes(
   
   // \int_{- \infty}^{+\infty} | first-second |^p
   double result;
-  if (p != 1) {
-    result = diff.computeIntegralOfLandscape(p);
-  } else {
+  if (p == 1) {
     result = diff.computeIntegralOfLandscape();
+  } else {
+    result = diff.computeIntegralOfLandscape(p);
   }
 
   // ( \int_{- \infty}^{+\infty} | first - second |^p )^(1/p)
