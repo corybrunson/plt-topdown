@@ -418,7 +418,8 @@ public:
   }
   
   PersistenceLandscapeInterface indicator(
-      List indicator) {
+      List indicator,
+      unsigned r) {
     
     // Encode the list of vectors as a vector of pairs.
     std::vector<std::pair<double, double>> ind;
@@ -427,13 +428,14 @@ public:
       ind.push_back(std::make_pair(supp[0], supp[1]));
     }
     
-    PersistenceLandscape pl_out = pl_raw.multiplyByIndicatorFunction(ind);
+    PersistenceLandscape pl_out = pl_raw.multiplyByIndicatorFunction(ind, r);
     
     return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
   }
   
   double indicator_form(
       List indicator,
+      unsigned r,
       unsigned p) {
     
     // Encode the list of vectors as a vector of pairs.
@@ -447,10 +449,10 @@ public:
     
     if (p == 1)
       form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-        ind);
+        ind, r);
     else
       form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-        ind, p);
+        ind, r, p);
     
     return form_out;
   }

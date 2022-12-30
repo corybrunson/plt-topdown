@@ -17,7 +17,6 @@
 \alias{pl_vmoment}
 \alias{pl_distance}
 \alias{pl_norm}
-\alias{pl_indicate}
 \title{Arithmetic Operations on Persistence Landscapes}
 \usage{
 pl_sum(pl1, pl2)
@@ -49,8 +48,6 @@ pl_vmoment(pl, p = 1L, center = 0, level = NULL)
 pl_distance(pl1, pl2, p = 2)
 
 pl_norm(pl, p = 2)
-
-pl_indicate(pl, supports)
 }
 \arguments{
 \item{pl, pl1, pl2}{Persistent landscapes.}
@@ -69,13 +66,13 @@ moment.}
 }
 \value{
 A persistence landscape (an object of S4 class
-'Rcpp_PersistenceLandscape').
+'Rcpp_PersistenceLandscape'), a real number, or a vector of real numbers.
 }
 \description{
 Calculate sums, scalar multiples, absolute values, means, inner
-products, extrema, moments, distances, norms, and products with indicator
-functions of persistent landscapes. These operations arise from the Hilbert
-space structure on persistence landscapes ().
+products, extrema, moments, distances, and norms of persistent landscapes.
+These operations arise from the Hilbert space structure on persistence
+landscapes (Bubenik, 2015).
 }
 \examples{
 # scale a landscape
@@ -122,28 +119,6 @@ pl_avg <- pl_mean(pl_list)
 pl_diff <- pl$add(pl_avg$scale(-1))
 print(pl_inner(pl_diff, pl_diff))
 }
-
-# multiply by an indicator function
-pd <- as_persistence(data.frame(dim = 1, birth = c(0, 1), death = c(2, 4)))
-f <- list(c(.5, 3), c(1.5, 2), c(1.75, 2))
-# exact landscape
-pl <- landscape(pd, degree = 1, exact = TRUE)
-par(mfcol = c(2L, 2L), mar = c(0, 2, 0, 2))
-plot(pl, xlim = c(0, 5))
-plf <- pl$indicator(f)
-plot(plf, xlim = c(0, 5))
-# discrete landscape
-pl <- landscape(pd, degree = 1, min_x = 0, max_x = 5, by = .2)
-plot(pl)
-plf <- pl$indicator(f)
-plot(plf, xlim = c(0, 5))
-par(mfrow = c(1L, 1L), mar = c(5.1, 4.1, 4.1, 2.1))
-
-# benchmark one- and two-step computation of indicator-based linear form
-bench::mark(
-  pl$indicator_form(f, 1),
-  pl$indicator(f)$integral(1)
-)
 }
 \seealso{
 PersistenceLandscape-methods
