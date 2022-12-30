@@ -418,64 +418,71 @@ double PersistenceLandscape::computeNthMoment(
 
 // The `indicator` function is a vector of pairs. Its length is the number of
 // envelopes on which it may be nonzero. See Section 3.6 of Bubenik (2015).
-bool multiplyByIndicatorFunctionDBG = true;
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     std::vector<std::pair<double, double>> indicator) const {
   PersistenceLandscape result;
   for (size_t dim = 0; dim != this->land.size(); ++dim) {
-    if (multiplyByIndicatorFunctionDBG) {
-      Rcpp::Rcout << "dim : " << dim << "\n";
-    }
     std::vector<std::pair<double, double>> lambda_n;
-    lambda_n.push_back(std::make_pair(0, INT_MIN));
-    if (indicator.size() > dim) {
-      if (multiplyByIndicatorFunctionDBG) {
-        Rcpp::Rcout << "There is nonzero indicator in this dimension\n";
-        Rcpp::Rcout << "[ " << indicator[dim].first << " , "
-                  << indicator[dim].second << "] \n";
-      }
-      for (size_t nr = 0; nr != this->land[dim].size(); ++nr) {
-        if (multiplyByIndicatorFunctionDBG) {
-          Rcpp::Rcout << "this->land[dim][nr] : " << this->land[dim][nr].first
-                    << " , " << this->land[dim][nr].second << "\n";
-        }
-        if (this->land[dim][nr].first < indicator[dim].first) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Below treshold\n";
-          }
-          continue;
-        }
-        if (this->land[dim][nr].first > indicator[dim].second) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Just pass above treshold \n";
-          }
-          lambda_n.push_back(std::make_pair(
-              indicator[dim].second,
-              functionValue(this->land[dim][nr - 1], this->land[dim][nr],
-                            indicator[dim].second)));
-          lambda_n.push_back(std::make_pair(indicator[dim].second, 0));
-          break;
-        }
-        if ((this->land[dim][nr].first >= indicator[dim].first) &&
-            (this->land[dim][nr - 1].first <= indicator[dim].first)) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Entering the indicator \n";
-          }
-          lambda_n.push_back(std::make_pair(indicator[dim].first, 0));
-          lambda_n.push_back(std::make_pair(
-              indicator[dim].first,
-              functionValue(this->land[dim][nr - 1], this->land[dim][nr],
-                            indicator[dim].first)));
-        }
-
-        if (multiplyByIndicatorFunctionDBG) {
-          Rcpp::Rcout << "We are here\n";
-        }
-        lambda_n.push_back(std::make_pair(this->land[dim][nr].first,
-                                          this->land[dim][nr].second));
-      }
+    // left limit
+    if (exact) {
+      lambda_n.push_back(std::make_pair(INT_MIN, 0));
     }
-    lambda_n.push_back(std::make_pair(0, INT_MIN));
+    // if the indicator has at least `dim` levels...
+    if (indicator.size() > dim) {
+      
+      if (exact) {
+        // original method, for exact landscapes
+        
+        // loop over the critical points...
+        for (size_t nr = 0; nr != this->land[dim].size(); ++nr) {
+          // critical point lies before left endpoint; exclude
+          if (this->land[dim][nr].first < indicator[dim].first) {
+            continue;
+          }
+          // critical point lies just after right endpoint; interpolate
+          if (this->land[dim][nr].first > indicator[dim].second) {
+            lambda_n.push_back(std::make_pair(
+                indicator[dim].second,
+                functionValue(this->land[dim][nr - 1], this->land[dim][nr],
+                              indicator[dim].second)));
+            lambda_n.push_back(std::make_pair(indicator[dim].second, 0));
+            break;
+          }
+          // critical point lies just after left endpoint; interpolate
+          if ((this->land[dim][nr].first >= indicator[dim].first) &&
+              (this->land[dim][nr - 1].first <= indicator[dim].first)) {
+            lambda_n.push_back(std::make_pair(indicator[dim].first, 0));
+            lambda_n.push_back(std::make_pair(
+                indicator[dim].first,
+                functionValue(this->land[dim][nr - 1], this->land[dim][nr],
+                              indicator[dim].first)));
+          }
+          // critical point lies between left and right endpoints; include
+          lambda_n.push_back(this->land[dim][nr]);
+        }
+        
+      } else {
+        // method for discrete landscapes
+        
+        // loop over grid...
+        for (size_t nr = 0; nr != this->land[dim].size(); ++nr) {
+          if (this->land[dim][nr].first >= indicator[dim].first &&
+              this->land[dim][nr].first <= indicator[dim].second) {
+            // critical point lies inside endpoints; include
+            lambda_n.push_back(this->land[dim][nr]);
+          } else {
+            // critical point lies outside endpoints; exclude
+            lambda_n.push_back(std::make_pair(this->land[dim][nr].first, 0));
+          }
+        }
+        
+      }
+      
+    }
+    // right limit
+    if (exact) {
+      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+    }
     if (lambda_n.size() > 2) {
       result.land.push_back(lambda_n);
     }
