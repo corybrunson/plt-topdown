@@ -509,7 +509,7 @@ List PLdiff(List pl_list) {
   return diff_out;
 }
 
-PersistenceLandscapeInterface PLaverage(List pl_list) {
+PersistenceLandscapeInterface PLmean(List pl_list) {
   
   PersistenceLandscapeInterface avg_out = PLsum(pl_list);
   
@@ -519,7 +519,7 @@ PersistenceLandscapeInterface PLaverage(List pl_list) {
 double PLvar(List pl_list, unsigned p) {
   
   // average landscape
-  PersistenceLandscapeInterface avg = PLaverage(pl_list);
+  PersistenceLandscapeInterface avg = PLmean(pl_list);
   
   // sum-squared distance
   double ssd = 0;

@@ -82,7 +82,7 @@ RCPP_MODULE(Landscape) {
 
   Rcpp::function("PLsum", &PLsum);
   Rcpp::function("PLdiff", &PLdiff);
-  Rcpp::function("PLaverage", &PLaverage);
+  Rcpp::function("PLmean", &PLmean);
   Rcpp::function("PLvar", &PLvar);
   Rcpp::function("PLsd", &PLsd);
 }
