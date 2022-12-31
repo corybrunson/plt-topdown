@@ -72,7 +72,7 @@ test_that("PL sum is correct.", {
   pl_d = pl$getInternal()
   pl2_d = pl2$getInternal()
   
-  expect_equal(pl_sum(pl,pl2)$getInternal(), sumPL(pl_d, pl2_d))
+  expect_equal(pl_sum(list(pl, pl2))$getInternal(), sumPL(pl_d, pl2_d))
 })
 
 

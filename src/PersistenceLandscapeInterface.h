@@ -363,6 +363,14 @@ public:
     return scalar_out;
   }
   
+  double supremum(unsigned level) {
+    return pl_raw.findMax(level);
+  }
+  
+  double infimum(unsigned level) {
+    return pl_raw.findMin(level);
+  }
+  
   double moment(
       unsigned n,
       double center,
@@ -371,6 +379,19 @@ public:
     double moment_out = pl_raw.computeNthMoment(n, center, level);
     
     return moment_out;
+  }
+  
+  double integral(
+      unsigned p) {
+    
+    double int_out;
+    
+    if (p == 1)
+      int_out = pl_raw.computeIntegralOfLandscape();
+    else
+      int_out = pl_raw.computeIntegralOfLandscape(p);
+    
+    return int_out;
   }
   
   double distance(
@@ -396,6 +417,46 @@ public:
     return norm_out;
   }
   
+  PersistenceLandscapeInterface indicator(
+      List indicator,
+      unsigned r) {
+    
+    // Encode the list of vectors as a vector of pairs.
+    std::vector<std::pair<double, double>> ind;
+    for (size_t i = 0; i != indicator.length(); ++i) {
+      std::vector<double> supp = indicator[i];
+      ind.push_back(std::make_pair(supp[0], supp[1]));
+    }
+    
+    PersistenceLandscape pl_out = pl_raw.multiplyByIndicatorFunction(ind, r);
+    
+    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+  }
+  
+  double indicator_form(
+      List indicator,
+      unsigned r,
+      unsigned p) {
+    
+    // Encode the list of vectors as a vector of pairs.
+    std::vector<std::pair<double, double>> ind;
+    for (size_t i = 0; i != indicator.length(); ++i) {
+      std::vector<double> supp = indicator[i];
+      ind.push_back(std::make_pair(supp[0], supp[1]));
+    }
+    
+    double form_out;
+    
+    if (p == 1)
+      form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
+        ind, r);
+    else
+      form_out = pl_raw.computeIntegralOfLandscapeMultipliedByIndicatorFunction(
+        ind, r, p);
+    
+    return form_out;
+  }
+  
   friend bool checkPairOfDiscreteLandscapes(
       PersistenceLandscapeInterface &l1,
       const PersistenceLandscapeInterface &l2);
@@ -414,53 +475,74 @@ private:
 };
 
 // [[Rcpp::export]]
-PersistenceLandscapeInterface PLaverage(List p) {
+PersistenceLandscapeInterface PLsum(List pl_list) {
+
+  PersistenceLandscapeInterface
+  sum_out = as<PersistenceLandscapeInterface>(pl_list[0]);
   
-  PersistenceLandscapeInterface out = as<PersistenceLandscapeInterface>(p[0]);
-  
-  for (int i = 1; i < p.size(); i++) {
-    out = out.add(as<PersistenceLandscapeInterface>(p[i]));
+  for (int i = 1; i < pl_list.size(); i++) {
+    sum_out = sum_out.add(as<PersistenceLandscapeInterface>(pl_list[i]));
   }
   
-  return out.scale(1.0/p.size());
+  return sum_out;
 }
 
-PersistenceLandscapeInterface PLsum(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2) {
-  return p1.add(p2);
+// [[Rcpp::export]]
+List PLdiff(List pl_list) {
+  
+  List diff_out;
+  
+  for (int i = 1; i < pl_list.size(); i++) {
+    PersistenceLandscapeInterface
+    diff_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    diff_i = diff_i.add(as<PersistenceLandscapeInterface>(
+      pl_list[i - 1]).scale(-1));
+    diff_out.push_back(diff_i);
+  }
+  
+  return diff_out;
 }
 
-PersistenceLandscapeInterface PLabs(
-    PersistenceLandscapeInterface pl) {
-  return pl.abs();
+// [[Rcpp::export]]
+PersistenceLandscapeInterface PLaverage(List pl_list) {
+  
+  PersistenceLandscapeInterface avg_out = PLsum(pl_list);
+  
+  return avg_out.scale(1.0 / pl_list.size());
 }
 
-PersistenceLandscapeInterface PLscale(
-    double scale,
-    PersistenceLandscapeInterface p) {
-  return p.scale(scale);
+// [[Rcpp::export]]
+double PLvar(List pl_list, unsigned p) {
+  
+  // average landscape
+  PersistenceLandscapeInterface avg = PLaverage(pl_list);
+  
+  // sum-squared distance
+  double ssd = 0;
+  
+  for (size_t i = 0; i != pl_list.size(); ++i) {
+    
+    PersistenceLandscapeInterface
+    pl_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    
+    double d = avg.distance(pl_i, p);
+    
+    ssd += d * d;
+  }
+  
+  // sample standard deviation
+  double var_out = ssd / pl_list.size();
+  // double var_out = ssd / (pl_list.size() - 1.0);
+  return var_out;
 }
 
-double PLinner(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2) {
-  return p1.inner(p2);
-}
-
-double PLdistance(
-    PersistenceLandscapeInterface p1,
-    PersistenceLandscapeInterface p2,
-    unsigned p) {
-  return p1.distance(p2, p);
-}
-
-bool checkPairOfDiscreteLandscapes(
-    PersistenceLandscapeInterface &l1,
-    const PersistenceLandscapeInterface &l2) {
-  if (l1.min_pl != l2.min_pl || l1.max_pl != l2.max_pl || l1.dx != l2.dx)
-    return false;
-  return true;
+// [[Rcpp::export]]
+double PLsd(List pl_list, unsigned p) {
+  
+  double sd_out = PLvar(pl_list, p);
+  
+  sd_out = sqrt(sd_out);
+  return sd_out;
 }
 
 // For operations on two landscapes we need to know if the output will be

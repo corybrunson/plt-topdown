@@ -28,7 +28,7 @@ test_that("PL sum is correct for simple case.", {
   pl1 <- landscape(pd1, exact = TRUE)
   pl2 <- landscape(pd2, exact = TRUE)
   
-  pl <- pl_sum(pl1, pl2)
+  pl <- pl1$add(pl2)
   expected <- list(matrix(c(-Inf, 0, 1, 1.5, 2, Inf, 0, 0, 1, 1, 0, 0),
                           nrow = 6, ncol = 2))
   

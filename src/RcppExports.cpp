@@ -10,14 +10,60 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// PLaverage
-PersistenceLandscapeInterface PLaverage(List p);
-RcppExport SEXP _plt_PLaverage(SEXP pSEXP) {
+// PLsum
+PersistenceLandscapeInterface PLsum(List pl_list);
+RcppExport SEXP _plt_PLsum(SEXP pl_listSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(PLaverage(p));
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLsum(pl_list));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PLdiff
+List PLdiff(List pl_list);
+RcppExport SEXP _plt_PLdiff(SEXP pl_listSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLdiff(pl_list));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PLaverage
+PersistenceLandscapeInterface PLaverage(List pl_list);
+RcppExport SEXP _plt_PLaverage(SEXP pl_listSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLaverage(pl_list));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PLvar
+double PLvar(List pl_list, unsigned p);
+RcppExport SEXP _plt_PLvar(SEXP pl_listSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLvar(pl_list, p));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PLsd
+double PLsd(List pl_list, unsigned p);
+RcppExport SEXP _plt_PLsd(SEXP pl_listSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLsd(pl_list, p));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -25,7 +71,11 @@ END_RCPP
 RcppExport SEXP _rcpp_module_boot_class_PersistenceLandscape();
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_plt_PLsum", (DL_FUNC) &_plt_PLsum, 1},
+    {"_plt_PLdiff", (DL_FUNC) &_plt_PLdiff, 1},
     {"_plt_PLaverage", (DL_FUNC) &_plt_PLaverage, 1},
+    {"_plt_PLvar", (DL_FUNC) &_plt_PLvar, 2},
+    {"_plt_PLsd", (DL_FUNC) &_plt_PLsd, 2},
     {"_rcpp_module_boot_class_PersistenceLandscape", (DL_FUNC) &_rcpp_module_boot_class_PersistenceLandscape, 0},
     {NULL, NULL, 0}
 };

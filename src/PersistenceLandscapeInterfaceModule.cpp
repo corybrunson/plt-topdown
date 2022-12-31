@@ -1,6 +1,6 @@
 #include <Rcpp.h>
 using namespace Rcpp ;
-#include "pl.h"
+#include "PersistenceLandscapeInterface.h"
 
 RCPP_MODULE(class_PersistenceLandscape) {
 

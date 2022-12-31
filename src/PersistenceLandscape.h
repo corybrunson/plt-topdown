@@ -54,52 +54,6 @@ double birth(std::pair<double, double> a) { return a.first - a.second; }
 
 double death(std::pair<double, double> a) { return a.first + a.second; }
 
-// functions used in PersistenceLandscape( const PersistenceBarcodes& pb )
-// constructor:
-bool comparePoints(
-    std::pair<double, double> f,
-    std::pair<double, double> s) {
-  double differenceBirth = birth(f) - birth(s);
-  if (differenceBirth < 0)
-    differenceBirth *= -1;
-  double differenceDeath = death(f) - death(s);
-  if (differenceDeath < 0)
-    differenceDeath *= -1;
-
-  if ((differenceBirth < epsi) && (differenceDeath < epsi)) {
-    return false;
-  }
-  if ((differenceBirth < epsi)) {
-    // consider birth points the same. If we are here, we know that death points
-    // are NOT the same
-    if (death(f) < death(s)) {
-      return true;
-    }
-    return false;
-  }
-  if (differenceDeath < epsi) {
-    // we consider death points the same and since we are here, the birth points
-    // are not the same!
-    if (birth(f) < birth(s)) {
-      return false;
-    }
-    return true;
-  }
-
-  if (birth(f) > birth(s)) {
-    return false;
-  }
-  if (birth(f) < birth(s)) {
-    return true;
-  }
-  // if this is true, we assume that death(f)<=death(s) -- othervise I have had
-  // a lot of roundoff problems here!
-  if ((death(f) <= death(s))) {
-    return false;
-  }
-  return true;
-}
-
 // this function assumes birth-death coords
 bool comparePoints2(
     std::pair<double, double> f,
@@ -152,20 +106,27 @@ public:
   PersistenceLandscape operator=(const PersistenceLandscape &org);
   PersistenceLandscape(const PersistenceLandscape &);
   
-  PersistenceLandscape(std::vector<std::vector<std::pair<double, double>>>
-                           landscapePointsWithoutInfinities);
+  PersistenceLandscape(
+    std::vector<std::vector<std::pair<double, double>>>
+    landscapePointsWithoutInfinities);
   
   double computeIntegralOfLandscape() const;
-  double computeIntegralOfLandscape(double p)
-      const; // this function compute integral of p-th power of landscape.
-  double computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-      std::vector<std::pair<double, double>> indicator) const;
+  // This function computes the integral of the p^th power of a landscape.
+  double computeIntegralOfLandscape(double p) const;
+  
   double computeIntegralOfLandscapeMultipliedByIndicatorFunction(
       std::vector<std::pair<double, double>> indicator,
-      double p) const; // this function compute integral of p-th power of
-                       // landscape multiplied by the indicator function.
+      unsigned r) const;
+  // This function computes the integral of the p^th power of a landscape
+  // multiplied by an indicator function.
+  double computeIntegralOfLandscapeMultipliedByIndicatorFunction(
+      std::vector<std::pair<double, double>> indicator,
+      unsigned r,
+      double p) const;
+  
   PersistenceLandscape multiplyByIndicatorFunction(
-      std::vector<std::pair<double, double>> indicator) const;
+      std::vector<std::pair<double, double>> indicator,
+      unsigned r) const;
   
   unsigned
   removePairsOfLocalMaximumMinimumOfEpsPersistence(double errorTolerance);
@@ -178,29 +139,13 @@ public:
           std::pair<double, double>,
           std::pair<double, double>));
   double computeValueAtAGivenPoint(unsigned level, double x) const;
-  // friend std::ostream &operator<<(std::ostream &out,
-  //                                 PersistenceLandscape &land);
-
-  typedef std::vector<std::pair<double, double>>::iterator lDimIterator;
-  lDimIterator lDimBegin(unsigned dim) {
-    if (dim > this->land.size())
-      throw("Calling lDimIterator in a dimension higher that dimension of "
-            "landscape");
-    return this->land[dim].begin();
-  }
-  lDimIterator lDimEnd(unsigned dim) {
-    if (dim > this->land.size())
-      throw("Calling lDimIterator in a dimension higher that dimension of "
-            "landscape");
-    return this->land[dim].end();
-  }
-
+  
   PersistenceLandscape multiplyLanscapeByRealNumber(double x) const;
   
   // Friendzone:
 
-  // this is a general algorithm to perform linear operations on persisntece
-  // lapscapes. It perform it by doing operations on landscape points.
+  // This is a general algorithm to perform linear operations on persistence
+  // landscapes. It perform it by doing operations on landscape points.
   friend PersistenceLandscape operationOnPairOfLandscapes(
       const PersistenceLandscape &land1,
       const PersistenceLandscape &land2,
@@ -308,10 +253,13 @@ public:
     const PersistenceLandscape &pl2);
   
   friend double computeMaximalDistanceNonSymmetric(
-      const PersistenceLandscape &pl1, const PersistenceLandscape &pl2,
-      unsigned &nrOfLand, double &x, double &y1, double &y2);
-  // this function additionally returns integer n and double x, y1, y2 such that
-  // the maximal distance is obtained betwenn lambda_n's on a coordinate x such
+      const PersistenceLandscape &pl1,
+      const PersistenceLandscape &pl2,
+      unsigned &nrOfLand,
+      double &x,
+      double &y1, double &y2);
+  // This function additionally returns integer n and double x, y1, y2 such that
+  // the maximal distance is obtained between lambda_n's on a coordinate x such
   // that the value of the first landscape is y1, and the vale of the second
   // landscape is y2.
 
@@ -334,19 +282,20 @@ public:
   size_t size() const { return this->land.size(); }
 
   double findMax(unsigned lambda) const;
-
+  
+  double findMin(unsigned lambda) const;
+  
   friend double computeInnerProduct(
       const PersistenceLandscape &l1,
       const PersistenceLandscape &l2);
   
-  // this function compute n-th moment of lambda_level
   double computeNthMoment(
       unsigned p,
       double center,
       unsigned level) const;
   
-  // those are two new functions to generate histograms of Betti numbers across
-  // the filtration values.
+  // These are two functions to generate histograms of Betti numbers across the
+  // filtration values.
   std::vector<std::pair<double, unsigned>>
   generateBettiNumbersHistogram() const;
   std::vector<std::vector<std::pair<double, double>>> land;
@@ -391,7 +340,7 @@ bool PersistenceLandscape::operator==(const PersistenceLandscape &rhs) const {
   return true;
 }
 
-// this function find maximum of lambda_n
+// This function finds the maximum value at the level lambda.
 double PersistenceLandscape::findMax(
     unsigned lambda) const {
   if (this->land.size() < lambda)
@@ -404,15 +353,28 @@ double PersistenceLandscape::findMax(
   return maximum;
 }
 
-// this function compute n-th moment of lambda_level
+// This function finds the minimum value at the level lambda.
+double PersistenceLandscape::findMin(
+    unsigned lambda) const {
+  if (this->land.size() < lambda)
+    return 0;
+  double minimum = INT_MAX;
+  for (size_t i = 0; i != this->land[lambda].size(); ++i) {
+    if (this->land[lambda][i].second < minimum)
+      minimum = this->land[lambda][i].second;
+  }
+  return minimum;
+}
+
+// This function computes the n^th moment of the level lambda.
 double PersistenceLandscape::computeNthMoment(
     unsigned p,
     double center,
     unsigned level) const {
   if (p < 1) {
-    Rcpp::Rcerr << "Cannot compute p-th moment for  p = " << p
+    Rcpp::Rcerr << "Cannot compute p^th moment for  p = " << p
                 << ". The program will now terminate \n";
-    throw("Cannot compute p-th moment. The program will now terminate \n");
+    throw("Cannot compute p^th moment. The program will now terminate \n");
   }
   double result = 0;
   if (this->land.size() > level) {
@@ -457,64 +419,96 @@ double PersistenceLandscape::computeNthMoment(
   return result;
 }
 
-bool multiplyByIndicatorFunctionDBG = false;
+// The `indicator` function is a vector of pairs. Its length is the number of
+// envelopes on which it may be nonzero. See Section 3.6 of Bubenik (2015).
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
-    std::vector<std::pair<double, double>> indicator) const {
+    std::vector<std::pair<double, double>> indicator,
+    unsigned r) const {
+  
   PersistenceLandscape result;
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
-    if (multiplyByIndicatorFunctionDBG) {
-      Rcpp::Rcout << "dim : " << dim << "\n";
-    }
+  
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
+    
+    double lev_c = pow(pow(lev + 1, -1), r);
     std::vector<std::pair<double, double>> lambda_n;
-    lambda_n.push_back(std::make_pair(0, INT_MIN));
-    if (indicator.size() > dim) {
-      if (multiplyByIndicatorFunctionDBG) {
-        Rcpp::Rcout << "There is nonzero indicator in this dimension\n";
-        Rcpp::Rcout << "[ " << indicator[dim].first << " , "
-                  << indicator[dim].second << "] \n";
-      }
-      for (size_t nr = 0; nr != this->land[dim].size(); ++nr) {
-        if (multiplyByIndicatorFunctionDBG) {
-          Rcpp::Rcout << "this->land[dim][nr] : " << this->land[dim][nr].first
-                    << " , " << this->land[dim][nr].second << "\n";
-        }
-        if (this->land[dim][nr].first < indicator[dim].first) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Below treshold\n";
-          }
-          continue;
-        }
-        if (this->land[dim][nr].first > indicator[dim].second) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Just pass above treshold \n";
-          }
-          lambda_n.push_back(std::make_pair(
-              indicator[dim].second,
-              functionValue(this->land[dim][nr - 1], this->land[dim][nr],
-                            indicator[dim].second)));
-          lambda_n.push_back(std::make_pair(indicator[dim].second, 0));
-          break;
-        }
-        if ((this->land[dim][nr].first >= indicator[dim].first) &&
-            (this->land[dim][nr - 1].first <= indicator[dim].first)) {
-          if (multiplyByIndicatorFunctionDBG) {
-            Rcpp::Rcout << "Entering the indicator \n";
-          }
-          lambda_n.push_back(std::make_pair(indicator[dim].first, 0));
-          lambda_n.push_back(std::make_pair(
-              indicator[dim].first,
-              functionValue(this->land[dim][nr - 1], this->land[dim][nr],
-                            indicator[dim].first)));
-        }
-
-        if (multiplyByIndicatorFunctionDBG) {
-          Rcpp::Rcout << "We are here\n";
-        }
-        lambda_n.push_back(std::make_pair(this->land[dim][nr].first,
-                                          this->land[dim][nr].second));
-      }
+    
+    // left limit
+    if (exact) {
+      lambda_n.push_back(std::make_pair(INT_MIN, 0));
     }
-    lambda_n.push_back(std::make_pair(0, INT_MIN));
+    
+    // if the indicator has at least `lev` levels...
+    if (indicator.size() > lev) {
+      
+      if (exact) {
+        // original method, for exact landscapes
+        
+        // loop over the critical points...
+        for (size_t nr = 0; nr != this->land[lev].size(); ++nr) {
+          
+          // critical point lies before left endpoint; exclude
+          if (this->land[lev][nr].first < indicator[lev].first) {
+            continue;
+          }
+          
+          // critical point lies just after right endpoint; interpolate
+          if (this->land[lev][nr].first > indicator[lev].second) {
+            lambda_n.push_back(std::make_pair(
+                indicator[lev].second,
+                functionValue(this->land[lev][nr - 1], this->land[lev][nr],
+                              indicator[lev].second) * lev_c));
+            lambda_n.push_back(std::make_pair(indicator[lev].second, 0));
+            break;
+          }
+          
+          // critical point lies just after left endpoint; interpolate
+          if ((this->land[lev][nr].first >= indicator[lev].first) &&
+              (this->land[lev][nr - 1].first <= indicator[lev].first)) {
+            lambda_n.push_back(std::make_pair(indicator[lev].first, 0));
+            lambda_n.push_back(std::make_pair(
+                indicator[lev].first,
+                functionValue(this->land[lev][nr - 1], this->land[lev][nr],
+                              indicator[lev].first) * lev_c));
+          }
+          
+          // critical point lies between left and right endpoints; include
+          // lambda_n.push_back(this->land[lev][nr]);
+          lambda_n.push_back(std::make_pair(
+              this->land[lev][nr].first,
+              this->land[lev][nr].second * lev_c));
+        }
+        
+      } else {
+        // method for discrete landscapes
+        
+        // loop over grid...
+        for (size_t nr = 0; nr != this->land[lev].size(); ++nr) {
+          
+          if (this->land[lev][nr].first >= indicator[lev].first &&
+              this->land[lev][nr].first <= indicator[lev].second) {
+            // critical point lies inside endpoints; include
+            
+            // lambda_n.push_back(this->land[lev][nr]);
+            lambda_n.push_back(std::make_pair(
+                this->land[lev][nr].first,
+                this->land[lev][nr].second * lev_c));
+          } else {
+            // critical point lies outside endpoints; exclude
+            
+            lambda_n.push_back(std::make_pair(this->land[lev][nr].first, 0));
+          }
+        }
+        
+      }
+      
+    }
+    
+    // right limit
+    if (exact) {
+      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+    }
+    
+    // ignore cases with no critical points
     if (lambda_n.size() > 2) {
       result.land.push_back(lambda_n);
     }
@@ -550,7 +544,7 @@ operator=(const PersistenceLandscape &oryginal) {
   return *this;
 }
 
-// TODO -- removewhen the problem is respved
+// TODO -- remove when the problem is resolved
 bool check(
     unsigned i,
     std::vector<std::pair<double, double>> v) {
@@ -625,6 +619,7 @@ PersistenceLandscape::PersistenceLandscape(
   
   if (exact) {
     // This is a general algorithm to construct persistence landscapes.
+    
     std::vector<std::pair<double, double>> pds;
     pds.insert(pds.begin(), pd.begin(), pd.end());
     std::sort(pds.begin(), pds.end(), comparePoints2);
@@ -706,7 +701,9 @@ PersistenceLandscape::PersistenceLandscape(
 
       this->land.push_back(lambda_n);
     }
+    
   } else {
+    
     // In this case we will build a landscape on a grid.
     double gridDiameter = grid_diameter;
     // REVIEW: Why create `minMax` rather than use `min_x` and `max_x`? -JCB
@@ -787,6 +784,7 @@ PersistenceLandscape::PersistenceLandscape(
 
 double PersistenceLandscape::computeIntegralOfLandscape() const {
   double result = 0;
+  
   for (size_t i = 0; i != this->land.size(); ++i) {
     // REVIEW: Handle exact and discrete cases differently. -JCB
     int infs = this->land[i][0].first == INT_MIN;
@@ -798,6 +796,7 @@ double PersistenceLandscape::computeIntegralOfLandscape() const {
         (this->land[i][nr].second + this->land[i][nr - 1].second);
     }
   }
+  
   return result;
 }
 
@@ -818,6 +817,7 @@ std::pair<double, double> computeParametersOfALine(
 double PersistenceLandscape::computeIntegralOfLandscape(
     double p) const {
   double result = 0;
+  
   for (size_t i = 0; i != this->land.size(); ++i) {
     // REVIEW: Handle exact and discrete cases differently. -JCB
     int infs = this->land[i][0].first == INT_MIN;
@@ -848,22 +848,25 @@ double PersistenceLandscape::computeIntegralOfLandscape(
       }
     }
   }
+  
   return result;
 }
 
 double
 PersistenceLandscape::computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-    std::vector<std::pair<double, double>> indicator) const {
-  PersistenceLandscape l = this->multiplyByIndicatorFunction(indicator);
+    std::vector<std::pair<double, double>> indicator,
+    unsigned r) const {
+  PersistenceLandscape l = this->multiplyByIndicatorFunction(indicator, r);
   return l.computeIntegralOfLandscape();
 }
 
 double
 PersistenceLandscape::computeIntegralOfLandscapeMultipliedByIndicatorFunction(
-    std::vector<std::pair<double, double>> indicator, double p)
-    // This function compute integral of p-th power of landscape.
-    const {
-  PersistenceLandscape l = this->multiplyByIndicatorFunction(indicator);
+    std::vector<std::pair<double, double>> indicator,
+    unsigned r,
+    // This function computes the integral of the p^th power of a landscape.
+    double p) const {
+  PersistenceLandscape l = this->multiplyByIndicatorFunction(indicator, r);
   return l.computeIntegralOfLandscape(p);
 }
 
@@ -875,22 +878,22 @@ PersistenceLandscape::computeIntegralOfLandscapeMultipliedByIndicatorFunction(
 unsigned PersistenceLandscape::removePairsOfLocalMaximumMinimumOfEpsPersistence(
     double epsilon) {
   unsigned numberOfReducedPairs = 0;
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
-    if (2 > this->land[dim].size() - 3)
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
+    if (2 > this->land[lev].size() - 3)
       continue; // to make sure that the loop in below is not infinite.
-    for (size_t nr = 2; nr != this->land[dim].size() - 3; ++nr) {
-      if ((fabs(this->land[dim][nr].second - this->land[dim][nr + 1].second) <
+    for (size_t nr = 2; nr != this->land[lev].size() - 3; ++nr) {
+      if ((fabs(this->land[lev][nr].second - this->land[lev][nr + 1].second) <
            epsilon) &&
-          (this->land[dim][nr].second != this->land[dim][nr + 1].second)) {
+          (this->land[lev][nr].second != this->land[lev][nr + 1].second)) {
         // right now we modify only the lalues of a points. That means that
         // angles of lines in the landscape changes a bit. This is the easiest
         // computational way of doing this. But I am not sure if this is the
         // best way of doing such a reduction of nonessential critical points.
         // Think about this!
-        if (this->land[dim][nr].second < this->land[dim][nr + 1].second) {
-          this->land[dim][nr].second = this->land[dim][nr + 1].second;
+        if (this->land[lev][nr].second < this->land[lev][nr + 1].second) {
+          this->land[lev][nr].second = this->land[lev][nr + 1].second;
         } else {
-          this->land[dim][nr + 1].second = this->land[dim][nr].second;
+          this->land[lev][nr + 1].second = this->land[lev][nr].second;
         }
         ++numberOfReducedPairs;
       }
@@ -899,7 +902,7 @@ unsigned PersistenceLandscape::removePairsOfLocalMaximumMinimumOfEpsPersistence(
   return numberOfReducedPairs;
 }
 
-// this procedure redue all critical points of low persistence.
+// This procedure reduces all critical points of low persistence.
 void PersistenceLandscape::reduceAllPairsOfLowPersistenceMaximaMinima(
     double epsilon) {
   unsigned numberOfReducedPoints = 1;
@@ -917,34 +920,34 @@ void PersistenceLandscape::reduceAlignedPoints(
     // This parapeter says how much the coefficients a and b in a formula y=ax+b
     // may be different to consider points aligned.
     double tollerance) {
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
     size_t nr = 1;
     std::vector<std::pair<double, double>> lambda_n;
-    lambda_n.push_back(this->land[dim][0]);
-    while (nr != this->land[dim].size() - 2) {
+    lambda_n.push_back(this->land[lev][0]);
+    while (nr != this->land[lev].size() - 2) {
       // first, compute a and b in formula y=ax+b of a line crossing
-      // this->land[dim][nr] and this->land[dim][nr+1].
+      // this->land[lev][nr] and this->land[lev][nr+1].
       std::pair<double, double> res = computeParametersOfALine(
-          this->land[dim][nr], this->land[dim][nr + 1]);
+          this->land[lev][nr], this->land[lev][nr + 1]);
       // if (reduceAlignedPointsDBG) {
       //   Rcpp::Rcout << "Considering points : "
-      //             << this->land[dim][nr] << " and "
-      //             << this->land[dim][nr + 1] << std::endl;
-      //   Rcpp::Rcout << "Adding : " << this->land[dim][nr] << " to lambda_n."
+      //             << this->land[lev][nr] << " and "
+      //             << this->land[lev][nr + 1] << std::endl;
+      //   Rcpp::Rcout << "Adding : " << this->land[lev][nr] << " to lambda_n."
       //             << std::endl;
       // }
-      lambda_n.push_back(this->land[dim][nr]);
+      lambda_n.push_back(this->land[lev][nr]);
 
       double a = res.first;
       double b = res.second;
       int i = 1;
-      while (nr + i != this->land[dim].size() - 2) {
+      while (nr + i != this->land[lev].size() - 2) {
         // if (reduceAlignedPointsDBG) {
-        //   Rcpp::Rcout << "Checking if : " << this->land[dim][nr + i + 1]
+        //   Rcpp::Rcout << "Checking if : " << this->land[lev][nr + i + 1]
         //             << " is aligned with them " << std::endl;
         // }
         std::pair<double, double> res1 = computeParametersOfALine(
-            this->land[dim][nr], this->land[dim][nr + i + 1]);
+            this->land[lev][nr], this->land[lev][nr + i + 1]);
         if ((fabs(res1.first - a) < tollerance) &&
             (fabs(res1.second - b) < tollerance)) {
           if (reduceAlignedPointsDBG) {
@@ -969,25 +972,25 @@ void PersistenceLandscape::reduceAlignedPoints(
     //   Rcpp::Rcout << "Out  of main while loop, done with this dimension "
     //             << std::endl;
     //   Rcpp::Rcout << "Adding : "
-    //             << this->land[dim][this->land[dim].size() - 2]
+    //             << this->land[lev][this->land[lev].size() - 2]
     //             << " to lamnda_n " << std::endl;
     //   Rcpp::Rcout << "Adding : "
-    //             << this->land[dim][this->land[dim].size() - 1]
+    //             << this->land[lev][this->land[lev].size() - 1]
     //             << " to lamnda_n " << std::endl;
     //   std::cin.ignore();
     // }
-    lambda_n.push_back(this->land[dim][this->land[dim].size() - 2]);
-    lambda_n.push_back(this->land[dim][this->land[dim].size() - 1]);
+    lambda_n.push_back(this->land[lev][this->land[lev].size() - 2]);
+    lambda_n.push_back(this->land[lev][this->land[lev].size() - 1]);
 
-    // if something was reduced, then replace this->land[dim] with the new
+    // if something was reduced, then replace this->land[lev] with the new
     // lambda_n.
-    if (lambda_n.size() < this->land[dim].size()) {
+    if (lambda_n.size() < this->land[lev].size()) {
       if (lambda_n.size() > 4) {
-        this->land[dim].swap(lambda_n);
+        this->land[lev].swap(lambda_n);
       }
       /*else
       {
-          this->land[dim].clear();
+          this->land[lev].clear();
       }*/
     }
   }
@@ -1015,31 +1018,31 @@ unsigned PersistenceLandscape::reducePoints(
     double (*penalty)(std::pair<double, double>, std::pair<double, double>,
                       std::pair<double, double>)) {
   unsigned numberOfPointsReduced = 0;
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
     size_t nr = 1;
     std::vector<std::pair<double, double>> lambda_n;
-    lambda_n.push_back(this->land[dim][0]);
-    while (nr <= this->land[dim].size() - 2) {
-      lambda_n.push_back(this->land[dim][nr]);
-      if (penalty(this->land[dim][nr], this->land[dim][nr + 1],
-                  this->land[dim][nr + 2]) < tollerance) {
+    lambda_n.push_back(this->land[lev][0]);
+    while (nr <= this->land[lev].size() - 2) {
+      lambda_n.push_back(this->land[lev][nr]);
+      if (penalty(this->land[lev][nr], this->land[lev][nr + 1],
+                  this->land[lev][nr + 2]) < tollerance) {
         ++nr;
         ++numberOfPointsReduced;
       }
       ++nr;
     }
-    lambda_n.push_back(this->land[dim][this->land[dim].size() - 2]);
-    lambda_n.push_back(this->land[dim][this->land[dim].size() - 1]);
+    lambda_n.push_back(this->land[lev][this->land[lev].size() - 2]);
+    lambda_n.push_back(this->land[lev][this->land[lev].size() - 1]);
 
-    // if something was reduced, then replace this->land[dim] with the new
+    // if something was reduced, then replace this->land[lev] with the new
     // lambda_n.
-    if (lambda_n.size() < this->land[dim].size()) {
+    if (lambda_n.size() < this->land[lev].size()) {
       if (lambda_n.size() > 4) {
         // CHANGE
-        // this->land[dim] = lambda_n;
-        this->land[dim].swap(lambda_n);
+        // this->land[lev] = lambda_n;
+        this->land[lev].swap(lambda_n);
       } else {
-        this->land[dim].clear();
+        this->land[lev].clear();
       }
     }
   }
@@ -1147,13 +1150,13 @@ PersistenceLandscape PersistenceLandscape::abs() {
 PersistenceLandscape PersistenceLandscape::multiplyLanscapeByRealNumber(
     double x) const {
   std::vector<std::vector<std::pair<double, double>>> result(this->land.size());
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
-    std::vector<std::pair<double, double>> lambda_dim(this->land[dim].size());
-    for (size_t i = 0; i != this->land[dim].size(); ++i) {
-      lambda_dim[i] = std::make_pair(this->land[dim][i].first,
-                                     x * this->land[dim][i].second);
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
+    std::vector<std::pair<double, double>> lambda_lev(this->land[lev].size());
+    for (size_t i = 0; i != this->land[lev].size(); ++i) {
+      lambda_lev[i] = std::make_pair(this->land[lev][i].first,
+                                     x * this->land[lev][i].second);
     }
-    result[dim] = lambda_dim;
+    result[lev] = lambda_lev;
   }
   PersistenceLandscape res;
   // CHANGE
@@ -1407,10 +1410,10 @@ double computeDistanceOfLandscapes(
   
   // \int_{- \infty}^{+\infty} | first-second |^p
   double result;
-  if (p != 1) {
-    result = diff.computeIntegralOfLandscape(p);
-  } else {
+  if (p == 1) {
     result = diff.computeIntegralOfLandscape();
+  } else {
+    result = diff.computeIntegralOfLandscape(p);
   }
 
   // ( \int_{- \infty}^{+\infty} | first - second |^p )^(1/p)
@@ -1435,29 +1438,29 @@ PersistenceLandscape::generateBettiNumbersHistogram() const {
   
   std::vector<std::pair<double, unsigned>> resultRaw;
 
-  for (size_t dim = 0; dim != this->land.size(); ++dim) {
+  for (size_t lev = 0; lev != this->land.size(); ++lev) {
     std::vector<std::pair<double, unsigned>> rangeOfLandscapeInThisDimension;
-    if (dim > 0) {
-      for (size_t i = 1; i != this->land[dim].size() - 1; ++i) {
-        if (this->land[dim][i].second == 0) {
+    if (lev > 0) {
+      for (size_t i = 1; i != this->land[lev].size() - 1; ++i) {
+        if (this->land[lev][i].second == 0) {
           rangeOfLandscapeInThisDimension.push_back(
-              std::make_pair(this->land[dim][i].first, dim + 1));
+              std::make_pair(this->land[lev][i].first, lev + 1));
         }
       }
     } else {
-      // dim == 0.
+      // lev == 0.
       bool first = true;
-      for (size_t i = 1; i != this->land[dim].size() - 1; ++i) {
-        if (this->land[dim][i].second == 0) {
+      for (size_t i = 1; i != this->land[lev].size() - 1; ++i) {
+        if (this->land[lev][i].second == 0) {
           if (first) {
             rangeOfLandscapeInThisDimension.push_back(
-                std::make_pair(this->land[dim][i].first, 0));
+                std::make_pair(this->land[lev][i].first, 0));
           }
           rangeOfLandscapeInThisDimension.push_back(
-              std::make_pair(this->land[dim][i].first, dim + 1));
+              std::make_pair(this->land[lev][i].first, lev + 1));
           if (!first) {
             rangeOfLandscapeInThisDimension.push_back(
-                std::make_pair(this->land[dim][i].first, 0));
+                std::make_pair(this->land[lev][i].first, 0));
           }
           first = !first;
         }

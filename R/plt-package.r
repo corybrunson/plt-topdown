@@ -26,7 +26,7 @@ Rcpp::exposeClass(
     "getExact", "getDiscrete", "getInternal",
     "add", "scale", "inner"
   ),
-  header = '#include "pl.h"',
+  header = '#include "PersistenceLandscapeInterface.h"',
   CppClass = "PersistenceLandscapeInterface"
 )
 
