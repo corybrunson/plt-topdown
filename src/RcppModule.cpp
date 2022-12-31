@@ -80,5 +80,9 @@ RCPP_MODULE(Landscape) {
           "Computes the integral of the productof this PL with an indicator.")
   ;
 
+  Rcpp::function("PLsum", &PLsum);
+  Rcpp::function("PLdiff", &PLdiff);
   Rcpp::function("PLaverage", &PLaverage);
+  Rcpp::function("PLvar", &PLvar);
+  Rcpp::function("PLsd", &PLsd);
 }

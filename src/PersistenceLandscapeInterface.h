@@ -482,16 +482,70 @@ bool checkPairOfDiscreteLandscapes(
   return true;
 }
 
-PersistenceLandscapeInterface PLaverage(List pl_list) {
+PersistenceLandscapeInterface PLsum(List pl_list) {
   
   PersistenceLandscapeInterface
-  avg_out = as<PersistenceLandscapeInterface>(pl_list[0]);
+  sum_out = as<PersistenceLandscapeInterface>(pl_list[0]);
   
   for (int i = 1; i < pl_list.size(); i++) {
-    avg_out = avg_out.add(as<PersistenceLandscapeInterface>(pl_list[i]));
+    sum_out = sum_out.add(as<PersistenceLandscapeInterface>(pl_list[i]));
   }
   
+  return sum_out;
+}
+
+List PLdiff(List pl_list) {
+  
+  List diff_out;
+  
+  for (int i = 1; i < pl_list.size(); i++) {
+    PersistenceLandscapeInterface
+    diff_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    diff_i = diff_i.add(as<PersistenceLandscapeInterface>(
+      pl_list[i - 1]).scale(-1));
+    diff_out.push_back(diff_i);
+  }
+  
+  return diff_out;
+}
+
+PersistenceLandscapeInterface PLaverage(List pl_list) {
+  
+  PersistenceLandscapeInterface avg_out = PLsum(pl_list);
+  
   return avg_out.scale(1.0 / pl_list.size());
+}
+
+double PLvar(List pl_list, unsigned p) {
+  
+  // average landscape
+  PersistenceLandscapeInterface avg = PLaverage(pl_list);
+  
+  // sum-squared distance
+  double ssd = 0;
+  
+  for (size_t i = 0; i != pl_list.size(); ++i) {
+    
+    PersistenceLandscapeInterface
+    pl_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    
+    double d = avg.distance(pl_i, p);
+    
+    ssd += d * d;
+  }
+  
+  // sample standard deviation
+  double var_out = ssd / pl_list.size();
+  // double var_out = ssd / (pl_list.size() - 1.0);
+  return var_out;
+}
+
+double PLsd(List pl_list, unsigned p) {
+  
+  double sd_out = PLvar(pl_list, p);
+  
+  sd_out = sqrt(sd_out);
+  return sd_out;
 }
 
 // For operations on two landscapes we need to know if the output will be

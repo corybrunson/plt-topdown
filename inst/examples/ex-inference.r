@@ -16,7 +16,22 @@ plf <- pl_indicator(pl, f)
 plot(plf, xlim = c(0, 5))
 par(mfrow = c(1L, 1L), mar = c(5.1, 4.1, 4.1, 2.1))
 
-
+# apply z-test to two sets of landscapes
+circlescapes <- replicate(
+  5,
+  tdaunif::sample_circle(n = rpois(n = 1, lambda = 24)) |>
+    ripserr::vietoris_rips(max_dim = 2L, threshold = 2) |>
+    as_persistence() |>
+    landscape(degree = 1, exact = TRUE)
+)
+toruscapes <- replicate(
+  5,
+  tdaunif::sample_torus_tube(n = rpois(n = 1, lambda = 24)) |>
+    ripserr::vietoris_rips(max_dim = 2L, threshold = 2) |>
+    as_persistence() |>
+    landscape(degree = 1, exact = TRUE)
+)
+pl_z_test(circlescapes, toruscapes)
 
 \dontrun{
 # benchmark one- and two-step computation of indicator-based linear form
