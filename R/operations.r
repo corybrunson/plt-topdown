@@ -62,7 +62,7 @@ pl_diff <- function(pl_list) {
 #' @rdname arithmetic-operations
 #' @export
 pl_mean <- function(pl_list) {
-  PLaverage(pl_list)
+  PLmean(pl_list)
 }
 
 #' @rdname arithmetic-operations

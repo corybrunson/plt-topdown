@@ -32,14 +32,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// PLaverage
-PersistenceLandscapeInterface PLaverage(List pl_list);
-RcppExport SEXP _plt_PLaverage(SEXP pl_listSEXP) {
+// PLmean
+PersistenceLandscapeInterface PLmean(List pl_list);
+RcppExport SEXP _plt_PLmean(SEXP pl_listSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
-    rcpp_result_gen = Rcpp::wrap(PLaverage(pl_list));
+    rcpp_result_gen = Rcpp::wrap(PLmean(pl_list));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -69,14 +69,16 @@ END_RCPP
 }
 
 RcppExport SEXP _rcpp_module_boot_class_PersistenceLandscape();
+RcppExport SEXP _rcpp_module_boot_Landscape();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_plt_PLsum", (DL_FUNC) &_plt_PLsum, 1},
     {"_plt_PLdiff", (DL_FUNC) &_plt_PLdiff, 1},
-    {"_plt_PLaverage", (DL_FUNC) &_plt_PLaverage, 1},
+    {"_plt_PLmean", (DL_FUNC) &_plt_PLmean, 1},
     {"_plt_PLvar", (DL_FUNC) &_plt_PLvar, 2},
     {"_plt_PLsd", (DL_FUNC) &_plt_PLsd, 2},
     {"_rcpp_module_boot_class_PersistenceLandscape", (DL_FUNC) &_rcpp_module_boot_class_PersistenceLandscape, 0},
+    {"_rcpp_module_boot_Landscape", (DL_FUNC) &_rcpp_module_boot_Landscape, 0},
     {NULL, NULL, 0}
 };
 

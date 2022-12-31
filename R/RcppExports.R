@@ -9,8 +9,8 @@ PLdiff <- function(pl_list) {
     .Call(`_plt_PLdiff`, pl_list)
 }
 
-PLaverage <- function(pl_list) {
-    .Call(`_plt_PLaverage`, pl_list)
+PLmean <- function(pl_list) {
+    .Call(`_plt_PLmean`, pl_list)
 }
 
 PLvar <- function(pl_list, p) {

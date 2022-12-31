@@ -504,8 +504,8 @@ List PLdiff(List pl_list) {
 }
 
 // [[Rcpp::export]]
-PersistenceLandscapeInterface PLaverage(List pl_list) {
-  
+PersistenceLandscapeInterface PLmean(List pl_list) {
+
   PersistenceLandscapeInterface avg_out = PLsum(pl_list);
   
   return avg_out.scale(1.0 / pl_list.size());
@@ -515,7 +515,7 @@ PersistenceLandscapeInterface PLaverage(List pl_list) {
 double PLvar(List pl_list, unsigned p) {
   
   // average landscape
-  PersistenceLandscapeInterface avg = PLaverage(pl_list);
+  PersistenceLandscapeInterface avg = PLmean(pl_list);
   
   // sum-squared distance
   double ssd = 0;
