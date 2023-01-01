@@ -111,7 +111,8 @@ pl_limits <- function(pl) {
   switch (
     pl_str(pl),
     exact = {
-      xvec <- Reduce(rbind, pl$getInternal())[, 1L, drop = TRUE]
+      int <- pl$getInternal()
+      xvec <- Reduce(rbind, int)[-c(1L, nrow(int)), 1L, drop = TRUE]
       return(range(xvec))
     },
     discrete = {

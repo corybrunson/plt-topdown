@@ -6,16 +6,32 @@
 \alias{Rcpp_PersistenceLandscape}
 \alias{PersistenceLandscape-class}
 \alias{Rcpp_PersistenceLandscape-class}
+\alias{summary.Rcpp_PersistenceLandscape}
+\alias{print.summary.Rcpp_PersistenceLandscape}
 \alias{as.vector.Rcpp_PersistenceLandscape}
 \alias{as.data.frame.Rcpp_PersistenceLandscape}
 \title{Exported C++ Class 'PersistenceLandscape'}
 \usage{
+\method{summary}{Rcpp_PersistenceLandscape}(object)
+
+\method{print}{summary.Rcpp_PersistenceLandscape}(x, digits = max(1L, getOption("digits") - 3L))
+
 \method{as.vector}{Rcpp_PersistenceLandscape}(x, mode = "any")
 
 \method{as.data.frame}{Rcpp_PersistenceLandscape}(x, row.names = NULL, optional = FALSE, exact = FALSE, ...)
 }
 \arguments{
-\item{x}{an \R object.}
+\item{object}{an object for which a summary is desired.}
+
+\item{x}{a result of the \emph{default} method of \code{summary()}.}
+
+\item{digits}{integer, used for number formatting with
+    \code{\link[base]{signif}()} (for \code{summary.default}) or
+    \code{\link[base]{format}()} (for \code{summary.data.frame}).  In
+    \code{summary.default}, if not specified (i.e.,
+    \code{\link[base]{missing}(.)}), \code{signif()} will \emph{not} be called
+    anymore (since \R >= 3.4.0, where the default has been changed to
+    only round in the \code{print} and \code{format} methods).}
 
 \item{mode}{character string naming an atomic mode or
     \code{"list"} or \code{"expression"} or (except for \code{vector})
@@ -39,7 +55,7 @@
 representation; if \code{TRUE} but \code{x} has a discrete representation, then
 ignored with a warning.}
 
-\item{...}{additional arguments to be passed to or from methods.}
+\item{...}{additional arguments affecting the summary produced.}
 }
 \description{
 Export, and create and manipulate objects of, the
@@ -60,11 +76,13 @@ pl1 <- new(PersistenceLandscape,
            exact = TRUE,
            min_x = 0, max_x = 3,
            by = 0.1, max_y = 100)
+summary(pl1)
 pl2 <- new(PersistenceLandscape,
            diagram = matrix(c(0,1, 0,2), nrow = 2L, ncol = 2L, byrow = TRUE),
            exact = FALSE,
            min_x = -.25, max_x = 5,
            by = 0.1, max_y = 100)
+summary(pl2)
 
 # getters
 pl1$getInternal()
