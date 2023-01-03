@@ -28,18 +28,7 @@
 #ifndef PERISTENCELANDSCAPE_H
 #define PERISTENCELANDSCAPE_H
 
-// #include "Configure.h"
-// #include "PersistenceBarcode.h"
-#include <algorithm>
-#include <climits>
-#include <cmath>
-#include <cstdarg>
-#include <limits>
-#include <list>
-#include <unistd.h>
-#include <vector>
 #include <Rcpp.h>
-
 using namespace std;
 
 double epsi = 0.000005;
@@ -317,10 +306,6 @@ PersistenceLandscape::PersistenceLandscape(
     // v.push_back(std::make_pair(INT_MAX,0));
     this->land.push_back(v);
   }
-}
-
-inline bool check_if_file_exist(const char *name) {
-  return (access(name, F_OK) != -1);
 }
 
 bool PersistenceLandscape::operator==(const PersistenceLandscape &rhs) const {

@@ -12,9 +12,9 @@
 \alias{as.data.frame.Rcpp_PersistenceLandscape}
 \title{Exported C++ Class 'PersistenceLandscape'}
 \usage{
-\method{summary}{Rcpp_PersistenceLandscape}(object)
+\method{summary}{Rcpp_PersistenceLandscape}(object, ...)
 
-\method{print}{summary.Rcpp_PersistenceLandscape}(x, digits = max(1L, getOption("digits") - 3L))
+\method{print}{summary.Rcpp_PersistenceLandscape}(x, digits = max(1L, getOption("digits") - 3L), ...)
 
 \method{as.vector}{Rcpp_PersistenceLandscape}(x, mode = "any")
 
@@ -23,7 +23,9 @@
 \arguments{
 \item{object}{an object for which a summary is desired.}
 
-\item{x}{a result of the \emph{default} method of \code{summary()}.}
+\item{...}{Additional arguments; currently ignored.}
+
+\item{x}{an \R object.}
 
 \item{digits}{integer, used for number formatting with
     \code{\link[base]{signif}()} (for \code{summary.default}) or
@@ -54,8 +56,6 @@
 \item{exact}{Whether to export the exact or a discrete (default)
 representation; if \code{TRUE} but \code{x} has a discrete representation, then
 ignored with a warning.}
-
-\item{...}{additional arguments affecting the summary produced.}
 }
 \description{
 Export, and create and manipulate objects of, the
