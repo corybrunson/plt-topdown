@@ -14,6 +14,8 @@
 #' @aliases PersistenceLandscape-class
 #' @aliases Rcpp_PersistenceLandscape-class
 #' @include plt-package.r
+#' @inheritParams base::summary
+#' @inheritParams base::print
 #' @inheritParams base::as.vector
 #' @inheritParams base::as.data.frame
 #' @param exact Whether to export the exact or a discrete (default)
@@ -33,6 +35,47 @@ Rcpp_PersistenceLandscape <- setClass("Rcpp_PersistenceLandscape")
 
 # register S4 class for S3 inheritance
 setOldClass("Rcpp_PersistenceLandscape")
+
+#' @rdname PersistenceLandscape
+#' @export
+summary.Rcpp_PersistenceLandscape <- function(object) {
+  res <- list(
+    str = pl_str(object),
+    n.env = pl_num_envelopes(object),
+    limits = pl_limits(object),
+    resolution = if (object$isExact()) NA_real_ else object$getdx(),
+    support = pl_support(object),
+    range = c(pl_min(object), pl_max(object)),
+    magnitude = object %*% object,
+    integral = pl_integral(object)
+  )
+  class(res) <- "summary.Rcpp_PersistenceLandscape"
+  res
+}
+
+#' @rdname PersistenceLandscape
+#' @export
+print.summary.Rcpp_PersistenceLandscape <- function(
+    x, digits = max(1L, getOption("digits") - 3L)
+) {
+  fmt <- function(s) {
+    if (is.na(s) || is.infinite(s)) return(format(s))
+    format(round(s, max(0, digits - log10(abs(s)))))
+  }
+  cat("Internal representation: ", x$str, "\n")
+  cat("Number of envelopes: ", x$n.env, "\n")
+  cat(
+    "Representation limits: (",
+    fmt(x$limits[[1L]]), ",", fmt(x$limits[[2L]]), ")",
+    if (x$str == "discrete")
+      paste0(" at resolution ", format(round(x$resolution))),
+    "\n"
+  )
+  cat("Landscape range: (",
+      fmt(x$range[[1L]]), ",", fmt(x$range[[2L]]), ")", "\n")
+  cat("Magnitude: ", fmt(x$magnitude), "\n")
+  cat("Integral:  ", fmt(x$integral), "\n")
+}
 
 #' @rdname PersistenceLandscape
 #' @export
