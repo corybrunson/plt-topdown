@@ -28,8 +28,6 @@
 #ifndef PERISTENCELANDSCAPE_H
 #define PERISTENCELANDSCAPE_H
 
-// #include "Configure.h"
-// #include "PersistenceBarcode.h"
 #include <algorithm>
 #include <climits>
 #include <cmath>

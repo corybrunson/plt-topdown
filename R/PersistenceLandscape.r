@@ -14,13 +14,14 @@
 #' @aliases PersistenceLandscape-class
 #' @aliases Rcpp_PersistenceLandscape-class
 #' @include plt-package.r
-#' @inheritParams base::summary
-#' @inheritParams base::print
 #' @inheritParams base::as.vector
 #' @inheritParams base::as.data.frame
+#' @inheritParams base::summary
+#' @inheritParams base::print
 #' @param exact Whether to export the exact or a discrete (default)
 #'   representation; if `TRUE` but `x` has a discrete representation, then
 #'   ignored with a warning.
+#' @param ... Additional arguments; currently ignored.
 #' @example inst/examples/ex-PersistenceLandscape.r
 #' @export PersistenceLandscape
 #' @export Rcpp_PersistenceLandscape
@@ -35,7 +36,7 @@ setOldClass("Rcpp_PersistenceLandscape")
 
 #' @rdname PersistenceLandscape
 #' @export
-summary.Rcpp_PersistenceLandscape <- function(object) {
+summary.Rcpp_PersistenceLandscape <- function(object, ...) {
   res <- list(
     str = pl_str(object),
     n.env = pl_num_envelopes(object),
@@ -53,7 +54,7 @@ summary.Rcpp_PersistenceLandscape <- function(object) {
 #' @rdname PersistenceLandscape
 #' @export
 print.summary.Rcpp_PersistenceLandscape <- function(
-    x, digits = max(1L, getOption("digits") - 3L)
+    x, digits = max(1L, getOption("digits") - 3L), ...
 ) {
   fmt <- function(s) {
     if (is.na(s) || is.infinite(s)) return(format(s))
