@@ -193,16 +193,14 @@ std::vector<std::pair<double, double>> generateGrid(
 class PersistenceLandscapeInterface {
 public:
   // Creates PL from PD (in the form of a 2-column numeric matrix)
-  // TODO: Better defaults.
   // Natural defaults are inferred in R through `landscape()`.
-  // Should C++ defaults be harmonized? -JCB
   PersistenceLandscapeInterface(
     NumericMatrix pd,
     bool exact = false,
-    double min_pl = 0, double max_pl = 1,
+    double min_x = 0, double max_x = 1,
     double dx = 0.01,
     double max_y = 1000)
-    : exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {
+    : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
     
     // Initialize a PersistenceLandscape object.
     std::vector<std::pair<double, double>> bars;
@@ -212,15 +210,15 @@ public:
     // auto pb = PersistenceBarcodes(bars);
     
     PersistenceLandscapeInterface::pl_raw =
-      PersistenceLandscape(bars, exact, min_pl, max_pl, 2 * dx);
+      PersistenceLandscape(bars, exact, min_x, max_x, 2 * dx);
   }
   
   PersistenceLandscapeInterface(
     PersistenceLandscape pl,
     bool exact,
-    double min_pl, double max_pl,
+    double min_x, double max_x,
     double dx)
-    : pl_raw(pl), exact(exact), min_pl(min_pl), max_pl(max_pl), dx(dx) {}
+    : pl_raw(pl), exact(exact), min_x(min_x), max_x(max_x), dx(dx) {}
   
   std::vector<NumericVector> getExact() {
     if (!exact) {
@@ -234,7 +232,7 @@ public:
   NumericVector getDiscrete() {
     if (exact) {
       return discretePersistenceLandscapeToR(
-        exactLandscapeToDiscrete(pl_raw.land, 0, max_pl, dx));
+        exactLandscapeToDiscrete(pl_raw.land, 0, max_x, dx));
     } else {
       // TODO: Allow this function to change the resolution.
       return discretePersistenceLandscapeToR(pl_raw.land);
@@ -253,11 +251,11 @@ public:
   }
   
   double getMin() const {
-    return min_pl;
+    return min_x;
   }
   
   double getMax() const {
-    return max_pl;
+    return max_x;
   }
   
   double getdx() const {
@@ -293,8 +291,8 @@ public:
       if (conversions.first == true) {
         auto conversion1 = exactLandscapeToDiscrete(
           this->pl_raw,
-          other.min_pl,
-          other.max_pl,
+          other.min_x,
+          other.max_x,
           other.dx);
         add_out = PersistenceLandscape(addDiscreteLandscapes(
           conversion1,
@@ -305,8 +303,8 @@ public:
       else if (conversions.second == true) {
         auto conversion2 = exactLandscapeToDiscrete(
           other.pl_raw,
-          PersistenceLandscapeInterface::min_pl,
-          PersistenceLandscapeInterface::max_pl,
+          PersistenceLandscapeInterface::min_x,
+          PersistenceLandscapeInterface::max_x,
           PersistenceLandscapeInterface::dx);
         add_out = PersistenceLandscape(addDiscreteLandscapes(
           conversion2,
@@ -322,8 +320,8 @@ public:
     // REVIEW: This has been edited from {tdatools} by JCB.
     // appropriate settings for output PL
     bool out_exact = exact & other.isExact();
-    double out_min = min(min_pl, other.getMin());
-    double out_max = max(max_pl, other.getMax());
+    double out_min = min(min_x, other.getMin());
+    double out_max = max(max_x, other.getMax());
     return PersistenceLandscapeInterface(add_out,
                                          out_exact,
                                          out_min, out_max,
@@ -340,14 +338,14 @@ public:
     else
       scale_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
     
-    return PersistenceLandscapeInterface(scale_out, exact, min_pl, max_pl, dx);
+    return PersistenceLandscapeInterface(scale_out, exact, min_x, max_x, dx);
   }
   
   PersistenceLandscapeInterface abs() {
     
     PersistenceLandscape abs_out = pl_raw.abs();
     
-    return PersistenceLandscapeInterface(abs_out, exact, min_pl, max_pl, dx);
+    return PersistenceLandscapeInterface(abs_out, exact, min_x, max_x, dx);
   }
   
   double inner(
@@ -402,9 +400,9 @@ public:
     
     if (p == 0)
       // `p = 0` encodes `p = Inf`
-      dist_out = computeMaxNormDistanceOfLandscapes(pl_raw, other.pl_raw);
+      dist_out = computeMaxNormDistanceBetweenLandscapes(pl_raw, other.pl_raw);
     else
-      dist_out = computeDistanceOfLandscapes(pl_raw, other.pl_raw, p);
+      dist_out = computeDistanceBetweenLandscapes(pl_raw, other.pl_raw, p);
     
     return dist_out;
   }
@@ -430,7 +428,7 @@ public:
     
     PersistenceLandscape pl_out = pl_raw.multiplyByIndicatorFunction(ind, r);
     
-    return PersistenceLandscapeInterface(pl_out, exact, min_pl, max_pl, dx);
+    return PersistenceLandscapeInterface(pl_out, exact, min_x, max_x, dx);
   }
   
   double indicator_form(
@@ -468,11 +466,19 @@ public:
 private:
   PersistenceLandscape pl_raw;
   bool exact;
-  double min_pl = 0;
-  double max_pl = 1;
+  double min_x = 0;
+  double max_x = 1;
   double dx = 0.01;
   
 };
+
+bool checkPairOfDiscreteLandscapes(
+    PersistenceLandscapeInterface &l1,
+    const PersistenceLandscapeInterface &l2) {
+  if (l1.min_x != l2.min_x || l1.max_x != l2.max_x || l1.dx != l2.dx)
+    return false;
+  return true;
+}
 
 // [[Rcpp::export]]
 PersistenceLandscapeInterface PLsum(List pl_list) {
