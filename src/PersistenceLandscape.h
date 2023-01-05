@@ -23,6 +23,9 @@
 //    You should have received a copy of the GNU Lesser General Public License
 //    along with PLT.  If not, see <http://www.gnu.org/licenses/>.
 
+//    This file has been substantially modified by Jason Cory Brunson in
+//    consultation with Dlotko.
+
 #ifndef PERISTENCELANDSCAPE_H
 #define PERISTENCELANDSCAPE_H
 
@@ -41,7 +44,7 @@ double birth(std::pair<double, double> a) { return a.first - a.second; }
 
 double death(std::pair<double, double> a) { return a.first + a.second; }
 
-// this function assumes birth-death coords
+// this function assumes birth-death coordinates
 bool comparePoints2(
     std::pair<double, double> f,
     std::pair<double, double> s) {
@@ -97,9 +100,9 @@ public:
   
   size_t size() const { return this->land.size(); }
   
-  PersistenceLandscape operator=(const PersistenceLandscape &org);
+  PersistenceLandscape(const PersistenceLandscape &original);
   
-  PersistenceLandscape(const PersistenceLandscape &);
+  PersistenceLandscape operator=(const PersistenceLandscape &original);
   
   PersistenceLandscape(
     std::vector<std::vector<std::pair<double, double>>>
@@ -338,7 +341,7 @@ bool PersistenceLandscape::operator==(const PersistenceLandscape &rhs) const {
   return true;
 }
 
-// This function finds the maximum value at the level lambda.
+// This function finds the maximum value at the level `lambda`.
 double PersistenceLandscape::findMax(
     unsigned lambda) const {
   if (this->land.size() < lambda)
@@ -351,7 +354,7 @@ double PersistenceLandscape::findMax(
   return maximum;
 }
 
-// This function finds the minimum value at the level lambda.
+// This function finds the minimum value at the level `lambda`.
 double PersistenceLandscape::findMin(
     unsigned lambda) const {
   if (this->land.size() < lambda)
@@ -364,7 +367,7 @@ double PersistenceLandscape::findMin(
   return minimum;
 }
 
-// This function computes the n^th moment of the level lambda.
+// This function computes the n^th moment of the level `lambda`.
 double PersistenceLandscape::computeNthMoment(
     unsigned p,
     double center,
@@ -379,8 +382,8 @@ double PersistenceLandscape::computeNthMoment(
     for (size_t i = 2; i != this->land[level].size() - 1; ++i) {
       if (this->land[level][i].first - this->land[level][i - 1].first == 0)
         continue;
-      // between this->land[level][i] and this->land[level][i-1] the
-      // lambda_level is of the form ax+b. First we need to find a and b.
+      // Between `this->land[level][i]` and `this->land[level][i-1]`, the
+      // `lambda_level` is of the form a x + b. First we need to find a and b.
       double a =
           (this->land[level][i].second - this->land[level][i - 1].second) /
           (this->land[level][i].first - this->land[level][i - 1].first);
@@ -430,7 +433,7 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     double lev_c = pow(pow(lev + 1, -1), r);
     std::vector<std::pair<double, double>> lambda_n;
     
-    // left limit
+    // left (lower) limit
     if (exact) {
       lambda_n.push_back(std::make_pair(INT_MIN, 0));
     }
@@ -501,12 +504,12 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
       
     }
     
-    // right limit
+    // right (upper) limit
     if (exact) {
       lambda_n.push_back(std::make_pair(INT_MAX, 0));
     }
     
-    // ignore cases with no critical points
+    // cases with no critical points
     if (lambda_n.size() > 2) {
       result.land.push_back(lambda_n);
     }
@@ -515,13 +518,14 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
 }
 
 PersistenceLandscape::PersistenceLandscape(
-    const PersistenceLandscape &oryginal) {
+    const PersistenceLandscape &original) {
   // Rcpp::Rcerr << "Running copy constructor \n";
   std::vector<std::vector<std::pair<double, double>>> land(
-      oryginal.land.size());
-  for (size_t i = 0; i != oryginal.land.size(); ++i) {
-    land[i].insert(land[i].end(), oryginal.land[i].begin(),
-                   oryginal.land[i].end());
+      original.land.size());
+  for (size_t i = 0; i != original.land.size(); ++i) {
+    land[i].insert(land[i].end(),
+                   original.land[i].begin(),
+                   original.land[i].end());
   }
   // CHANGE
   // this->land = land;
@@ -529,61 +533,19 @@ PersistenceLandscape::PersistenceLandscape(
 }
 
 PersistenceLandscape PersistenceLandscape::
-operator=(const PersistenceLandscape &oryginal) {
+operator=(const PersistenceLandscape &original) {
   std::vector<std::vector<std::pair<double, double>>> land(
-      oryginal.land.size());
-  for (size_t i = 0; i != oryginal.land.size(); ++i) {
-    land[i].insert(land[i].end(), oryginal.land[i].begin(),
-                   oryginal.land[i].end());
+      original.land.size());
+  for (size_t i = 0; i != original.land.size(); ++i) {
+    land[i].insert(land[i].end(),
+                   original.land[i].begin(),
+                   original.land[i].end());
   }
   // CHANGE
   // this->land = land;
   this->land.swap(land);
   return *this;
 }
-
-// TODO -- remove when the problem is resolved
-bool check(
-    unsigned i,
-    std::vector<std::pair<double, double>> v) {
-  if ((i >= v.size())) {
-    Rcpp::Rcout << "you want to get to index : " << i
-                << " while there are only  : " << v.size() << " indices \n";
-    std::cin.ignore();
-    return true;
-  }
-  return false;
-}
-// if ( check( , ) ){Rcpp::Rcerr << "OUT OF MEMORY \n";}
-
-// // TEST: Attempt to have `PersistenceLandscape()` handle matrices directly.
-// // This function is adapted from the constructor:
-// // `PersistenceBarcodes(std::vector<std::pair<double, double>> bars)`
-// std::vector<std::pair<double, double>> PDSort(
-//     std::vector<std::pair<double, double>> pd) {
-//   extern double infty;
-//   unsigned nb = 0;
-//   for (size_t i = 0; i != pd.size(); ++i) {
-//     if (pd[i].second != infty) {
-//       ++nb;
-//     }
-//     if (pd[i].second < pd[i].first) {
-//       double sec = pd[i].second;
-//       pd[i].second = pd[i].first;
-//       pd[i].first = sec;
-//     }
-//   }
-//   std::vector<std::pair<double, double>> pds(nb);
-//   unsigned nr = 0;
-//   for (size_t i = 0; i != pd.size(); ++i) {
-//     if (pd[i].second != infty) {
-//       // this is a finite interval
-//       pds[nr] = std::make_pair(pd[i].first, pd[i].second);
-//       ++nr;
-//     }
-//   }
-//   return pds;
-// }
 
 PersistenceLandscape::PersistenceLandscape(
   const std::vector<std::pair<double, double>> &diagram,
@@ -609,7 +571,7 @@ PersistenceLandscape::PersistenceLandscape(
   unsigned nr = 0;
   for (size_t i = 0; i != pd.size(); ++i) {
     if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
-      // this is a finite interval
+      // This is a finite interval.
       pd[nr] = std::make_pair(pd[i].first, pd[i].second);
       ++nr;
     }
@@ -709,16 +671,17 @@ PersistenceLandscape::PersistenceLandscape(
     size_t numberOfBins =
         2 * ((minMax.second - minMax.first) / gridDiameter) + 1;
 
-    // first element of a pair std::pair< double , std::vector<double> > is a
-    // x-value. Second element is a vector of values of landscapes.
+    // The first element of a pair `std::pair< double, std::vector<double> >`
+    // is an x-value. The second element is a vector of values of landscapes.
     std::vector<std::pair<double, std::vector<double>>>
         criticalValuesOnPointsOfGrid(numberOfBins);
-    // filling up the bins:
+    
+    // Filling up the bins:
 
-    // Now, the idea is to iterate on this->land[lambda-1] and use only points
+    // Now, the idea is to iterate on `this->land[lambda-1]` and use only points
     // over there. The problem is at the very beginning, when there is nothing
-    // in this->land. That is why over here, we make a fate this->land[0]. It
-    // will be later deteted before moving on.
+    // in `this->land`. That is why over here, we make a fate `this->land[0]`.
+    // It will be later deleted before moving on.
     std::vector<std::pair<double, double>> aa;
     double x = minMax.first;
     for (size_t i = 0; i != numberOfBins; ++i) {
@@ -729,7 +692,7 @@ PersistenceLandscape::PersistenceLandscape(
       x += 0.5 * gridDiameter;
     }
 
-    // for every peristent interval, sample on grid.
+    // For every persistent interval, sample on the grid.
     for (size_t intervalNo = 0; intervalNo != pd.size(); ++intervalNo) {
       // size_t beginn = (size_t)(2*( pd[intervalNo].first-minMax.first
       // )/( gridDiameter ))+1;
@@ -752,9 +715,9 @@ PersistenceLandscape::PersistenceLandscape(
       }
     }
 
-    // now, the basic structure is created. We need to translate it to a
+    // Now, the basic structure is created. We need to translate it to a
     // persistence landscape data structure. To do so, first we need to sort all
-    // the vectors in criticalValuesOnPointsOfGrid[i].second
+    // the vectors in `criticalValuesOnPointsOfGrid[i].second`.
     size_t maxNonzeroLambda = 0;
     for (size_t i = 0; i != criticalValuesOnPointsOfGrid.size(); ++i) {
       std::sort(criticalValuesOnPointsOfGrid[i].second.begin(),
@@ -786,8 +749,8 @@ double PersistenceLandscape::computeIntegralOfLandscape() const {
   for (size_t i = 0; i != this->land.size(); ++i) {
     // REVIEW: Handle exact and discrete cases differently. -JCB
     int infs = this->land[i][0].first == INT_MIN;
-    // it suffices to compute every planar integral and then sum them ap for
-    // each lambda_n
+    // It suffices to compute every planar integral and then sum them up for
+    // each `lambda_n`.
     // for (size_t nr = 2; nr != this->land[i].size() - 1; ++nr) {
     for (size_t nr = 1 + infs; nr != this->land[i].size() - infs; ++nr) {
       result += 0.5 * (this->land[i][nr].first - this->land[i][nr - 1].first) *

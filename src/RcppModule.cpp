@@ -33,15 +33,15 @@ RCPP_MODULE(Landscape) {
   .method("getdx",
           &PersistenceLandscapeInterface::getdx,
           "Returns the resolution of the discrete representation.")
-  .method("getExact",
-          &PersistenceLandscapeInterface::getExact,
-          "Returns the PL in exact representation.")
-  .method("getDiscrete",
-          &PersistenceLandscapeInterface::getDiscrete,
-          "Returns the PL in discrete representation.")
   .method("getInternal",
           &PersistenceLandscapeInterface::getInternal,
           "Returns the internal tensor representation of the PL.")
+  .method("toExact",
+          &PersistenceLandscapeInterface::toExact,
+          "Returns the PL in exact representation.")
+  .method("toDiscrete",
+          &PersistenceLandscapeInterface::toDiscrete,
+          "Returns the PL in discrete representation.")
   .method("add",
           &PersistenceLandscapeInterface::add,
           "Adds this PL to another.")

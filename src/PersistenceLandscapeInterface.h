@@ -220,7 +220,7 @@ public:
     double dx)
     : pl_raw(pl), exact(exact), min_x(min_x), max_x(max_x), dx(dx) {}
   
-  std::vector<NumericVector> getExact() {
+  std::vector<NumericVector> toExact() {
     if (!exact) {
       stop("Error: Can not convert a discrete PL to an exact PL.");
     }
@@ -229,7 +229,7 @@ public:
     }
   }
   
-  NumericVector getDiscrete() {
+  NumericVector toDiscrete() {
     if (exact) {
       return discretePersistenceLandscapeToR(
         exactLandscapeToDiscrete(pl_raw.land, 0, max_x, dx));
