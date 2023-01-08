@@ -102,6 +102,7 @@ public:
   
   PersistenceLandscape(const PersistenceLandscape &original);
   
+  // assignment operator overload
   PersistenceLandscape operator=(const PersistenceLandscape &original);
   
   PersistenceLandscape(
