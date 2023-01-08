@@ -99,9 +99,53 @@ std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
   return out;
 }
 
-std::vector<std::vector<std::pair<double, double>>> scaleDiscreteLandscapes(
-    double scale,
-    PersistenceLandscape l) {
+// NB: This operation does not verify that the input is correcctly encoded; in
+// particular, it does not check that the resolution is fixed throughout. -JCB
+std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
+  PersistenceLandscape l,
+  double min_x, double max_x,
+  double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  // reality check
+  if (dx != l.land[0][1].first - l.land[0][0].first)
+    stop("Resolutions do not agree.");
+  
+  // numbers of additional grid points
+  double diffLeft = l.land[0][0].first - min_x;
+  double diffRight = max_x - l.land[0][l.land[0].size() - 1].first;
+  int gridDiffLeft = std::ceil(std::max(0., (diffLeft) / dx));
+  int gridDiffRight = std::ceil(std::max(0., diffRight / dx));
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    
+    // prefix
+    for (int i = gridDiffLeft; i > 0; i--)
+      level_out.push_back(std::make_pair(
+          level[0].first - i * dx,
+          0));
+    // existing
+    for (std::pair<double, double> pair : level)
+      level_out.push_back(std::make_pair(
+          pair.first,
+          pair.second));
+    // suffix
+    for (int i = 1; i <= gridDiffRight; i++)
+      level_out.push_back(std::make_pair(
+          level[level.size() - 1].first + i * dx,
+          0));
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+std::vector<std::vector<std::pair<double, double>>> scaleDiscreteLandscape(
+    PersistenceLandscape l,
+    double scale) {
   
   std::vector<std::vector<std::pair<double, double>>> out;
   
@@ -120,8 +164,7 @@ std::vector<std::vector<std::pair<double, double>>> scaleDiscreteLandscapes(
 
 std::vector<std::vector<std::pair<double, double>>> exactLandscapeToDiscrete(
     PersistenceLandscape l,
-    double min_x,
-    double max_x,
+    double min_x, double max_x,
     double dx) {
   
   std::vector<std::vector<std::pair<double, double>>> out;
@@ -191,7 +234,9 @@ std::vector<std::pair<double, double>> generateGrid(
 }
 
 class PersistenceLandscapeInterface {
+  
 public:
+  
   // Creates PL from PD (in the form of a 2-column numeric matrix)
   // Natural defaults are inferred in R through `landscape()`.
   PersistenceLandscapeInterface(
@@ -220,32 +265,6 @@ public:
     double dx)
     : pl_raw(pl), exact(exact), min_x(min_x), max_x(max_x), dx(dx) {}
   
-  std::vector<NumericVector> toExact() {
-    if (!exact) {
-      stop("Error: Can not convert a discrete PL to an exact PL.");
-    }
-    else {
-      return exactPersistenceLandscapeToR(pl_raw.land);
-    }
-  }
-  
-  NumericVector toDiscrete() {
-    if (exact) {
-      return discretePersistenceLandscapeToR(
-        exactLandscapeToDiscrete(pl_raw.land, 0, max_x, dx));
-    } else {
-      // TODO: Allow this function to change the resolution.
-      return discretePersistenceLandscapeToR(pl_raw.land);
-    }
-  }
-  
-  SEXP getInternal() {
-    if (PersistenceLandscapeInterface::exact == false)
-      return wrap(discretePersistenceLandscapeToR(pl_raw.land));
-    else
-      return wrap(exactPersistenceLandscapeToR(pl_raw.land));
-  }
-  
   bool isExact() const {
     return exact;
   }
@@ -261,6 +280,50 @@ public:
   double getdx() const {
     return dx;
   }
+  
+  SEXP getInternal() {
+    if (PersistenceLandscapeInterface::exact == false)
+      return wrap(discretePersistenceLandscapeToR(pl_raw.land));
+    else
+      return wrap(exactPersistenceLandscapeToR(pl_raw.land));
+  }
+  
+  NumericVector toDiscrete() {
+    if (exact) {
+      return discretePersistenceLandscapeToR(
+        exactLandscapeToDiscrete(pl_raw.land, min_x, max_x, dx));
+    } else {
+      return discretePersistenceLandscapeToR(pl_raw.land);
+    }
+  }
+  
+  std::vector<NumericVector> toExact() {
+    if (!exact) {
+      stop("Error: Can not convert a discrete PL to an exact PL.");
+    }
+    else {
+      return exactPersistenceLandscapeToR(pl_raw.land);
+    }
+  }
+  
+  // REVIEW: Expands the limits of a PL -JCB
+  PersistenceLandscapeInterface expand(
+      double min_x, double max_x) {
+    
+    PersistenceLandscape exp_out;
+    
+    if (exact)
+      exp_out = pl_raw;
+    else
+      exp_out = PersistenceLandscape(expandDiscreteLandscape(
+        pl_raw,
+        min_x, max_x,
+        dx));
+    
+    return PersistenceLandscapeInterface(exp_out, exact, min_x, max_x, dx);
+  }
+  
+  // TODO: Contracts the limits of a PL -JCB
   
   // Adds this to another PL
   PersistenceLandscapeInterface add(
@@ -336,7 +399,7 @@ public:
     if (exact)
       scale_out = scale * pl_raw;
     else
-      scale_out = PersistenceLandscape(scaleDiscreteLandscapes(scale, pl_raw));
+      scale_out = PersistenceLandscape(scaleDiscreteLandscape(pl_raw, scale));
     
     return PersistenceLandscapeInterface(scale_out, exact, min_x, max_x, dx);
   }
@@ -464,6 +527,7 @@ public:
       const PersistenceLandscapeInterface &l2);
   
 private:
+  
   PersistenceLandscape pl_raw;
   bool exact;
   double min_x = 0;
@@ -472,6 +536,8 @@ private:
   
 };
 
+// TODO: Once conversions are implemented, check only that resolutions are equal
+// and that endpoints lie on the same grid of the shared resolution.
 bool checkPairOfDiscreteLandscapes(
     PersistenceLandscapeInterface &l1,
     const PersistenceLandscapeInterface &l2) {

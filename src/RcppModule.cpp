@@ -42,6 +42,9 @@ RCPP_MODULE(Landscape) {
   .method("toDiscrete",
           &PersistenceLandscapeInterface::toDiscrete,
           "Returns the PL in discrete representation.")
+  .method("expand",
+          &PersistenceLandscapeInterface::expand,
+          "Expands the limits of this PL.")
   .method("add",
           &PersistenceLandscapeInterface::add,
           "Adds this PL to another.")

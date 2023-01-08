@@ -1,6 +1,14 @@
 #' @title Persistence Landscapes
 #' @description Compute persistence landscapes from persistence data.
 #'
+#' @details `landscape()` is a wrapper around the S4 class constructor
+#'   `[methods:new()]`. The `pl_*()` helper functions take a persistence
+#'   landscape as returned by `landscape()` and return its representation
+#'   (`pl_is_exact()` and `pl_str()`), the number of envelopes
+#'   (`pl_num_envelopes()`), the endpoints of its internal representation
+#'   (excluding infinities) (`pl_limits()`), and the infimum and supremum of its
+#'   support, i.e. of the points at which its value is nonzero (`pl_support()`).
+#'
 #' @name landscape
 #' @include PersistenceLandscape.r
 #' @param pd Persistence data (or diagram), stored as a 2-column matrix or as a
@@ -12,11 +20,12 @@
 #' @param exact Set to `TRUE` for exact computation, `FALSE` (default) for
 #'   discrete.
 #' @param min_x,max_x Domain thresholds for discrete PL; if not specified, then
-#'   taken to be the support of the PL.
+#'   taken to be the support of the PL constructed from the data or the internal
+#'   values of the 'Rcpp_PersistenceLandscape' object.
 #' @param by Domain grid diameter for discrete PL; if not specified, then set to
 #'   the power of 10 that yields between 100 and 1000 intervals.
-#' @param max_y Numeric; the threshold used to compute the persistence
-#'   diagram (could be infinite).
+#' @param max_y Numeric; the threshold used to compute the persistence diagram
+#'   (could be infinite).
 #' @param pl A persistence landscape as returned by `landscape()`.
 #' @return `landscape()` returns a persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape'). Other functions return summary information
@@ -111,9 +120,8 @@ pl_limits <- function(pl) {
   switch (
     pl_str(pl),
     exact = {
-      int <- pl$getInternal()
-      xvec <- Reduce(rbind, int)[-c(1L, nrow(int)), 1L, drop = TRUE]
-      return(range(xvec))
+      xvec <- Reduce(rbind, pl$getInternal())[, 1L, drop = TRUE]
+      return(range(xvec[! is.infinite(xvec)]))
     },
     discrete = {
       return(range(pl$getInternal()[1L, , 1L]))
@@ -140,4 +148,13 @@ pl_support <- function(pl) {
       return(range(pl$getInternal()[1L, supp, 1L]))
     }
   )
+}
+
+#' @rdname landscape
+#' @export
+pl_expand <- function(pl, min_x = NULL, max_x = NULL) {
+  if (is.null(min_x) && is.null(max_x)) return(pl)
+  if (is.null(min_x)) min_x <- pl$getMin()
+  if (is.null(max_x)) max_x <- pl$getMax()
+  pl$expand(min_x, max_x)
 }

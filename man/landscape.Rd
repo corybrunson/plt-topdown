@@ -7,6 +7,7 @@
 \alias{pl_num_envelopes}
 \alias{pl_limits}
 \alias{pl_support}
+\alias{pl_expand}
 \title{Persistence Landscapes}
 \usage{
 landscape(
@@ -28,6 +29,8 @@ pl_num_envelopes(pl)
 pl_limits(pl)
 
 pl_support(pl)
+
+pl_expand(pl, min_x = NULL, max_x = NULL)
 }
 \arguments{
 \item{pd}{Persistence data (or diagram), stored as a 2-column matrix or as a
@@ -42,13 +45,14 @@ $(d+1)$th matrix in the list will be selected.)}
 discrete.}
 
 \item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
-taken to be the support of the PL.}
+taken to be the support of the PL constructed from the data or the internal
+values of the 'Rcpp_PersistenceLandscape' object.}
 
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{max_y}{Numeric; the threshold used to compute the persistence
-diagram (could be infinite).}
+\item{max_y}{Numeric; the threshold used to compute the persistence diagram
+(could be infinite).}
 
 \item{pl}{A persistence landscape as returned by \code{landscape()}.}
 }
@@ -59,6 +63,15 @@ about such an object.
 }
 \description{
 Compute persistence landscapes from persistence data.
+}
+\details{
+\code{landscape()} is a wrapper around the S4 class constructor
+\verb{[methods:new()]}. The \verb{pl_*()} helper functions take a persistence
+landscape as returned by \code{landscape()} and return its representation
+(\code{pl_is_exact()} and \code{pl_str()}), the number of envelopes
+(\code{pl_num_envelopes()}), the endpoints of its internal representation
+(excluding infinities) (\code{pl_limits()}), and the infimum and supremum of its
+support, i.e. of the points at which its value is nonzero (\code{pl_support()}).
 }
 \examples{
 # sample points

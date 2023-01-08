@@ -15,6 +15,7 @@ summary(pl2)
 # getters
 pl1$getInternal()
 pl1$toExact()
+# FIXME: For x > 1, get y = -0.1 (< 0).
 pl1$toDiscrete()
 pl2$getInternal()
 try(pl2$toExact())
