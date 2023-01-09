@@ -169,32 +169,65 @@ std::vector<std::vector<std::pair<double, double>>> exactLandscapeToDiscrete(
   
   std::vector<std::vector<std::pair<double, double>>> out;
   
+  std::pair<double, double> currentPoint;
+  
   for (unsigned i = 0; i < l.land.size(); i++) {
     
     auto level = l.land[i];
     std::vector<std::pair<double, double>> level_out;
     
-    double starting_y = l.computeValueAtAGivenPoint(i, min_x);
-    std::pair<double, double> startingPoint = std::make_pair(min_x, starting_y);
-    double x_buffer = startingPoint.first;
-    double y_buffer = startingPoint.second;
+    // Start at the level value at `min_x`.
+    double x_buff = min_x;
+    double y_buff = l.computeValueAtAGivenPoint(i, min_x);
+    currentPoint = std::make_pair(x_buff, y_buff);
+    level_out.push_back(currentPoint);
     
-    for (int i = 1; i < level.size(); i++) {
-      std::pair<double, double> point = level[i];
-      // Make sure slope is well defined:
-      if (point.first != startingPoint.first) {
-        double delta_x = level[i].first - startingPoint.first;
-        double delta_y = level[i].second - startingPoint.second;
-        double slope = delta_y / delta_x;
-        
-        while (x_buffer < point.first && x_buffer < max_x) {
-          y_buffer += dx * slope;
-          x_buffer += dx;
-          level_out.push_back(std::make_pair(x_buffer, y_buffer));
-        }
-      }
+    // Iterate over finite critical points...
+    for (int j = 1; j < level.size() - 1; j++) {
       
-      startingPoint = point;
+      // Skip to the critical point rightward of `currentPoint` for which the
+      // next critical point is just leftward of `currentPoint + dx`.
+      if (level[j].first <= x_buff || level[j + 1].first < x_buff + dx) continue;
+      
+      // If the next critical point is at least `dx` rightward, then increment
+      // linearly to it; else, compute and increment to the next level value.
+      if (level[j].first < x_buff + dx) {
+        
+        x_buff += dx;
+        y_buff = l.computeValueAtAGivenPoint(i, x_buff + dx);
+        currentPoint = std::make_pair(x_buff, y_buff);
+        level_out.push_back(currentPoint);
+        
+      } else {
+        std::pair<double, double> nextPoint = level[j];
+        
+        // If change in x, increment linearly from current to just before next.
+        if (nextPoint.first != currentPoint.first) {
+          double delta_x = nextPoint.first - currentPoint.first;
+          double delta_y = nextPoint.second - currentPoint.second;
+          double slope = delta_y / delta_x;
+          
+          int n_incr = std::floor((std::min(nextPoint.first, max_x) - x_buff) /
+                                  dx);
+          for (int k = 0; k < n_incr; k++) {
+            x_buff += dx;
+            y_buff += dx * slope;
+            level_out.push_back(std::make_pair(x_buff, y_buff));
+          }
+        }
+        
+        currentPoint = std::make_pair(x_buff, y_buff);
+      }
+    }
+    
+    // If `max_x` has not been reached, then increment along zero y values.
+    if (x_buff + dx < max_x + epsi) {
+      int n_incr = std::floor((max_x + epsi - x_buff) / dx);
+      y_buff = 0;
+      for (int k = 0; k < n_incr; k++) {
+        x_buff += dx;
+        level_out.push_back(std::make_pair(x_buff, y_buff));
+      }
     }
     
     out.push_back(level_out);

@@ -681,7 +681,7 @@ PersistenceLandscape::PersistenceLandscape(
 
     // Now, the idea is to iterate on `this->land[lambda-1]` and use only points
     // over there. The problem is at the very beginning, when there is nothing
-    // in `this->land`. That is why over here, we make a fate `this->land[0]`.
+    // in `this->land`. That is why over here, we make a fake `this->land[0]`.
     // It will be later deleted before moving on.
     std::vector<std::pair<double, double>> aa;
     double x = minMax.first;
