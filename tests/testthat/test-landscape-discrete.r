@@ -132,22 +132,22 @@ test_that("inner PL is correct.", {
   expect_equal(pl$inner(pl2), innerPL(pl_d,pl2_d))
 })
 
-test_that("getExact from discrete is correct", {
+test_that("toExact from discrete is correct", {
   pl <- landscape(pd$pairs[[1]], exact=FALSE, max_x=2.5, by=0.1)
   
-  expect_error(pl$getExact())
+  expect_error(pl$toExact())
 })
 
-test_that("getDiscrete from discrete is correct", {
+test_that("toDiscrete from discrete is correct", {
   pl <- landscape(pd$pairs[[1]], exact=FALSE, max_x=2.5, by=0.1)
   
-  expect_error(pl$getDiscrete(), NA)
+  expect_error(pl$toDiscrete(), NA)
 })
 
 test_that("getInternal from discrete is correct", {
   pl <- landscape(pd$pairs[[1]], exact=FALSE, max_x=2.5, by=0.1)
   
-  expect_equal(pl$getInternal(), pl$getDiscrete())
+  expect_equal(pl$getInternal(), pl$toDiscrete())
 })
 
 test_that("getInternal from discrete is correct from diagram", {

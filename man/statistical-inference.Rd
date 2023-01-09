@@ -71,13 +71,14 @@ $(d+1)$th matrix in the list will be selected.)}
 discrete.}
 
 \item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
-taken to be the support of the PL.}
+taken to be the support of the PL constructed from the data or the internal
+values of the 'Rcpp_PersistenceLandscape' object.}
 
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{max_y}{Numeric; the threshold used to compute the persistence
-diagram (could be infinite).}
+\item{max_y}{Numeric; the threshold used to compute the persistence diagram
+(could be infinite).}
 
 \item{complete}{Logical; whether to compute averages between all combinations
 from the two lists of landscapes.}

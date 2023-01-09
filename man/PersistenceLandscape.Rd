@@ -86,9 +86,9 @@ summary(pl2)
 
 # getters
 pl1$getInternal()
-pl1$getExact()
-pl1$getDiscrete()
+pl1$toExact()
+pl1$toDiscrete()
 pl2$getInternal()
-try(pl2$getExact())
-pl2$getDiscrete()
+try(pl2$toExact())
+pl2$toDiscrete()
 }
