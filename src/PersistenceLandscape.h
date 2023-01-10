@@ -32,6 +32,7 @@
 #include <Rcpp.h>
 using namespace std;
 
+// TODO: Make this a user-settable option through {Rcpp}.
 double epsi = 0.000005;
 
 inline bool almostEqual(double a, double b) {
@@ -317,10 +318,10 @@ PersistenceLandscape::PersistenceLandscape(
   for (size_t level = 0; level != landscapePointsWithoutInfinities.size();
        ++level) {
     std::vector<std::pair<double, double>> v;
-    // v.push_back(std::make_pair(INT_MIN,0));
+    // v.push_back(std::make_pair(INT_MIN, 0.));
     v.insert(v.end(), landscapePointsWithoutInfinities[level].begin(),
              landscapePointsWithoutInfinities[level].end());
-    // v.push_back(std::make_pair(INT_MAX,0));
+    // v.push_back(std::make_pair(INT_MAX, 0.));
     this->land.push_back(v);
   }
 }
@@ -436,7 +437,7 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     
     // left (lower) limit
     if (exact) {
-      lambda_n.push_back(std::make_pair(INT_MIN, 0));
+      lambda_n.push_back(std::make_pair(INT_MIN, 0.));
     }
     
     // if the indicator has at least `lev` levels...
@@ -459,14 +460,14 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
                 indicator[lev].second,
                 functionValue(this->land[lev][nr - 1], this->land[lev][nr],
                               indicator[lev].second) * lev_c));
-            lambda_n.push_back(std::make_pair(indicator[lev].second, 0));
+            lambda_n.push_back(std::make_pair(indicator[lev].second, 0.));
             break;
           }
           
           // critical point lies just after left endpoint; interpolate
           if ((this->land[lev][nr].first >= indicator[lev].first) &&
               (this->land[lev][nr - 1].first <= indicator[lev].first)) {
-            lambda_n.push_back(std::make_pair(indicator[lev].first, 0));
+            lambda_n.push_back(std::make_pair(indicator[lev].first, 0.));
             lambda_n.push_back(std::make_pair(
                 indicator[lev].first,
                 functionValue(this->land[lev][nr - 1], this->land[lev][nr],
@@ -497,7 +498,7 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
           } else {
             // critical point lies outside endpoints; exclude
             
-            lambda_n.push_back(std::make_pair(this->land[lev][nr].first, 0));
+            lambda_n.push_back(std::make_pair(this->land[lev][nr].first, 0.));
           }
         }
         
@@ -507,7 +508,7 @@ PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     
     // right (upper) limit
     if (exact) {
-      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+      lambda_n.push_back(std::make_pair(INT_MAX, 0.));
     }
     
     // cases with no critical points
@@ -596,8 +597,8 @@ PersistenceLandscape::PersistenceLandscape(
     std::vector<std::vector<std::pair<double, double>>> persistenceLandscape;
     while (!characteristicPoints.empty()) {
       std::vector<std::pair<double, double>> lambda_n;
-      lambda_n.push_back(std::make_pair(INT_MIN, 0));
-      lambda_n.push_back(std::make_pair(birth(characteristicPoints[0]), 0));
+      lambda_n.push_back(std::make_pair(INT_MIN, 0.));
+      lambda_n.push_back(std::make_pair(birth(characteristicPoints[0]), 0.));
       lambda_n.push_back(characteristicPoints[0]);
 
       int i = 1;
@@ -613,10 +614,10 @@ PersistenceLandscape::PersistenceLandscape(
             std::pair<double, double> point =
                 std::make_pair((birth(characteristicPoints[i]) +
                                 death(lambda_n[lambda_n.size() - 1])) /
-                                   2,
+                                   2.,
                                (death(lambda_n[lambda_n.size() - 1]) -
                                 birth(characteristicPoints[i])) /
-                                   2);
+                                   2.);
             lambda_n.push_back(point);
 
             while ((i + j < characteristicPoints.size()) &&
@@ -639,9 +640,9 @@ PersistenceLandscape::PersistenceLandscape(
 
           } else {
             lambda_n.push_back(
-                std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0));
+                std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0.));
             lambda_n.push_back(
-                std::make_pair(birth(characteristicPoints[i]), 0));
+                std::make_pair(birth(characteristicPoints[i]), 0.));
           }
           lambda_n.push_back(characteristicPoints[i]);
         } else {
@@ -650,8 +651,8 @@ PersistenceLandscape::PersistenceLandscape(
         i = i + j;
       }
       lambda_n.push_back(
-          std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0));
-      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+          std::make_pair(death(lambda_n[lambda_n.size() - 1]), 0.));
+      lambda_n.push_back(std::make_pair(INT_MAX, 0.));
 
       // CHANGE
       characteristicPoints = newCharacteristicPoints;
@@ -689,7 +690,7 @@ PersistenceLandscape::PersistenceLandscape(
       std::vector<double> v;
       std::pair<double, std::vector<double>> p = std::make_pair(x, v);
       criticalValuesOnPointsOfGrid[i] = p;
-      aa.push_back(std::make_pair(x, 0));
+      aa.push_back(std::make_pair(x, 0.));
       x += 0.5 * gridDiameter;
     }
 
@@ -1047,7 +1048,7 @@ PersistenceLandscape PersistenceLandscape::abs() {
     std::vector<std::pair<double, double>> lambda_n;
     // REVIEW: Try to prevent operations from infinitizing endpoints. -JCB
     // if (this->land[level][0].first == INT_MIN) {
-    //   lambda_n.push_back(std::make_pair(INT_MIN, 0));
+    //   lambda_n.push_back(std::make_pair(INT_MIN, 0.));
     // } else {
     //   lambda_n.push_back(std::make_pair(this->land[level][0].first,
     //                                     fabs(this->land[level][0].second)));
@@ -1063,7 +1064,7 @@ PersistenceLandscape PersistenceLandscape::abs() {
         double zero = findZeroOfALineSegmentBetweenThoseTwoPoints(
           this->land[level][i - 1], this->land[level][i]);
         
-        lambda_n.push_back(std::make_pair(zero, 0));
+        lambda_n.push_back(std::make_pair(zero, 0.));
         lambda_n.push_back(std::make_pair(this->land[level][i].first,
                                           fabs(this->land[level][i].second)));
       } else {
@@ -1149,7 +1150,7 @@ PersistenceLandscape operationOnPairOfLandscapes(
     // REVIEW: Try to prevent operations from infinitizing endpoints. -JCB
     if (land1.land[i][p].first == land2.land[i][q].first) {
       if (land2.land[i][q].first == INT_MAX) {
-        lambda_n.push_back(std::make_pair(INT_MAX, 0));
+        lambda_n.push_back(std::make_pair(INT_MAX, 0.));
       } else {
         lambda_n.push_back(std::make_pair(land1.land[i][p].first,
                                           oper(land1.land[i][p].second,
@@ -1157,7 +1158,7 @@ PersistenceLandscape operationOnPairOfLandscapes(
       }
     } else {
       // REVIEW: Is there a better option in this case? -JCB
-      lambda_n.push_back(std::make_pair(INT_MAX, 0));
+      lambda_n.push_back(std::make_pair(INT_MAX, 0.));
     }
     // CHANGE
     // result.land[i] = lambda_n;
@@ -1383,13 +1384,13 @@ PersistenceLandscape::generateBettiNumbersHistogram() const {
         if (this->land[lev][i].second == 0) {
           if (first) {
             rangeOfLandscapeInThisDimension.push_back(
-                std::make_pair(this->land[lev][i].first, 0));
+                std::make_pair(this->land[lev][i].first, 0.));
           }
           rangeOfLandscapeInThisDimension.push_back(
               std::make_pair(this->land[lev][i].first, lev + 1));
           if (!first) {
             rangeOfLandscapeInThisDimension.push_back(
-                std::make_pair(this->land[lev][i].first, 0));
+                std::make_pair(this->land[lev][i].first, 0.));
           }
           first = !first;
         }
