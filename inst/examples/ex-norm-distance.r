@@ -1,5 +1,6 @@
 
-# value taken from 'PersistenceLandscape.h'
+# TODO: When `epsi` in 'PersistenceLandscape.h' is made into a user-settable
+# option, set this equal to that option.
 epsi <- 0.000005
 
 # insert critical points (y = 0)
@@ -120,7 +121,7 @@ pl_dist(pl1, pl2, p = 2)
 pl_dist(pl1, pl2, p = 1)
 
 # benchmark comparison of distance functions
-ps <- c(Inf, 1 + 2 ^ seq(8L, -2L, -2L), 1)
+ps <- c(Inf, 1 + 2 ^ seq(8L, 0L, -2L), 1)
 # exact
 bench::mark(
   cpp = vapply(ps, function(p) pl_distance(ple1, ple2, p), 0),
