@@ -23,7 +23,7 @@ Rcpp::exposeClass(
   fields = character(0L),
   methods = c(
     "isExact", "getMin", "getMax", "getdx",
-    "getExact", "getDiscrete", "getInternal",
+    "toExact", "toDiscrete", "getInternal",
     "add", "scale", "inner"
   ),
   header = '#include "PersistenceLandscapeInterface.h"',
