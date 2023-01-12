@@ -122,7 +122,7 @@ Below, we view a portion of the discretized exact landscape and make a failed at
 ```{r}
 # default conversion to discrete uses `by = 0.001`
 # TODO: Export method with `min_x,max_x,by` parameters.
-print(dim(pl1$getDiscrete()))
+print(dim(pl1$toDiscrete()))
 # print first 12 x-coordinates
 pl1$toDiscrete()[, seq(220L, 280L), , drop = FALSE]
 try(pl1d$toExact())

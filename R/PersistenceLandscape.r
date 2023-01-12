@@ -82,7 +82,7 @@ print.summary.Rcpp_PersistenceLandscape <- function(
 #' @export
 as.vector.Rcpp_PersistenceLandscape <- function(x, mode = "any") {
   # get discrete representation for consistent abscissa values
-  internal <- x$getDiscrete()
+  internal <- x$toDiscrete()
   
   # export concatenation of envelopes
   as.vector(t(internal[, , 2L]), mode = mode)
@@ -94,7 +94,7 @@ as.data.frame.Rcpp_PersistenceLandscape <- function(
     x, row.names = NULL, optional = FALSE, exact = FALSE, ...
 ) {
   if (exact) {
-    internal <- try(x$getExact(), silent = TRUE)
+    internal <- try(x$toExact(), silent = TRUE)
     if (inherits(internal, "try-error")) {
       warning("Cannot recover exact PL data from a discrete PL object.")
       # recurse
@@ -115,7 +115,7 @@ as.data.frame.Rcpp_PersistenceLandscape <- function(
     }
     df
   } else {
-    internal <- x$getDiscrete()
+    internal <- x$toDiscrete()
     envelope <- rep(seq(dim(internal)[[2L]]), each = dim(internal)[[1L]])
     y <- as.vector(t(internal[, , 1L]))
     fy <- as.vector(t(internal[, , 2L]))
