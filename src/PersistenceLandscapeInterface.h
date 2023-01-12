@@ -302,15 +302,15 @@ public:
     return exact;
   }
   
-  double getMin() const {
+  double xMin() const {
     return min_x;
   }
   
-  double getMax() const {
+  double xMax() const {
     return max_x;
   }
   
-  double getdx() const {
+  double xBy() const {
     return dx;
   }
   
@@ -416,8 +416,8 @@ public:
     // REVIEW: This has been edited from {tdatools} by JCB.
     // appropriate settings for output PL
     bool out_exact = exact & other.isExact();
-    double out_min = min(min_x, other.getMin());
-    double out_max = max(max_x, other.getMax());
+    double out_min = min(min_x, other.xMin());
+    double out_max = max(max_x, other.xMax());
     return PersistenceLandscapeInterface(add_out,
                                          out_exact,
                                          out_min, out_max,
@@ -457,12 +457,12 @@ public:
     return scalar_out;
   }
   
-  double supremum(unsigned level) {
-    return pl_raw.findMax(level);
+  double minimum(unsigned level) {
+    return pl_raw.findMin(level);
   }
   
-  double infimum(unsigned level) {
-    return pl_raw.findMin(level);
+  double maximum(unsigned level) {
+    return pl_raw.findMax(level);
   }
   
   double moment(

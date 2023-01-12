@@ -24,14 +24,14 @@ RCPP_MODULE(Landscape) {
   .method("isExact",
           &PersistenceLandscapeInterface::isExact,
           "Queries whether the underlying PL representation is exact.")
-  .method("getMin",
-          &PersistenceLandscapeInterface::getMin,
-          "Returns the infimum of the PL support.")
-  .method("getMax",
-          &PersistenceLandscapeInterface::getMax,
-          "Returns the supremum of the PL support.")
-  .method("getdx",
-          &PersistenceLandscapeInterface::getdx,
+  .method("xMin",
+          &PersistenceLandscapeInterface::xMin,
+          "Returns the infimum (left endpoint) of the PL support.")
+  .method("xMax",
+          &PersistenceLandscapeInterface::xMax,
+          "Returns the supremum (right endpoint) of the PL support.")
+  .method("xBy",
+          &PersistenceLandscapeInterface::xBy,
           "Returns the resolution of the discrete representation.")
   .method("getInternal",
           &PersistenceLandscapeInterface::getInternal,
@@ -57,11 +57,11 @@ RCPP_MODULE(Landscape) {
   .method("inner",
           &PersistenceLandscapeInterface::inner,
           "Takes the inner product of this PL with another.")
-  .method("infimum",
-          &PersistenceLandscapeInterface::infimum,
+  .method("minimum",
+          &PersistenceLandscapeInterface::minimum,
           "Finds the minimum value of one level of this PL.")
-  .method("supremum",
-          &PersistenceLandscapeInterface::supremum,
+  .method("maximum",
+          &PersistenceLandscapeInterface::maximum,
           "Finds the maximum value of one level of this PL.")
   .method("moment",
           &PersistenceLandscapeInterface::moment,

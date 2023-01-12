@@ -41,7 +41,7 @@ summary.Rcpp_PersistenceLandscape <- function(object, ...) {
     str = pl_str(object),
     n.env = pl_num_envelopes(object),
     limits = pl_limits(object),
-    resolution = if (object$isExact()) NA_real_ else object$getdx(),
+    resolution = if (object$isExact()) NA_real_ else object$xBy(),
     support = pl_support(object),
     range = c(pl_min(object), pl_max(object)),
     magnitude = object %*% object,

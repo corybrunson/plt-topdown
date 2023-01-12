@@ -61,27 +61,27 @@ pd <- as_persistence(ripserr::vietoris_rips(rpp, max_dim = 2L, threshold = 4))
 # plot landscapes
 par(mfrow = c(3L, 1L), mar = c(0, 2, 0, 2))
 # palette name
-plot(landscape(pd, degree = 0L, min_x = 0, max_x = 1.5, by = 0.01),
+plot(landscape(pd, degree = 0L, xmin = 0, xmax = 1.5, by = 0.01),
      palette = "Cork", lwd = 1)
 # palette function name
-plot(landscape(pd, degree = 1L, min_x = 0, max_x = 1.5, by = 0.01),
+plot(landscape(pd, degree = 1L, xmin = 0, xmax = 1.5, by = 0.01),
      palette = "topo.colors", lwd = 1, rev = TRUE)
 # custom color ramp
-plot(landscape(pd, degree = 2L, min_x = 0, max_x = 1.5, by = 0.01),
+plot(landscape(pd, degree = 2L, xmin = 0, xmax = 1.5, by = 0.01),
      palette = c("red", "green", "blue"), lwd = 1)
 par(mfrow = c(1L, 1L), mar = c(5.1, 4.1, 4.1, 2.1))
 # constructor
 pl1 <- new(PersistenceLandscape,
            diagram = matrix(c(0,1, 0,2), nrow = 2L, ncol = 2L, byrow = TRUE),
            exact = TRUE,
-           min_x = 0, max_x = 3,
-           by = 0.1, max_y = 100)
+           xmin = 0, xmax = 3,
+           by = 0.1, ymax = 100)
 summary(pl1)
 pl2 <- new(PersistenceLandscape,
            diagram = matrix(c(0,1, 0,2), nrow = 2L, ncol = 2L, byrow = TRUE),
            exact = FALSE,
-           min_x = -.25, max_x = 5,
-           by = 0.1, max_y = 100)
+           xmin = -.25, xmax = 5,
+           by = 0.1, ymax = 100)
 summary(pl2)
 
 # getters

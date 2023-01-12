@@ -14,10 +14,10 @@ landscape(
   pd,
   degree = NULL,
   exact = FALSE,
-  min_x = NULL,
-  max_x = NULL,
+  xmin = NULL,
+  xmax = NULL,
   by = NULL,
-  max_y = NULL
+  ymax = NULL
 )
 
 pl_is_exact(pl)
@@ -30,7 +30,7 @@ pl_limits(pl)
 
 pl_support(pl)
 
-pl_expand(pl, min_x = NULL, max_x = NULL)
+pl_expand(pl, xmin = NULL, xmax = NULL)
 }
 \arguments{
 \item{pd}{Persistence data (or diagram), stored as a 2-column matrix or as a
@@ -44,14 +44,14 @@ $(d+1)$th matrix in the list will be selected.)}
 \item{exact}{Set to \code{TRUE} for exact computation, \code{FALSE} (default) for
 discrete.}
 
-\item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
+\item{xmin, xmax}{Domain thresholds for discrete PL; if not specified, then
 taken to be the support of the PL constructed from the data or the internal
 values of the 'Rcpp_PersistenceLandscape' object.}
 
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{max_y}{Numeric; the threshold used to compute the persistence diagram
+\item{ymax}{Numeric; the threshold used to compute the persistence diagram
 (could be infinite).}
 
 \item{pl}{A persistence landscape as returned by \code{landscape()}.}
@@ -70,8 +70,8 @@ Compute persistence landscapes from persistence data.
 landscape as returned by \code{landscape()} and return its representation
 (\code{pl_is_exact()} and \code{pl_str()}), the number of envelopes
 (\code{pl_num_envelopes()}), the endpoints of its internal representation
-(excluding infinities) (\code{pl_limits()}), and the infimum and supremum of its
-support, i.e. of the points at which its value is nonzero (\code{pl_support()}).
+(excluding infinities) (\code{pl_limits()}), and the endpoints of its support,
+i.e. of the points at which its value is nonzero (\code{pl_support()}).
 }
 \examples{
 # sample points
@@ -97,7 +97,7 @@ pd <- as_persistence(TDA::ripsDiag(points, maxdimension = 2L, maxscale = 3))
 print(dim(pd$pairs[[2L]]))
 
 # compute persistence landscape for 1-dimensional cycles
-pl <- landscape(pd, degree = 1L, max_y = pd$threshold)
+pl <- landscape(pd, degree = 1L, ymax = pd$threshold)
 print(pl)
 
 # landscape dimensions
@@ -108,7 +108,7 @@ print(pl$getInternal())
 plot(pl)
 
 # custom parameters
-pl <- landscape(pd, degree = 1L, by = 0.1, max_x = 2, max_y = pd$threshold)
+pl <- landscape(pd, degree = 1L, by = 0.1, xmax = 2, ymax = pd$threshold)
 print(pl)
 plot(pl)
 }
