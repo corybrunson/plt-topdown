@@ -20,7 +20,8 @@ Rcpp::exposeClass(
   constructors = list(
     c("NumericMatrix", "bool", "double", "double", "double", "double")
   ),
-  fields = character(0L),
+  # REVIEW: Could not successfully pass to `readOnly` param. -JCB
+  fields = "exact",
   methods = c(
     "isExact", "xMin", "xMax", "xBy",
     "toExact", "toDiscrete", "getInternal",

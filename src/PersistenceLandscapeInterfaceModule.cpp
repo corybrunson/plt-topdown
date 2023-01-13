@@ -9,6 +9,7 @@ RCPP_MODULE(class_PersistenceLandscape) {
 
     .constructor<NumericMatrix,bool,double,double,double,double>()
 
+    .field("exact", &PersistenceLandscapeInterface::exact)
 
     .method("isExact", &PersistenceLandscapeInterface::isExact)
     .method("xMin", &PersistenceLandscapeInterface::xMin)
