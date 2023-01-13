@@ -67,7 +67,7 @@ par(mfrow = c(1, 1), mar = c(5.1, 4.1, 4.1, 2.1))
 
 # add an exact landscape to a discrete one
 pl2d <- landscape(pd2, degree = 1, exact = FALSE,
-                  min_x = 0, max_x = 1.2, by = 0.00001)
+                  xmin = 0, xmax = 1.2, by = 0.00001)
 # plot the summand landscapes and their sum with consistent parameters;
 # the exact landscape is automatically converted to a discrete one
 n_lev <- pl_num_envelopes(pl1)

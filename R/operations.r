@@ -7,7 +7,7 @@
 #' @details These functions are prefixed `pl_*()` to help users access them via
 #'   tab-completion. Some take their names from the underlying S4 class methods
 #'   and are only provided to enable composition via pipes: `add`, `scale`,
-#'   `abs`, `inner`, `min` (`infimum`), `max` (`supremum`), and `moment`;
+#'   `abs`, `inner`, `min` (`minimum`), `max` (`maximum`), and `moment`;
 #'   `range` combines `min` and `max`. Others mimic classic R functions to
 #'   handle lists of persistence landscapes: `sum`, `diff`, `mean`, `var`, and
 #'   `sd`. Finally, some are vectorizations of the preceding: `vmin`, `vmax`,
@@ -92,39 +92,39 @@ pl_inner <- function(pl1, pl2) {
 #' @rdname arithmetic-operations
 #' @export
 pl_min <- function(pl, level = 1L) {
-  pl$infimum(level)
+  pl$minimum(level)
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_max <- function(pl, level = 1L) {
-  pl$supremum(level)
+  pl$maximum(level)
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_range <- function(pl, level = 1L) {
-  c(pl$infimum(level), pl$supremum(level))
+  c(pl$minimum(level), pl$maximum(level))
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_vmin <- function(pl, level = 1L) {
-  vapply(seq(level), function(l) pl$infimum(l), double())
+  vapply(seq(level), function(l) pl$minimum(l), double())
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_vmax <- function(pl, level = 1L) {
-  vapply(seq(level), function(l) pl$supremum(l), double())
+  vapply(seq(level), function(l) pl$maximum(l), double())
 }
 
 #' @rdname arithmetic-operations
 #' @export
 pl_vrange <- function(pl, level = 1L) {
   cbind(
-    vapply(seq(level), function(l) pl$infimum(l), double()),
-    vapply(seq(level), function(l) pl$supremum(l), double())
+    vapply(seq(level), function(l) pl$minimum(l), double()),
+    vapply(seq(level), function(l) pl$maximum(l), double())
   )
 }
 

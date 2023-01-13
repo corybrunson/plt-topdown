@@ -22,7 +22,7 @@ Rcpp::exposeClass(
   ),
   fields = character(0L),
   methods = c(
-    "isExact", "getMin", "getMax", "getdx",
+    "isExact", "xMin", "xMax", "xBy",
     "toExact", "toDiscrete", "getInternal",
     "add", "scale", "inner"
   ),

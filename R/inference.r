@@ -111,12 +111,12 @@ pl_z_test <- function(
 pd_z_test <- function(
     x, y,
     degree = NULL, exact = FALSE,
-    min_x = NULL, max_x = NULL, by = NULL, max_y = NULL,
+    xmin = NULL, xmax = NULL, by = NULL, ymax = NULL,
     alternative = c("two.sided", "less", "greater"), conf.level = 0.95,
     supports = NULL, r = 0, p = 1
 ) {
-  pl_x <- lapply(x, landscape, degree, exact, min_x, max_x, by, max_y)
-  pl_y <- lapply(x, landscape, degree, exact, min_x, max_x, by, max_y)
+  pl_x <- lapply(x, landscape, degree, exact, xmin, xmax, by, ymax)
+  pl_y <- lapply(x, landscape, degree, exact, xmin, xmax, by, ymax)
   pl_z_test(pl_x, pl_y, alternative, conf.level, supports, r, p)
 }
 

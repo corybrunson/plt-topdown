@@ -11,9 +11,9 @@ RCPP_MODULE(class_PersistenceLandscape) {
 
 
     .method("isExact", &PersistenceLandscapeInterface::isExact)
-    .method("getMin", &PersistenceLandscapeInterface::getMin)
-    .method("getMax", &PersistenceLandscapeInterface::getMax)
-    .method("getdx", &PersistenceLandscapeInterface::getdx)
+    .method("xMin", &PersistenceLandscapeInterface::xMin)
+    .method("xMax", &PersistenceLandscapeInterface::xMax)
+    .method("xBy", &PersistenceLandscapeInterface::xBy)
     .method("toExact", &PersistenceLandscapeInterface::toExact)
     .method("toDiscrete", &PersistenceLandscapeInterface::toDiscrete)
     .method("getInternal", &PersistenceLandscapeInterface::getInternal)

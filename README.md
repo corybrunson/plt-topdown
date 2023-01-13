@@ -174,7 +174,7 @@ The length of this list is the number of levels of the landscape.
 
 An alternative, approximate construction computes the value of each
 level of the landscape at each point on a 1-dimensional grid, ranging
-from `min_x` to `max_x` at increments of `by`. A landscape constructed
+from `xmin` to `xmax` at increments of `by`. A landscape constructed
 using a discrete approximation is stored as a 3-dimensional array of
 dimensions (levels, values, 2), with one level per feature (some of
 which may be trivial) and one value per grid point, stored as $x,y$
@@ -183,7 +183,7 @@ pairs along the third dimension.
 ``` r
 b_ran <- pl_support(pl1)
 pl1d <- landscape(pd, degree = 1,
-                  min_x = b_ran[[1L]], max_x = b_ran[[2L]], by = 0.02)
+                  xmin = b_ran[[1L]], xmax = b_ran[[2L]], by = 0.02)
 print(dim(pl1d$getInternal()))
 #> [1]  4 21  2
 print(pl1d$getInternal())
@@ -231,7 +231,7 @@ exactify the discrete one:
 
 ``` r
 # default conversion to discrete uses `by = 0.001`
-# TODO: Export method with `min_x,max_x,by` parameters.
+# TODO: Export method with `xmin,xmax,by` parameters.
 print(dim(pl1$toDiscrete()))
 #> [1]   2 411   2
 # print first 12 x-coordinates

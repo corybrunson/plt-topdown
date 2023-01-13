@@ -9,7 +9,7 @@ plot(pl, xlim = c(0, 5))
 plf <- pl_indicator(pl, f)
 plot(plf, xlim = c(0, 5))
 # discrete landscape
-pl <- landscape(pd, degree = 1, min_x = 0, max_x = 5, by = .2)
+pl <- landscape(pd, degree = 1, xmin = 0, xmax = 5, by = .2)
 plot(pl)
 # plf <- pl$indicator(f, 0)
 plf <- pl_indicator(pl, f)

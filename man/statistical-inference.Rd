@@ -31,10 +31,10 @@ pd_z_test(
   y,
   degree = NULL,
   exact = FALSE,
-  min_x = NULL,
-  max_x = NULL,
+  xmin = NULL,
+  xmax = NULL,
   by = NULL,
-  max_y = NULL,
+  ymax = NULL,
   alternative = c("two.sided", "less", "greater"),
   conf.level = 0.95,
   supports = NULL,
@@ -70,14 +70,14 @@ $(d+1)$th matrix in the list will be selected.)}
 \item{exact}{Set to \code{TRUE} for exact computation, \code{FALSE} (default) for
 discrete.}
 
-\item{min_x, max_x}{Domain thresholds for discrete PL; if not specified, then
+\item{xmin, xmax}{Domain thresholds for discrete PL; if not specified, then
 taken to be the support of the PL constructed from the data or the internal
 values of the 'Rcpp_PersistenceLandscape' object.}
 
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{max_y}{Numeric; the threshold used to compute the persistence diagram
+\item{ymax}{Numeric; the threshold used to compute the persistence diagram
 (could be infinite).}
 
 \item{complete}{Logical; whether to compute averages between all combinations
@@ -107,7 +107,7 @@ plot(pl, xlim = c(0, 5))
 plf <- pl_indicator(pl, f)
 plot(plf, xlim = c(0, 5))
 # discrete landscape
-pl <- landscape(pd, degree = 1, min_x = 0, max_x = 5, by = .2)
+pl <- landscape(pd, degree = 1, xmin = 0, xmax = 5, by = .2)
 plot(pl)
 # plf <- pl$indicator(f, 0)
 plf <- pl_indicator(pl, f)

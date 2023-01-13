@@ -90,7 +90,7 @@ arise from the Hilbert space structure on persistence landscapes (Bubenik,
 These functions are prefixed \verb{pl_*()} to help users access them via
 tab-completion. Some take their names from the underlying S4 class methods
 and are only provided to enable composition via pipes: \code{add}, \code{scale},
-\code{abs}, \code{inner}, \code{min} (\code{infimum}), \code{max} (\code{supremum}), and \code{moment};
+\code{abs}, \code{inner}, \code{min} (\code{minimum}), \code{max} (\code{maximum}), and \code{moment};
 \code{range} combines \code{min} and \code{max}. Others mimic classic R functions to
 handle lists of persistence landscapes: \code{sum}, \code{diff}, \code{mean}, \code{var}, and
 \code{sd}. Finally, some are vectorizations of the preceding: \code{vmin}, \code{vmax},
@@ -100,7 +100,7 @@ handle lists of persistence landscapes: \code{sum}, \code{diff}, \code{mean}, \c
 # scale a landscape
 x <- tdaunif::sample_torus_tube(4, 2.5)
 pd <- as_persistence(ripserr::vietoris_rips(x, dim = 1L, threshold = 2))
-pl <- landscape(pd$pairs[[1]], exact = FALSE, max_x=2.5, by=0.1)
+pl <- landscape(pd$pairs[[1]], exact = FALSE, xmax = 2.5, by=0.1)
 print(pl$getInternal()[2, , ])
 print(pl$scale(0.5)$getInternal()[2, , ])
 
@@ -109,8 +109,8 @@ x <- tdaunif::sample_torus_tube(4, 2.5)
 y <- tdaunif::sample_torus_tube(4, 2.5)
 x_pd <- as_persistence(ripserr::vietoris_rips(x, dim = 1, threshold = 2))
 y_pd <- as_persistence(ripserr::vietoris_rips(y, dim = 1, threshold = 2))
-x_pl <- landscape(x_pd$pairs[[1]], exact = FALSE, max_x = 2.5, by = 0.1)
-y_pl <- landscape(y_pd$pairs[[1]], exact = FALSE, max_x = 2.5, by = 0.1)
+x_pl <- landscape(x_pd$pairs[[1]], exact = FALSE, xmax = 2.5, by = 0.1)
+y_pl <- landscape(y_pd$pairs[[1]], exact = FALSE, xmax = 2.5, by = 0.1)
 
 # compare landscapes and calculate mean landscape
 print(x_pl$getInternal())
@@ -123,14 +123,14 @@ set.seed(492869L)
 # compute landscape for a large sample
 pt <- tdaunif::sample_torus_tube(1000, 5)
 pd <- as_persistence(ripserr::vietoris_rips(pt, dim = 2, threshold = 2))
-pl <- landscape(pd, degree = 1, exact = FALSE, by = 0.1, min_x = 0, max_x = 2)
+pl <- landscape(pd, degree = 1, exact = FALSE, by = 0.1, xmin = 0, xmax = 2)
 
 # compute landscapes for a large sample of small samples
 pl_list <- c()
 for (i in seq(100)) {
   pti <- tdaunif::sample_torus_tube(100, 5)
   pdi <- as_persistence(ripserr::vietoris_rips(pti, dim = 2, threshold = 2))
-  pli <- landscape(pdi, degree = 1, exact = FALSE, by = 0.1, min_x = 0, max_x = 2)
+  pli <- landscape(pdi, degree = 1, exact = FALSE, by = 0.1, xmin = 0, xmax = 2)
   pl_list <- c(pl_list, pli)
 }
 
