@@ -8,6 +8,7 @@
 \alias{pl_limits}
 \alias{pl_support}
 \alias{pl_expand}
+\alias{pl_contract}
 \title{Persistence Landscapes}
 \usage{
 landscape(
@@ -31,6 +32,8 @@ pl_limits(pl)
 pl_support(pl)
 
 pl_expand(pl, xmin = NULL, xmax = NULL)
+
+pl_contract(pl, xmin = NULL, xmax = NULL)
 }
 \arguments{
 \item{pd}{Persistence data (or diagram), stored as a 2-column matrix or as a

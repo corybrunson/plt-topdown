@@ -67,6 +67,8 @@ std::vector<NumericVector> exactPersistenceLandscapeToR(
   return out_d;
 }
 
+// TODO: Assume only that the `dx` are equal and divide the difference between
+// the `min_x`. -JCB
 std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
     const PersistenceLandscape &l1,
     const PersistenceLandscape &l2) {
@@ -109,7 +111,7 @@ std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
   std::vector<std::vector<std::pair<double, double>>> out;
   
   // reality check
-  if (dx != l.land[0][1].first - l.land[0][0].first)
+  if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
     stop("Resolutions do not agree.");
   
   // numbers of additional grid points
@@ -136,6 +138,41 @@ std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
       level_out.push_back(std::make_pair(
           level[level.size() - 1].first + i * dx,
           0));
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+std::vector<std::vector<std::pair<double, double>>> contractDiscreteLandscape(
+    PersistenceLandscape l,
+    double min_x, double max_x,
+    double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  // reality check
+  if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
+    stop("Resolutions do not agree.");
+  
+  // TODO: If no grid points lie between `min_x` and `max_x`, then return an
+  // empty landscape.
+  
+  // numbers of fewer grid points
+  double diffLeft = min_x - l.land[0][0].first;
+  double diffRight = l.land[0][l.land[0].size() - 1].first - max_x;
+  int gridDiffLeft = std::ceil(std::max(0., (diffLeft) / dx));
+  int gridDiffRight = std::ceil(std::max(0., diffRight / dx));
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    
+    // truncated range
+    for (int i = gridDiffLeft; i < l.land[0].size() - gridDiffRight; i++)
+      level_out.push_back(std::make_pair(
+          level[i].first,
+          level[i].second));
     
     out.push_back(level_out);
   }
@@ -343,20 +380,35 @@ public:
   PersistenceLandscapeInterface expand(
       double min_x, double max_x) {
     
-    PersistenceLandscape exp_out;
+    PersistenceLandscape out;
     
     if (exact)
-      exp_out = pl_raw;
+      out = pl_raw;
     else
-      exp_out = PersistenceLandscape(expandDiscreteLandscape(
+      out = PersistenceLandscape(expandDiscreteLandscape(
         pl_raw,
         min_x, max_x,
         dx));
     
-    return PersistenceLandscapeInterface(exp_out, exact, min_x, max_x, dx);
+    return PersistenceLandscapeInterface(out, exact, min_x, max_x, dx);
   }
   
-  // TODO: Contracts the limits of a PL -JCB
+  // REVIEW: Contracts the limits of a PL -JCB
+  PersistenceLandscapeInterface contract(
+      double min_x, double max_x) {
+    
+    PersistenceLandscape out;
+    
+    if (exact)
+      out = pl_raw;
+    else
+      out = PersistenceLandscape(contractDiscreteLandscape(
+        pl_raw,
+        min_x, max_x,
+        dx));
+    
+    return PersistenceLandscapeInterface(out, exact, min_x, max_x, dx);
+  }
   
   // Adds this to another PL
   PersistenceLandscapeInterface add(
