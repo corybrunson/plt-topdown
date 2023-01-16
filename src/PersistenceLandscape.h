@@ -797,7 +797,8 @@ double PersistenceLandscape::computeIntegralOfLandscape(
         continue;
       // REVIEW: Debug discrepancy with R implementation. -JCB
       // if (a != 0) {
-      if (fabs(a) > epsi) {
+      // if (fabs(a) > epsi) {
+      if (! almostEqual(a, 0.)) {
         // REVIEW: Simplify this formula:
         // result += 1 / (a * (p + 1)) *
         //   (pow((a * this->land[i][nr].first + b), p + 1) -
