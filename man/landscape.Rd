@@ -7,6 +7,7 @@
 \alias{pl_num_envelopes}
 \alias{pl_limits}
 \alias{pl_support}
+\alias{pl_discretize}
 \alias{pl_expand}
 \alias{pl_contract}
 \title{Persistence Landscapes}
@@ -30,6 +31,8 @@ pl_num_envelopes(pl)
 pl_limits(pl)
 
 pl_support(pl)
+
+pl_discretize(pl, xmin = NULL, xmax = NULL, by = NULL)
 
 pl_expand(pl, xmin = NULL, xmax = NULL)
 
@@ -92,6 +95,10 @@ print(pl)
 print(pl$getInternal()[[1L]])
 # plot all landscape layers
 plot(pl)
+
+# coerce to discrete
+pl_ <- pl_discretize(pl, xmin = 0, xmax = .5, by = .005)
+plot(pl_)
 # sample points
 points <- tdaunif::sample_torus_tube(60L, 2.5)
 

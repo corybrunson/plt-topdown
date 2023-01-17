@@ -372,10 +372,25 @@ public:
   std::vector<NumericVector> toExact() {
     if (! exact) {
       stop("Can not convert a discrete PL to an exact PL.");
-    }
-    else {
+    } else {
       return exactPersistenceLandscapeToR(pl_raw.land);
     }
+  }
+  
+  PersistenceLandscapeInterface discretize(
+      double min_x, double max_x,
+      double dx) {
+    
+    PersistenceLandscape out;
+    
+    if (exact) {
+      out = exactLandscapeToDiscrete(pl_raw.land, min_x, max_x, dx);
+    } else {
+      warning("Can not yet re-discretize a discrete PL.");
+      out = pl_raw.land;
+    }
+    
+    return PersistenceLandscapeInterface(out, false, min_x, max_x, dx);
   }
   
   // REVIEW: Expands the limits of a PL -JCB

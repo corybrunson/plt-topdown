@@ -13,3 +13,7 @@ print(pl)
 print(pl$getInternal()[[1L]])
 # plot all landscape layers
 plot(pl)
+
+# coerce to discrete
+pl_ <- pl_discretize(pl, xmin = 0, xmax = .5, by = .005)
+plot(pl_)
