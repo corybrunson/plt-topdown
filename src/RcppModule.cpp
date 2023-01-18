@@ -11,7 +11,8 @@ RCPP_MODULE(Landscape) {
   // 'PersistenceLandscape'
   class_<PersistenceLandscapeInterface>("PersistenceLandscape")
   
-  .constructor<NumericMatrix, bool, double, double, double, double>()
+  // Match specifications in `PersistenceLandscapeInterface.h`.
+  .constructor<NumericMatrix, bool, double, double, double, double, double>()
   
   // TODO: Implement validator. -JCB
   

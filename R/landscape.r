@@ -24,8 +24,9 @@
 #'   values of the 'Rcpp_PersistenceLandscape' object.
 #' @param by Domain grid diameter for discrete PL; if not specified, then set to
 #'   the power of 10 that yields between 100 and 1000 intervals.
-#' @param ymax Numeric; the threshold used to compute the persistence diagram
-#'   (could be infinite).
+#' @param ymin,ymax Numeric; the threshold used to compute the persistence
+#'   diagram or bound to impose on the height of the landscape (default to +/-
+#'   1000, could be infinite).
 #' @param pl A persistence landscape as returned by `landscape()`.
 #' @return `landscape()` returns a persistence landscape (an object of S4 class
 #'   'Rcpp_PersistenceLandscape'). Other functions return summary information
@@ -36,8 +37,8 @@
 landscape <- function(
     pd, degree = NULL,
     exact = FALSE,
-    # TODO: add `ymin` parameter
-    xmin = NULL, xmax = NULL, by = NULL, ymax = NULL
+    # REVIEW: added `ymin` parameter
+    xmin = NULL, xmax = NULL, by = NULL, ymin = NULL, ymax = NULL
 ) {
   
   # birth-death pairs matrix `diagram` with upper bound `ymax`
@@ -45,12 +46,16 @@ landscape <- function(
     if (is.null(degree))
       stop("`landscape()` requires a homological degree (`degree = <int>`).")
     diagram <- pd$pairs[[degree + 1L]]
-    if (! is.na(pd$threshold)) ymax <- pd$threshold
+    if (! is.na(pd$threshold)) {
+      ymin <- -pd$threshold
+      ymax <- pd$threshold
+    }
   } else if (is.atomic(pd)) {
     diagram <- pd
     stopifnot(ncol(diagram) >= 2L, is.numeric(diagram))
   }
   # TODO: `ymax %||% Inf`; don't artificially limit y range
+  ymin <- ymin %||% min(diagram[, 2L])
   ymax <- ymax %||% max(diagram[, 2L])
   
   # content check
@@ -66,7 +71,7 @@ landscape <- function(
   by <- by %||% 10 ^ (floor(log(xmax - xmin, 10)) - 2L)
   
   # construct persistence landscape
-  new(PersistenceLandscape, diagram, exact, xmin, xmax, by, ymax)
+  new(PersistenceLandscape, diagram, exact, xmin, xmax, by, ymin, ymax)
 }
 
 # pl_str <- function(pl) {

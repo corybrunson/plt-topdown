@@ -316,14 +316,15 @@ public:
     bool exact = false,
     double min_x = 0, double max_x = 1,
     double dx = 0.01,
-    double max_y = 1000)
+    double min_y = 0, double max_y = 1000)
     : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
     
     // Initialize a PersistenceLandscape object.
     std::vector<std::pair<double, double>> bars;
     
     for (int i = 0; i < pd.nrow(); i++)
-      bars.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
+      bars.push_back(std::make_pair(pd(i,0),
+                                    std::max(std::min(pd(i,1), max_y), min_y)));
     // auto pb = PersistenceBarcodes(bars);
     
     PersistenceLandscapeInterface::pl_raw =
