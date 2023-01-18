@@ -563,7 +563,7 @@ PersistenceLandscape::PersistenceLandscape(
     if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       ++nb;
     }
-    // TODO: Harmonize this step with extended persistence data. -JCB
+    // FIXME: Harmonize this step with extended persistence data. -JCB
     if (pd[i].second < pd[i].first) {
       double sec = pd[i].second;
       pd[i].second = pd[i].first;

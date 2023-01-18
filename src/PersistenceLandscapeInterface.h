@@ -67,8 +67,8 @@ std::vector<NumericVector> exactPersistenceLandscapeToR(
   return out_d;
 }
 
-// TODO: Assume only that the `dx` are equal and that they divide the difference
-// between the `min_x`. -JCB
+// REVIEW: Assume only that the `dx` are equal and that they divide the
+// difference between the `min_x`. -JCB
 std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
     const PersistenceLandscape &l1,
     const PersistenceLandscape &l2) {
