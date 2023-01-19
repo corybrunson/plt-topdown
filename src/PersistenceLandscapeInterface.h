@@ -166,6 +166,7 @@ std::vector<std::vector<std::pair<double, double>>> contractDiscreteLandscape(
   
   // TODO: If no grid points lie between `min_x` and `max_x`, then return an
   // empty landscape.
+  // `PersistenceLandscape l;`
   
   // numbers of fewer grid points
   double diffLeft = min_x - l.land[0][0].first;
@@ -716,6 +717,32 @@ PersistenceLandscapeInterface PLmean(List pl_list) {
   PersistenceLandscapeInterface avg_out = PLsum(pl_list);
   
   return avg_out.scale(1.0 / pl_list.size());
+}
+
+NumericMatrix PLdist(List pl_list, unsigned p) {
+  
+  // empty matrix
+  unsigned n = pl_list.size();
+  NumericMatrix out(n, n);
+  
+  // not assuming symmetric distance calculation
+  for (int i = 0; i != n; i++) {
+    PersistenceLandscapeInterface
+    pl_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    for (int j = 0; j != n; j++) {
+      if (j == i) {
+        // same landscape
+        out(i, j) = 0.;
+      } else {
+        // different landscape
+        PersistenceLandscapeInterface
+        pl_j = as<PersistenceLandscapeInterface>(pl_list[j]);
+        out(i, j) = pl_i.distance(pl_j, p);
+      }
+    }
+  }
+  
+  return out;
 }
 
 double PLvar(List pl_list, unsigned p) {

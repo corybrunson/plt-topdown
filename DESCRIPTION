@@ -52,6 +52,7 @@ Collate:
     'plt-package.r'
     'PersistenceLandscape.r'
     'Ops.r'
+    'calculus.r'
     'inference.r'
     'landscape.r'
     'operations.r'
