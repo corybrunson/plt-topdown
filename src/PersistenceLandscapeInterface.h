@@ -4,6 +4,12 @@
 
 using namespace Rcpp;
 
+// NOTE: Indexing of (level/envelope) arguments must at some point be shifted
+// from starting at 1 (in R) to starting at 0 (in C++). Since the
+// 'PersistenceLandscapeInterface' methods are exposed to R, this shift will be
+// done in these methods, before they are passed to 'PersistenceLandscape'
+// methods. -JCB
+
 int TDIndex(int X, int Y, int Z, int x, int y, int z) {
   return x + X * (y + Y * z);
 }
@@ -536,11 +542,11 @@ public:
   }
   
   double minimum(unsigned level) {
-    return pl_raw.findMin(level);
+    return pl_raw.findMin(level - 1);
   }
   
   double maximum(unsigned level) {
-    return pl_raw.findMax(level);
+    return pl_raw.findMax(level - 1);
   }
   
   double moment(
@@ -548,7 +554,7 @@ public:
       double center,
       unsigned level) {
     
-    double moment_out = pl_raw.computeNthMoment(n, center, level);
+    double moment_out = pl_raw.computeNthMoment(n, center, level - 1);
     
     return moment_out;
   }
