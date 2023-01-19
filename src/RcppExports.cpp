@@ -68,15 +68,12 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_class_PersistenceLandscape();
-
 static const R_CallMethodDef CallEntries[] = {
     {"_plt_PLsum", (DL_FUNC) &_plt_PLsum, 1},
     {"_plt_PLdiff", (DL_FUNC) &_plt_PLdiff, 1},
     {"_plt_PLmean", (DL_FUNC) &_plt_PLmean, 1},
     {"_plt_PLvar", (DL_FUNC) &_plt_PLvar, 2},
     {"_plt_PLsd", (DL_FUNC) &_plt_PLsd, 2},
-    {"_rcpp_module_boot_class_PersistenceLandscape", (DL_FUNC) &_rcpp_module_boot_class_PersistenceLandscape, 0},
     {NULL, NULL, 0}
 };
 

@@ -18,14 +18,16 @@ Rcpp::loadModule("PersistenceLandscape", loadNow = TRUE)
 Rcpp::exposeClass(
   "PersistenceLandscape",
   constructors = list(
-    c("NumericMatrix", "bool", "double", "double", "double", "double")
+    c("NumericMatrix", "bool", "double", "double", "double", "double", "double")
   ),
   # REVIEW: Could not successfully pass to `readOnly` param. -JCB
-  fields = "exact",
+  # fields = "exact",
   methods = c(
     "isExact", "xMin", "xMax", "xBy",
-    "toExact", "toDiscrete", "getInternal",
-    "add", "scale", "inner"
+    "getInternal", "toDiscrete", "toExact", "discretize",
+    "add", "scale", "abs", "inner",
+    "minimum", "maximum", "moment",
+    "integral", "distance", "norm", "indicator", "indicator_form"
   ),
   header = '#include "PersistenceLandscapeInterface.h"',
   CppClass = "PersistenceLandscapeInterface"

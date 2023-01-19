@@ -1,1 +1,0 @@
-PersistenceLandscape <- setRcppClass("PersistenceLandscape", "PersistenceLandscapeInterface")

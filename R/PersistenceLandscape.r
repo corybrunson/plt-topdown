@@ -28,10 +28,7 @@
 #' @exportClass PersistenceLandscape
 #' @exportClass Rcpp_PersistenceLandscape
 
-# setClass("PersistenceLandscape")
-
-# PersistenceLandscape <- setRcppClass("PersistenceLandscape")
-
+PersistenceLandscape <- setClass("PersistenceLandscape")
 Rcpp_PersistenceLandscape <- setClass("Rcpp_PersistenceLandscape")
 
 # register S4 class for S3 inheritance
