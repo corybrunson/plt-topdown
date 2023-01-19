@@ -563,7 +563,7 @@ PersistenceLandscape::PersistenceLandscape(
     if (pd[i].second != R_PosInf & pd[i].second != R_NegInf) {
       ++nb;
     }
-    // TODO: Harmonize this step with extended persistence data. -JCB
+    // FIXME: Harmonize this step with extended persistence data. -JCB
     if (pd[i].second < pd[i].first) {
       double sec = pd[i].second;
       pd[i].second = pd[i].first;
@@ -797,7 +797,8 @@ double PersistenceLandscape::computeIntegralOfLandscape(
         continue;
       // REVIEW: Debug discrepancy with R implementation. -JCB
       // if (a != 0) {
-      if (fabs(a) > epsi) {
+      // if (fabs(a) > epsi) {
+      if (! almostEqual(a, 0.)) {
         // REVIEW: Simplify this formula:
         // result += 1 / (a * (p + 1)) *
         //   (pow((a * this->land[i][nr].first + b), p + 1) -

@@ -67,6 +67,8 @@ std::vector<NumericVector> exactPersistenceLandscapeToR(
   return out_d;
 }
 
+// REVIEW: Assume only that the `dx` are equal and that they divide the
+// difference between the `min_x`. -JCB
 std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
     const PersistenceLandscape &l1,
     const PersistenceLandscape &l2) {
@@ -109,7 +111,8 @@ std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
   std::vector<std::vector<std::pair<double, double>>> out;
   
   // reality check
-  if (dx != l.land[0][1].first - l.land[0][0].first)
+  // if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
+  if (! almostEqual(l.land[0][1].first, l.land[0][0].first + dx))
     stop("Resolutions do not agree.");
   
   // numbers of additional grid points
@@ -136,6 +139,42 @@ std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
       level_out.push_back(std::make_pair(
           level[level.size() - 1].first + i * dx,
           0));
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+std::vector<std::vector<std::pair<double, double>>> contractDiscreteLandscape(
+    PersistenceLandscape l,
+    double min_x, double max_x,
+    double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  // reality check
+  // if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
+  if (! almostEqual(l.land[0][1].first, l.land[0][0].first + dx))
+    stop("Resolutions do not agree.");
+  
+  // TODO: If no grid points lie between `min_x` and `max_x`, then return an
+  // empty landscape.
+  
+  // numbers of fewer grid points
+  double diffLeft = min_x - l.land[0][0].first;
+  double diffRight = l.land[0][l.land[0].size() - 1].first - max_x;
+  int gridDiffLeft = std::ceil(std::max(0., (diffLeft) / dx));
+  int gridDiffRight = std::ceil(std::max(0., diffRight / dx));
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    
+    // truncated range
+    for (int i = gridDiffLeft; i < l.land[0].size() - gridDiffRight; i++)
+      level_out.push_back(std::make_pair(
+          level[i].first,
+          level[i].second));
     
     out.push_back(level_out);
   }
@@ -277,14 +316,15 @@ public:
     bool exact = false,
     double min_x = 0, double max_x = 1,
     double dx = 0.01,
-    double max_y = 1000)
+    double min_y = 0, double max_y = 1000)
     : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
     
     // Initialize a PersistenceLandscape object.
     std::vector<std::pair<double, double>> bars;
     
     for (int i = 0; i < pd.nrow(); i++)
-      bars.push_back(std::make_pair(pd(i, 0), std::min(pd(i, 1), max_y)));
+      bars.push_back(std::make_pair(pd(i,0),
+                                    std::max(std::min(pd(i,1), max_y), min_y)));
     // auto pb = PersistenceBarcodes(bars);
     
     PersistenceLandscapeInterface::pl_raw =
@@ -331,51 +371,93 @@ public:
   }
   
   std::vector<NumericVector> toExact() {
-    if (!exact) {
-      stop("Error: Can not convert a discrete PL to an exact PL.");
-    }
-    else {
+    if (! exact) {
+      stop("Can not convert a discrete PL to an exact PL.");
+    } else {
       return exactPersistenceLandscapeToR(pl_raw.land);
     }
+  }
+  
+  PersistenceLandscapeInterface discretize(
+      double min_x, double max_x,
+      double dx) {
+    
+    PersistenceLandscape out;
+    
+    if (exact) {
+      out = exactLandscapeToDiscrete(pl_raw.land, min_x, max_x, dx);
+    } else {
+      warning("Can not yet re-discretize a discrete PL.");
+      out = pl_raw.land;
+    }
+    
+    return PersistenceLandscapeInterface(out, false, min_x, max_x, dx);
   }
   
   // REVIEW: Expands the limits of a PL -JCB
   PersistenceLandscapeInterface expand(
       double min_x, double max_x) {
     
-    PersistenceLandscape exp_out;
+    PersistenceLandscape out;
     
     if (exact)
-      exp_out = pl_raw;
+      out = pl_raw;
     else
-      exp_out = PersistenceLandscape(expandDiscreteLandscape(
+      out = PersistenceLandscape(expandDiscreteLandscape(
         pl_raw,
         min_x, max_x,
         dx));
     
-    return PersistenceLandscapeInterface(exp_out, exact, min_x, max_x, dx);
+    return PersistenceLandscapeInterface(out, exact, min_x, max_x, dx);
   }
   
-  // TODO: Contracts the limits of a PL -JCB
+  // REVIEW: Contracts the limits of a PL -JCB
+  PersistenceLandscapeInterface contract(
+      double min_x, double max_x) {
+    
+    PersistenceLandscape out;
+    
+    if (exact)
+      out = pl_raw;
+    else
+      out = PersistenceLandscape(contractDiscreteLandscape(
+        pl_raw,
+        min_x, max_x,
+        dx));
+    
+    return PersistenceLandscapeInterface(out, exact, min_x, max_x, dx);
+  }
   
   // Adds this to another PL
   PersistenceLandscapeInterface add(
       const PersistenceLandscapeInterface &other) {
     
     PersistenceLandscape add_out;
+    // appropriate settings for output PL
+    bool out_exact = exact & other.isExact();
+    double out_min = min(min_x, other.min_x);
+    double out_max = max(max_x, other.max_x);
     
     // both landscapes are exact
     if (PersistenceLandscapeInterface::exact && other.isExact())
       add_out = pl_raw + other.pl_raw;
     
     // neither landscape is exact
-    else if (!PersistenceLandscapeInterface::exact && !other.isExact()) {
-      // FIXME: Drop these requirements once settings can be reconciled.
-      if (!checkPairOfDiscreteLandscapes(*this, other)) {
-        stop("Error: Persistence Landscape Properties Do Not Match.");
+    else if (! PersistenceLandscapeInterface::exact && ! other.isExact()) {
+      if (! checkPairOfDiscreteLandscapes(*this, other)) {
+        stop("Resolutions and limits are incompatible.");
       }
-      add_out =
-        PersistenceLandscape(addDiscreteLandscapes(pl_raw, other.pl_raw));
+      // REVIEW: Allow more landscapes to be added. Take output limits to be
+      // union of input limits. -JCB
+      if (alignPairOfDiscreteLandscapes(*this, other)) {
+        add_out =
+          PersistenceLandscape(addDiscreteLandscapes(pl_raw, other.pl_raw));
+      } else {
+        add_out =
+          PersistenceLandscape(addDiscreteLandscapes(
+              expandDiscreteLandscape(pl_raw, out_min, out_max, dx),
+              expandDiscreteLandscape(other.pl_raw, out_min, out_max, dx)));
+      }
     }
     
     else{
@@ -414,10 +496,6 @@ public:
     }
     
     // REVIEW: This has been edited from {tdatools} by JCB.
-    // appropriate settings for output PL
-    bool out_exact = exact & other.isExact();
-    double out_min = min(min_x, other.xMin());
-    double out_max = max(max_x, other.xMax());
     return PersistenceLandscapeInterface(add_out,
                                          out_exact,
                                          out_min, out_max,
@@ -555,6 +633,10 @@ public:
       PersistenceLandscapeInterface &l1,
       const PersistenceLandscapeInterface &l2);
   
+  friend bool alignPairOfDiscreteLandscapes(
+      PersistenceLandscapeInterface &l1,
+      const PersistenceLandscapeInterface &l2);
+  
   friend std::pair<bool, bool> operationOnPairOfLanscapesConversion(
       PersistenceLandscapeInterface &l1,
       const PersistenceLandscapeInterface &l2);
@@ -569,12 +651,29 @@ private:
   
 };
 
-// TODO: Once conversions are implemented, check only that resolutions are equal
-// and that endpoints lie on the same grid of the shared resolution.
+// REVIEW: Check only that resolutions are equal and that endpoints lie on the
+// same grid of the shared resolution. -JCB
 bool checkPairOfDiscreteLandscapes(
     PersistenceLandscapeInterface &l1,
     const PersistenceLandscapeInterface &l2) {
-  if (l1.min_x != l2.min_x || l1.max_x != l2.max_x || l1.dx != l2.dx)
+  // if (l1.min_x != l2.min_x || l1.max_x != l2.max_x || l1.dx != l2.dx)
+  //   return false;
+  if (l1.dx != l2.dx) return false;
+  
+  double mod_dx = fmod(l1.min_x - l2.min_x, l1.dx);
+  // WARNING: Allow flexibility here since `addDiscreteLandscapes()` simply
+  // takes the first input's abscissa. -JCB
+  if (! almostEqual(mod_dx, 0.) && ! almostEqual(mod_dx, l1.dx)) return false;
+  
+  return true;
+}
+
+// REVIEW: Provided parameters are compatible, check whether bounds need to be
+// aligned. -JCB
+bool alignPairOfDiscreteLandscapes(
+    PersistenceLandscapeInterface &l1,
+    const PersistenceLandscapeInterface &l2) {
+  if (l1.min_x != l2.min_x || l1.max_x != l2.max_x)
     return false;
   return true;
 }

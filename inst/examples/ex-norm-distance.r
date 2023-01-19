@@ -130,10 +130,9 @@ bench::mark(
 )
 # discrete
 bench::mark(
-  # FIXME: Discrete integrals disagree for p > 38.
   cpp = vapply(ps, function(p) pl_distance(pl1, pl2, p), 0),
   R = vapply(ps, function(p) pl_dist(pl1, pl2, p), 0),
-  check = FALSE
+  check = TRUE
 )
 
 # toy example from Bubenik & Dłotko (2017)

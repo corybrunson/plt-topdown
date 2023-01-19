@@ -34,6 +34,7 @@ pd_z_test(
   xmin = NULL,
   xmax = NULL,
   by = NULL,
+  ymin = NULL,
   ymax = NULL,
   alternative = c("two.sided", "less", "greater"),
   conf.level = 0.95,
@@ -77,8 +78,9 @@ values of the 'Rcpp_PersistenceLandscape' object.}
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{ymax}{Numeric; the threshold used to compute the persistence diagram
-(could be infinite).}
+\item{ymin, ymax}{Numeric; the threshold used to compute the persistence
+diagram or bound to impose on the height of the landscape (default to +/-
+1000, could be infinite).}
 
 \item{complete}{Logical; whether to compute averages between all combinations
 from the two lists of landscapes.}

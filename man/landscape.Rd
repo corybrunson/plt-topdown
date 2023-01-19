@@ -7,7 +7,9 @@
 \alias{pl_num_envelopes}
 \alias{pl_limits}
 \alias{pl_support}
+\alias{pl_discretize}
 \alias{pl_expand}
+\alias{pl_contract}
 \title{Persistence Landscapes}
 \usage{
 landscape(
@@ -17,6 +19,7 @@ landscape(
   xmin = NULL,
   xmax = NULL,
   by = NULL,
+  ymin = NULL,
   ymax = NULL
 )
 
@@ -30,7 +33,11 @@ pl_limits(pl)
 
 pl_support(pl)
 
+pl_discretize(pl, xmin = NULL, xmax = NULL, by = NULL)
+
 pl_expand(pl, xmin = NULL, xmax = NULL)
+
+pl_contract(pl, xmin = NULL, xmax = NULL)
 }
 \arguments{
 \item{pd}{Persistence data (or diagram), stored as a 2-column matrix or as a
@@ -51,8 +58,9 @@ values of the 'Rcpp_PersistenceLandscape' object.}
 \item{by}{Domain grid diameter for discrete PL; if not specified, then set to
 the power of 10 that yields between 100 and 1000 intervals.}
 
-\item{ymax}{Numeric; the threshold used to compute the persistence diagram
-(could be infinite).}
+\item{ymin, ymax}{Numeric; the threshold used to compute the persistence
+diagram or bound to impose on the height of the landscape (default to +/-
+1000, could be infinite).}
 
 \item{pl}{A persistence landscape as returned by \code{landscape()}.}
 }
@@ -89,6 +97,10 @@ print(pl)
 print(pl$getInternal()[[1L]])
 # plot all landscape layers
 plot(pl)
+
+# coerce to discrete
+pl_ <- pl_discretize(pl, xmin = 0, xmax = .5, by = .005)
+plot(pl_)
 # sample points
 points <- tdaunif::sample_torus_tube(60L, 2.5)
 
