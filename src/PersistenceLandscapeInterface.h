@@ -316,14 +316,14 @@ class PersistenceLandscapeInterface {
   
 public:
   
-  // Creates PL from PD (in the form of a 2-column numeric matrix)
+  // Creates a PL from a PD, in the form of a 2-column numeric matrix.
   // Natural defaults are inferred in R through `landscape()`.
   PersistenceLandscapeInterface(
     NumericMatrix pd,
     bool exact = false,
     double min_x = 0, double max_x = 1,
     double dx = 0.01,
-    double min_y = 0, double max_y = 1000)
+    double min_y = R_NegInf, double max_y = R_PosInf)
     : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
     
     // Initialize a PersistenceLandscape object.

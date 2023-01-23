@@ -12,7 +12,8 @@ RCPP_MODULE(Landscape) {
   class_<PersistenceLandscapeInterface>("PersistenceLandscape")
   
   // Match specifications in `PersistenceLandscapeInterface.h`.
-  .constructor<NumericMatrix, bool, double, double, double, double, double>()
+  .constructor<NumericMatrix, bool, double, double, double, double, double>(""
+  "Creates a PL from a PD, in the form of a 2-column numeric matrix")
   
   // TODO: Implement validator. -JCB
   
