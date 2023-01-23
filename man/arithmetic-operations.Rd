@@ -54,15 +54,15 @@ pl_max(pl, level = 1L)
 
 pl_range(pl, level = 1L)
 
-pl_vmin(pl, level = 1L)
+pl_vmin(pl, level = pl_num_levels(pl))
 
-pl_vmax(pl, level = 1L)
+pl_vmax(pl, level = pl_num_levels(pl))
 
-pl_vrange(pl, level = 1L)
+pl_vrange(pl, level = pl_num_levels(pl))
 
 pl_moment(pl, p = 1L, center = 0, level = 1L)
 
-pl_vmoment(pl, p = 1L, center = 0, level = NULL)
+pl_vmoment(pl, p = 1L, center = 0, level = pl_num_levels(pl))
 }
 \arguments{
 \item{p}{Positive integer or infinity; the power used to compute a norm or
@@ -74,7 +74,7 @@ moment.}
 
 \item{mult}{Double; a real-valued scale factor.}
 
-\item{level}{Positive integer; the envelope of the persistence landscape (up
+\item{level}{Positive integer; the level of the persistence landscape (up
 to) whose moment to calculate.}
 
 \item{center}{Double; where to center the moment.}

@@ -12,10 +12,9 @@ RCPP_MODULE(Landscape) {
   class_<PersistenceLandscapeInterface>("PersistenceLandscape")
   
   // Match specifications in `PersistenceLandscapeInterface.h`.
+  // TODO: Implement a validator. -JCB
   .constructor<NumericMatrix, bool, double, double, double, double, double>(""
   "Creates a PL from a PD, in the form of a 2-column numeric matrix")
-  
-  // TODO: Implement validator. -JCB
   
   // TODO: Delete `isExact` method if `exact` field can be read-only exposed.
   // -JCB

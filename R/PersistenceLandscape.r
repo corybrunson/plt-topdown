@@ -39,7 +39,7 @@ setOldClass("Rcpp_PersistenceLandscape")
 summary.Rcpp_PersistenceLandscape <- function(object, ...) {
   res <- list(
     str = pl_str(object),
-    n.env = pl_num_envelopes(object),
+    n.levels = pl_num_levels(object),
     limits = pl_limits(object),
     resolution = if (object$isExact()) NA_real_ else object$xBy(),
     support = pl_support(object),
@@ -61,7 +61,7 @@ print.summary.Rcpp_PersistenceLandscape <- function(
     format(round(s, max(0, digits - log10(abs(s)))))
   }
   cat("Internal representation: ", x$str, "\n")
-  cat("Number of envelopes: ", x$n.env, "\n")
+  cat("Number of levels: ", x$n.levels, "\n")
   cat(
     "Representation limits: (",
     fmt(x$limits[[1L]]), ",", fmt(x$limits[[2L]]), ")",
@@ -81,7 +81,7 @@ as.vector.Rcpp_PersistenceLandscape <- function(x, mode = "any") {
   # get discrete representation for consistent abscissa values
   internal <- x$toDiscrete()
   
-  # export concatenation of envelopes
+  # export concatenation of levels
   as.vector(t(internal[, , 2L]), mode = mode)
 }
 
@@ -99,30 +99,30 @@ as.data.frame.Rcpp_PersistenceLandscape <- function(
         x, row.names = row.names, optional = optional, exact = FALSE
       ))
     }
-    envelopes <- vapply(internal, nrow, 0L)
-    envelope <- rep(seq_along(internal), envelopes)
+    levs <- vapply(internal, nrow, 0L)
+    lev <- rep(seq_along(internal), levs)
     yfy <- Reduce(rbind, internal)
-    df <- data.frame(envelope, yfy)
-    names(df) <- c("envelope", "x", "fx")
+    df <- data.frame(lev, yfy)
+    names(df) <- c("level", "x", "fx")
     if (! is.null(row.names)) {
       rownames(df) <- row.names
     } else if (! optional) {
-      id <- unlist(lapply(envelopes, seq))
-      rownames(df) <- paste(envelope, id, sep = ".")
+      id <- unlist(lapply(levs, seq))
+      rownames(df) <- paste(lev, id, sep = ".")
     }
     df
   } else {
     internal <- x$toDiscrete()
-    envelope <- rep(seq(dim(internal)[[2L]]), each = dim(internal)[[1L]])
+    lev <- rep(seq(dim(internal)[[2L]]), each = dim(internal)[[1L]])
     y <- as.vector(t(internal[, , 1L]))
     fy <- as.vector(t(internal[, , 2L]))
-    df <- data.frame(envelope = envelope, x = y, fx = fy)
+    df <- data.frame(level = lev, x = y, fx = fy)
     if (! is.null(row.names) && length(row.names) == nrow(df)) {
       # adapted from `as.data.frame.matrix()`
       .rowNamesDF(df, make.names = TRUE) <- row.names
     } else if (! optional) {
       # adapted from `as.data.frame.matrix()`
-      attr(df, "row.names") <- paste(envelope, y, sep = ".")
+      attr(df, "row.names") <- paste(lev, y, sep = ".")
     }
     df
   }

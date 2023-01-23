@@ -4,7 +4,7 @@
 \alias{landscape}
 \alias{pl_is_exact}
 \alias{pl_str}
-\alias{pl_num_envelopes}
+\alias{pl_num_levels}
 \alias{pl_limits}
 \alias{pl_support}
 \alias{pl_discretize}
@@ -27,7 +27,7 @@ pl_is_exact(pl)
 
 pl_str(pl)
 
-pl_num_envelopes(pl)
+pl_num_levels(pl)
 
 pl_limits(pl)
 
@@ -76,8 +76,8 @@ Compute persistence landscapes from persistence data.
 \code{landscape()} is a wrapper around the S4 class constructor
 \verb{[methods:new()]}. The \verb{pl_*()} helper functions take a persistence
 landscape as returned by \code{landscape()} and return its representation
-(\code{pl_is_exact()} and \code{pl_str()}), the number of envelopes
-(\code{pl_num_envelopes()}), the endpoints of its internal representation
+(\code{pl_is_exact()} and \code{pl_str()}), the number of levels
+(\code{pl_num_levels()}), the endpoints of its internal representation
 (excluding infinities) (\code{pl_limits()}), and the endpoints of its support,
 i.e. of the points at which its value is nonzero (\code{pl_support()}).
 }

@@ -24,7 +24,7 @@ pl2d <- landscape(pd2, degree = 1, exact = FALSE,
                   xmin = 0, xmax = 1.2, by = 0.00001)
 # plot the summand landscapes and their sum with consistent parameters;
 # the exact landscape is automatically converted to a discrete one
-n_lev <- pl_num_envelopes(pl1)
+n_lev <- pl_num_levels(pl1)
 par(mfrow = c(3, 1), mar = c(0, 2, 0, 2))
 plot(pl1, xlim = c(0, 1.2), n_levels = n_lev)
 plot(pl2d, xlim = c(0, 1.2), n_levels = n_lev)

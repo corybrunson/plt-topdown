@@ -30,14 +30,14 @@ setMethod(
     silent = TRUE
   ) {
     # pre-process parameters
-    n_env <- pl_num_envelopes(x)
+    n_env <- pl_num_levels(x)
     if (is.null(n_levels)) {
       n_levels <- n_env
     # } else if (n_levels > n_env) {
     } else if (n_levels < n_env && ! silent) {
       warning("`", deparse(substitute(x)), "` has more than `n_levels = ",
               n_levels,
-              "` envelopes; lower envelopes will not be drawn.")
+              "` levels; lower levels will not be drawn.")
     }
     
     # pre-process internal representation of landscape

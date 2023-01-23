@@ -459,7 +459,7 @@ double PersistenceLandscape::computeNthMoment(
 }
 
 // The `indicator` function is a vector of pairs. Its length is the number of
-// envelopes on which it may be nonzero. See Section 3.6 of Bubenik (2015).
+// levels on which it may be nonzero. See Section 3.6 of Bubenik (2015).
 PersistenceLandscape PersistenceLandscape::multiplyByIndicatorFunction(
     std::vector<std::pair<double, double>> indicator,
     unsigned r) const {

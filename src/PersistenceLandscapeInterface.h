@@ -543,10 +543,14 @@ public:
   }
   
   double minimum(unsigned level) {
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
     return pl_raw.findMin(level - 1);
   }
   
   double maximum(unsigned level) {
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
     return pl_raw.findMax(level - 1);
   }
   
@@ -554,6 +558,9 @@ public:
       unsigned n,
       double center,
       unsigned level) {
+    
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
     
     double moment_out = pl_raw.computeNthMoment(n, center, level - 1);
     
