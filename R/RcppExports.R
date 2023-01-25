@@ -13,6 +13,10 @@ PLmean <- function(pl_list) {
     .Call(`_plt_PLmean`, pl_list)
 }
 
+PLdist <- function(pl_list, p) {
+    .Call(`_plt_PLdist`, pl_list, p)
+}
+
 PLvar <- function(pl_list, p) {
     .Call(`_plt_PLvar`, pl_list, p)
 }

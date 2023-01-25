@@ -134,10 +134,10 @@ try(pl1d$toExact())
 It uses **grDevices** to build color palettes, and as such its default palette is viridis; but the user may supply the name of a recognized palette or a sequence of colors between which to interpolate:
 
 ```{r}
-n_env <- max(pl_num_envelopes(pl1), pl_num_envelopes(pl1d))
+n_levs <- max(pl_num_levels(pl1), pl_num_levels(pl1d))
 par(mfrow = c(2L, 1L), mar = c(2, 2, 0, 2))
-plot(pl1, palette = "terrain", n_levels = n_env, asp = 1)
-plot(pl1d, palette = "terrain", n_levels = n_env, asp = 1)
+plot(pl1, palette = "terrain", n_levels = n_levs, asp = 1)
+plot(pl1d, palette = "terrain", n_levels = n_levs, asp = 1)
 ```
 
 ### Vector Operations

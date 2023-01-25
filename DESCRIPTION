@@ -46,7 +46,7 @@ Suggests:
     knitr,
     rmarkdown,
     bench
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Collate: 
     'plt-package.r'
@@ -54,6 +54,7 @@ Collate:
     'Ops.r'
     'PersistenceLandscapeClass.R'
     'RcppExports.R'
+    'calculus.r'
     'inference.r'
     'landscape.r'
     'operations.r'

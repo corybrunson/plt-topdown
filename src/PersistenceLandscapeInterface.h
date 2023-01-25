@@ -4,6 +4,12 @@
 
 using namespace Rcpp;
 
+// NOTE: Indexing of (level/envelope) arguments must at some point be shifted
+// from starting at 1 (in R) to starting at 0 (in C++). Since the
+// 'PersistenceLandscapeInterface' methods are exposed to R, this shift will be
+// done in these methods, before they are passed to 'PersistenceLandscape'
+// methods. -JCB
+
 int TDIndex(int X, int Y, int Z, int x, int y, int z) {
   return x + X * (y + Y * z);
 }
@@ -160,6 +166,7 @@ std::vector<std::vector<std::pair<double, double>>> contractDiscreteLandscape(
   
   // TODO: If no grid points lie between `min_x` and `max_x`, then return an
   // empty landscape.
+  // `PersistenceLandscape l;`
   
   // numbers of fewer grid points
   double diffLeft = min_x - l.land[0][0].first;
@@ -309,14 +316,14 @@ class PersistenceLandscapeInterface {
   
 public:
   
-  // Creates PL from PD (in the form of a 2-column numeric matrix)
+  // Creates a PL from a PD, in the form of a 2-column numeric matrix.
   // Natural defaults are inferred in R through `landscape()`.
   PersistenceLandscapeInterface(
     NumericMatrix pd,
     bool exact = false,
     double min_x = 0, double max_x = 1,
     double dx = 0.01,
-    double min_y = 0, double max_y = 1000)
+    double min_y = R_NegInf, double max_y = R_PosInf)
     : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
     
     // Initialize a PersistenceLandscape object.
@@ -536,11 +543,15 @@ public:
   }
   
   double minimum(unsigned level) {
-    return pl_raw.findMin(level);
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
+    return pl_raw.findMin(level - 1);
   }
   
   double maximum(unsigned level) {
-    return pl_raw.findMax(level);
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
+    return pl_raw.findMax(level - 1);
   }
   
   double moment(
@@ -548,7 +559,10 @@ public:
       double center,
       unsigned level) {
     
-    double moment_out = pl_raw.computeNthMoment(n, center, level);
+    if (level <= 0 || level > pl_raw.land.size())
+      return NA_REAL;
+    
+    double moment_out = pl_raw.computeNthMoment(n, center, level - 1);
     
     return moment_out;
   }
@@ -713,6 +727,33 @@ PersistenceLandscapeInterface PLmean(List pl_list) {
   PersistenceLandscapeInterface avg_out = PLsum(pl_list);
   
   return avg_out.scale(1.0 / pl_list.size());
+}
+
+// [[Rcpp::export]]
+NumericMatrix PLdist(List pl_list, unsigned p) {
+  
+  // empty matrix
+  unsigned n = pl_list.size();
+  NumericMatrix out(n, n);
+  
+  // not assuming symmetric distance calculation
+  for (int i = 0; i != n; i++) {
+    PersistenceLandscapeInterface
+    pl_i = as<PersistenceLandscapeInterface>(pl_list[i]);
+    for (int j = 0; j != n; j++) {
+      if (j == i) {
+        // same landscape
+        out(i, j) = 0.;
+      } else {
+        // different landscape
+        PersistenceLandscapeInterface
+        pl_j = as<PersistenceLandscapeInterface>(pl_list[j]);
+        out(i, j) = pl_i.distance(pl_j, p);
+      }
+    }
+  }
+  
+  return out;
 }
 
 // [[Rcpp::export]]

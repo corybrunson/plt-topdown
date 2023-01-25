@@ -4,8 +4,8 @@
 #' @details `landscape()` is a wrapper around the S4 class constructor
 #'   `[methods:new()]`. The `pl_*()` helper functions take a persistence
 #'   landscape as returned by `landscape()` and return its representation
-#'   (`pl_is_exact()` and `pl_str()`), the number of envelopes
-#'   (`pl_num_envelopes()`), the endpoints of its internal representation
+#'   (`pl_is_exact()` and `pl_str()`), the number of levels
+#'   (`pl_num_levels()`), the endpoints of its internal representation
 #'   (excluding infinities) (`pl_limits()`), and the endpoints of its support,
 #'   i.e. of the points at which its value is nonzero (`pl_support()`).
 #'
@@ -106,7 +106,7 @@ pl_str <- function(pl) {
 
 #' @rdname landscape
 #' @export
-pl_num_envelopes <- function(pl) {
+pl_num_levels <- function(pl) {
   stopifnot(inherits(pl, "Rcpp_PersistenceLandscape"))
   switch (
     pl_str(pl),

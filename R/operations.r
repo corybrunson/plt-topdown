@@ -18,7 +18,7 @@
 #' @param pl,pl1,pl2 Persistent landscapes.
 #' @param pl_list A list of persistent landscapes.
 #' @param mult Double; a real-valued scale factor.
-#' @param level Positive integer; the envelope of the persistence landscape (up
+#' @param level Positive integer; the level of the persistence landscape (up
 #'   to) whose moment to calculate.
 #' @param p Positive integer or infinity; the power used to compute a norm or
 #'   moment.
@@ -109,22 +109,25 @@ pl_range <- function(pl, level = 1L) {
 
 #' @rdname arithmetic-operations
 #' @export
-pl_vmin <- function(pl, level = 1L) {
-  vapply(seq(level), function(l) pl$minimum(l), double())
+pl_vmin <- function(pl, level = pl_num_levels(pl)) {
+  if (level < 1L) return(numeric(0L))
+  vapply(seq(level), function(l) pl$minimum(l), 0.)
 }
 
 #' @rdname arithmetic-operations
 #' @export
-pl_vmax <- function(pl, level = 1L) {
-  vapply(seq(level), function(l) pl$maximum(l), double())
+pl_vmax <- function(pl, level = pl_num_levels(pl)) {
+  if (level < 1L) return(numeric(0L))
+  vapply(seq(level), function(l) pl$maximum(l), 0.)
 }
 
 #' @rdname arithmetic-operations
 #' @export
-pl_vrange <- function(pl, level = 1L) {
+pl_vrange <- function(pl, level = pl_num_levels(pl)) {
+  if (level < 1L) return(cbind(numeric(0L), numeric(0L)))
   cbind(
-    vapply(seq(level), function(l) pl$minimum(l), double()),
-    vapply(seq(level), function(l) pl$maximum(l), double())
+    vapply(seq(level), function(l) pl$minimum(l), 0.),
+    vapply(seq(level), function(l) pl$maximum(l), 0.)
   )
 }
 
@@ -137,12 +140,11 @@ pl_moment <- function(pl, p = 1L, center = 0, level = 1L) {
 
 #' @rdname arithmetic-operations
 #' @export
-pl_vmoment <- function(pl, p = 1L, center = 0, level = NULL) {
+pl_vmoment <- function(pl, p = 1L, center = 0, level = pl_num_levels(pl)) {
   p <- ensure_p(p)
-  if (is.null(level)) level <- pl_num_envelopes(pl)
   vapply(
     seq(level),
     function(l) pl$moment(p, center, l),
-    double()
+    0.
   )
 }

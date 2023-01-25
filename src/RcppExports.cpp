@@ -43,6 +43,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// PLdist
+NumericMatrix PLdist(List pl_list, unsigned p);
+RcppExport SEXP _plt_PLdist(SEXP pl_listSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pl_list(pl_listSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(PLdist(pl_list, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // PLvar
 double PLvar(List pl_list, unsigned p);
 RcppExport SEXP _plt_PLvar(SEXP pl_listSEXP, SEXP pSEXP) {
@@ -72,6 +84,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_plt_PLsum", (DL_FUNC) &_plt_PLsum, 1},
     {"_plt_PLdiff", (DL_FUNC) &_plt_PLdiff, 1},
     {"_plt_PLmean", (DL_FUNC) &_plt_PLmean, 1},
+    {"_plt_PLdist", (DL_FUNC) &_plt_PLdist, 2},
     {"_plt_PLvar", (DL_FUNC) &_plt_PLvar, 2},
     {"_plt_PLsd", (DL_FUNC) &_plt_PLsd, 2},
     {NULL, NULL, 0}

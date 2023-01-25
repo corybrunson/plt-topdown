@@ -15,14 +15,14 @@ setMethod(
     
     # internal structure
     fmt <- pl_str(object)
-    # number of envelopes
-    envn <- pl_num_envelopes(object)
+    # number of levels
+    envn <- pl_num_levels(object)
     # abscissal support
     xran <- fmt_ran(pl_support(object))
     
     # send summary line to console
     cat(sprintf(
-      "Persistence landscape (%s format) of %i envelopes over (%s,%s)",
+      "Persistence landscape (%s format) of %i levels over (%s,%s)",
       fmt, envn, xran[[1L]], xran[[2L]]
     ))
     
