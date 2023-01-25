@@ -30,7 +30,10 @@
 #define PERISTENCELANDSCAPE_H
 
 #include <Rcpp.h>
+#include <limits>
+
 using namespace std;
+using namespace Rcpp;
 
 // TODO: Make this a user-settable option through {Rcpp}.
 double epsi = 0.000005;
@@ -83,6 +86,27 @@ double functionValue(
   return (a * x + b);
 }
 
+int TDIndex(int X, int Y, int Z, int x, int y, int z) {
+  return x + X * (y + Y * z);
+}
+
+int TDIndex2(int X, int Y, int x, int y) {
+  return x + X * y;
+}
+
+std::vector<std::pair<double, double>> generateGrid(
+    double start,
+    double end,
+    double dx) {
+  
+  std::vector<std::pair<double, double>> grid;
+  
+  for (double current = start; current < end; current += dx)
+    grid.push_back(std::make_pair(current, 0));
+  
+  return grid;
+}
+
 // Modified by Jose Bouza to accept exact/discrete constructor param.
 class PersistenceLandscape {
   
@@ -93,9 +117,26 @@ public:
   PersistenceLandscape(
     const std::vector<std::pair<double, double>> &diagram,
     bool exact = true,
-    double min_x = 0,
-    double max_x = 1,
+    double min_x = 0, double max_x = 1,
     double dx = 0.01);
+  
+  PersistenceLandscape(
+    const NumericMatrix pd,
+    bool exact = true,
+    double min_x = 0, double max_x = 1,
+    double dx = 0.01,
+    double min_y = R_NegInf, double max_y = R_PosInf)
+    : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
+    
+    // Convert numeric matrix in R to PD structure in C++.
+    std::vector<std::pair<double, double>> diag;
+    for (int i = 0; i < pd.nrow(); i++)
+      diag.push_back(std::make_pair(pd(i,0),
+                                    std::max(std::min(pd(i,1), max_y), min_y)));
+    
+    // PersistenceLandscape::diagram = diag;
+    PersistenceLandscape(diag, exact, min_x, max_x, dx);
+  };
   
   std::vector<std::vector<std::pair<double, double>>> land;
   
@@ -277,9 +318,38 @@ public:
       double center,
       unsigned level) const;
   
+  // Copied or adapted from class 'PersistenceLandscapeInterface':
+  
+  bool isExact() const {
+    return exact;
+  }
+  
+  double xMin() const {
+    return min_x;
+  }
+  
+  double xMax() const {
+    return max_x;
+  }
+  
+  double xBy() const {
+    return dx;
+  }
+  
+  SEXP getInternal() {
+    if (exact)
+      return wrap(exactPersistenceLandscapeToR(this->land));
+    else
+      return wrap(discretePersistenceLandscapeToR(this->land));
+  }
+  
 private:
   
+  std::vector<std::pair<double, double>> diagram;
   bool exact;
+  double min_x;
+  double max_x;
+  double dx;
   
 };
 
@@ -326,6 +396,61 @@ PersistenceLandscape::PersistenceLandscape(
     // v.push_back(std::make_pair(INT_MAX, 0.));
     this->land.push_back(v);
   }
+}
+
+std::vector<NumericVector> exactPersistenceLandscapeToR(
+    std::vector<std::vector<std::pair<double, double>>> input) {
+  
+  std::vector<NumericVector> out_d;
+  
+  for (int j = 0; j < input.size(); j++) {
+    Dimension d(input[j].size(), 2);
+    NumericVector out(input[j].size() * 2);
+    
+    for (int i = 0; i < input[j].size(); i++) {
+      out[TDIndex2(input[j].size(), 2, i, 0)] =
+        input[j][i].first;
+      out[TDIndex2(input[j].size(), 2, i, 1)] =
+        input[j][i].second;
+      
+      if (input[j][i].first == INT_MAX)
+        out[TDIndex2(input[j].size(), 2, i, 0)] = R_PosInf;
+      
+      if (input[j][i].first == INT_MIN)
+        out[TDIndex2(input[j].size(), 2, i, 0)] = R_NegInf;
+    }
+    
+    out.attr("dim") = d;
+    out_d.push_back(out);
+  }
+  
+  return out_d;
+}
+
+NumericVector discretePersistenceLandscapeToR(
+    std::vector<std::vector<std::pair<double, double>>> input) {
+  
+  Dimension d(input.size(), input[0].size(), 2);
+  NumericVector out(input.size() * input[0].size() * 2);
+  NumericVector out_d(d);
+  
+  for (int j = 0; j < input.size(); j++) {
+    for (int i = 0; i < input[0].size(); i++) {
+      out[TDIndex(input.size(), input[0].size(), 2, j, i, 0)] =
+        input[j][i].first;
+      out[TDIndex(input.size(), input[0].size(), 2, j, i, 1)] =
+        input[j][i].second;
+      
+      // REVIEW: Why is this needed for discrete landscapes? -JCB
+      if (input[j][i].first == INT_MAX)
+        out[TDIndex(input.size(), input[0].size(), 2, j, i, 0)] = R_PosInf;
+      if (input[j][i].first == INT_MIN)
+        out[TDIndex(input.size(), input[0].size(), 2, j, i, 0)] = R_NegInf;
+    }
+  }
+  
+  std::copy(out.begin(), out.end(), out_d.begin());
+  return out_d;
 }
 
 // this is O(log(n)) algorithm, where n is number of points in this->land.
@@ -405,6 +530,232 @@ double PersistenceLandscape::findMax(
       maximum = this->land[lambda][i].second;
   }
   return maximum;
+}
+
+std::vector<std::vector<std::pair<double, double>>> exactLandscapeToDiscrete(
+    PersistenceLandscape l,
+    double min_x, double max_x,
+    double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  std::pair<double, double> currentPoint;
+  
+  for (unsigned i = 0; i < l.land.size(); i++) {
+    
+    auto level = l.land[i];
+    std::vector<std::pair<double, double>> level_out;
+    
+    // Start at the level value at `min_x`.
+    double x_buff = min_x;
+    double y_buff = l.computeValueAtAGivenPoint(i, min_x);
+    currentPoint = std::make_pair(x_buff, y_buff);
+    level_out.push_back(currentPoint);
+    
+    // Iterate over finite critical points...
+    for (int j = 1; j < level.size() - 1; j++) {
+      
+      // Skip to the critical point rightward of `currentPoint` for which the
+      // next critical point is just leftward of `currentPoint + dx`.
+      if (level[j].first <= x_buff || level[j + 1].first < x_buff + dx) continue;
+      
+      // If the next critical point is at least `dx` rightward, then increment
+      // linearly to it; else, compute and increment to the next level value.
+      if (level[j].first < x_buff + dx) {
+        
+        x_buff += dx;
+        y_buff = l.computeValueAtAGivenPoint(i, x_buff + dx);
+        currentPoint = std::make_pair(x_buff, y_buff);
+        level_out.push_back(currentPoint);
+        
+      } else {
+        std::pair<double, double> nextPoint = level[j];
+        
+        // If change in x, increment linearly from current to just before next.
+        if (nextPoint.first != currentPoint.first) {
+          double delta_x = nextPoint.first - currentPoint.first;
+          double delta_y = nextPoint.second - currentPoint.second;
+          double slope = delta_y / delta_x;
+          
+          int n_incr = std::floor((std::min(nextPoint.first, max_x) - x_buff) /
+                                  dx);
+          for (int k = 0; k < n_incr; k++) {
+            x_buff += dx;
+            y_buff += dx * slope;
+            level_out.push_back(std::make_pair(x_buff, y_buff));
+          }
+        }
+        
+        currentPoint = std::make_pair(x_buff, y_buff);
+      }
+    }
+    
+    // If `max_x` has not been reached, then increment along zero y values.
+    if (x_buff + dx < max_x + epsi) {
+      int n_incr = std::floor((max_x + epsi - x_buff) / dx);
+      y_buff = 0;
+      for (int k = 0; k < n_incr; k++) {
+        x_buff += dx;
+        level_out.push_back(std::make_pair(x_buff, y_buff));
+      }
+    }
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+// NB: This operation does not verify that the input is correcctly encoded; in
+// particular, it does not check that the resolution is fixed throughout. -JCB
+std::vector<std::vector<std::pair<double, double>>> expandDiscreteLandscape(
+    PersistenceLandscape l,
+    double min_x, double max_x,
+    double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  // reality check
+  // if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
+  if (! almostEqual(l.land[0][1].first, l.land[0][0].first + dx))
+    stop("Resolutions do not agree.");
+  
+  // numbers of additional grid points
+  double diffLeft = l.land[0][0].first - min_x;
+  double diffRight = max_x - l.land[0][l.land[0].size() - 1].first;
+  int gridDiffLeft = std::ceil(std::max(0., (diffLeft) / dx));
+  int gridDiffRight = std::ceil(std::max(0., diffRight / dx));
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    
+    // prefix
+    for (int i = gridDiffLeft; i > 0; i--)
+      level_out.push_back(std::make_pair(
+          level[0].first - i * dx,
+          0));
+    // existing
+    for (std::pair<double, double> pair : level)
+      level_out.push_back(std::make_pair(
+          pair.first,
+          pair.second));
+    // suffix
+    for (int i = 1; i <= gridDiffRight; i++)
+      level_out.push_back(std::make_pair(
+          level[level.size() - 1].first + i * dx,
+          0));
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+std::vector<std::vector<std::pair<double, double>>> contractDiscreteLandscape(
+    PersistenceLandscape l,
+    double min_x, double max_x,
+    double dx) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  // reality check
+  // if (fabs(l.land[0][1].first - l.land[0][0].first - dx) > epsi)
+  if (! almostEqual(l.land[0][1].first, l.land[0][0].first + dx))
+    stop("Resolutions do not agree.");
+  
+  // TODO: If no grid points lie between `min_x` and `max_x`, then return an
+  // empty landscape.
+  // `PersistenceLandscape l;`
+  
+  // numbers of fewer grid points
+  double diffLeft = min_x - l.land[0][0].first;
+  double diffRight = l.land[0][l.land[0].size() - 1].first - max_x;
+  int gridDiffLeft = std::ceil(std::max(0., (diffLeft) / dx));
+  int gridDiffRight = std::ceil(std::max(0., diffRight / dx));
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    
+    // truncated range
+    for (int i = gridDiffLeft; i < l.land[0].size() - gridDiffRight; i++)
+      level_out.push_back(std::make_pair(
+          level[i].first,
+          level[i].second));
+    
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+// REVIEW: Assume only that the `dx` are equal and that they divide the
+// difference between the `min_x`. -JCB
+std::vector<std::vector<std::pair<double, double>>> addDiscreteLandscapes(
+    const PersistenceLandscape &l1,
+    const PersistenceLandscape &l2) {
+  
+  int min_level = std::min(l1.land.size(), l2.land.size());
+  std::vector<std::vector<std::pair<double, double>>> out;
+  for (int i = 0; i < min_level; i++) {
+    int min_index = std::min(l1.land[i].size(), l2.land[i].size());
+    std::vector<std::pair<double, double>> level_out;
+    for (int j = 0; j < min_index; j++)
+      level_out.push_back(std::make_pair(
+          l1.land[i][j].first,
+          l1.land[i][j].second + l2.land[i][j].second));
+    
+    for (; min_index < l1.land[i].size(); min_index++)
+      level_out.push_back(l1.land[i][min_index]);
+    
+    for (; min_index < l2.land[i].size(); min_index++)
+      level_out.push_back(l2.land[i][min_index]);
+    
+    out.push_back(level_out);
+  }
+  
+  for (; min_level < l1.land.size(); min_level++)
+    out.push_back(l1.land[min_level]);
+  
+  for (; min_level < l2.land.size(); min_level++)
+    out.push_back(l2.land[min_level]);
+  
+  return out;
+}
+
+std::vector<std::vector<std::pair<double, double>>> scaleDiscreteLandscape(
+    PersistenceLandscape l,
+    double scale) {
+  
+  std::vector<std::vector<std::pair<double, double>>> out;
+  
+  for (std::vector<std::pair<double, double>> level : l.land) {
+    std::vector<std::pair<double, double>> level_out;
+    for (std::pair<double, double> pair : level)
+      level_out.push_back(std::make_pair(pair.first, scale * pair.second));
+    // for (auto i : level_out) {
+    //   // TODO: Delete this loop or figure out what belongs in it! -JCB
+    // }
+    out.push_back(level_out);
+  }
+  
+  return out;
+}
+
+double innerProductDiscreteLandscapes(
+    PersistenceLandscape l1,
+    PersistenceLandscape l2,
+    double dx) {
+  
+  int min_level = std::min(l1.land.size(), l2.land.size());
+  double integral_buffer = 0;
+  
+  for (int i = 0; i < min_level; i++) {
+    int min_index = std::min(l1.land[i].size(), l2.land[i].size());
+    for (int j = 0; j < min_index; j++)
+      integral_buffer += l1.land[i][j].second * l2.land[i][j].second;
+  }
+  
+  return integral_buffer * dx;
 }
 
 // This function computes the n^th moment of the level `lambda`.
