@@ -475,11 +475,13 @@ private:
   
 };
 
+// https://stackoverflow.com/a/2350003/4556798
 PersistenceLandscape::PersistenceLandscape(
   const std::vector<std::pair<double, double>> &diagram,
   bool exact,
   double min_x, double max_x,
-  double grid_diameter) {
+  double grid_diameter)
+  : exact(exact), min_x(min_x), max_x(max_x), dx(grid_diameter) {
   
   // Adapted from constructor:
   // `PersistenceBarcodes(std::vector<std::pair<double, double>> bars)`
