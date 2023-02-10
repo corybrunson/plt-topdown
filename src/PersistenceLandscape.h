@@ -480,8 +480,8 @@ PersistenceLandscape::PersistenceLandscape(
   const std::vector<std::pair<double, double>> &diagram,
   bool exact,
   double min_x, double max_x,
-  double grid_diameter)
-  : exact(exact), min_x(min_x), max_x(max_x), dx(grid_diameter) {
+  double dx)
+  : exact(exact), min_x(min_x), max_x(max_x), dx(dx) {
   
   // Adapted from constructor:
   // `PersistenceBarcodes(std::vector<std::pair<double, double>> bars)`
@@ -596,7 +596,7 @@ PersistenceLandscape::PersistenceLandscape(
   } else {
     
     // In this case we will build a landscape on a grid.
-    double gridDiameter = grid_diameter;
+    double gridDiameter = dx;
     // REVIEW: Why create `minMax` rather than use `min_x` and `max_x`? -JCB
     std::pair<double, double> minMax = std::make_pair(min_x, max_x);
     size_t numberOfBins =
