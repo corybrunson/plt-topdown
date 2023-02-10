@@ -5,7 +5,7 @@ using namespace Rcpp;
 
 RCPP_EXPOSED_CLASS(PersistenceLandscape)
 
-RCPP_MODULE(Landscape) {
+RCPP_MODULE(class_PersistenceLandscape) {
   
   // NB: Expose C++ class 'PersistenceLandscape' as R class
   // 'PersistenceLandscape'

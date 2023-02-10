@@ -11,7 +11,12 @@
 \alias{as.vector.Rcpp_PersistenceLandscape}
 \alias{as.data.frame.Rcpp_PersistenceLandscape}
 \title{Exported C++ Class 'PersistenceLandscape'}
+\format{
+An object of class \code{C++Class} of length 1.
+}
 \usage{
+PersistenceLandscape
+
 \method{summary}{Rcpp_PersistenceLandscape}(object, ...)
 
 \method{print}{summary.Rcpp_PersistenceLandscape}(x, digits = max(1L, getOption("digits") - 3L), ...)
@@ -92,3 +97,4 @@ pl2$getInternal()
 try(pl2$toExact())
 pl2$toDiscrete()
 }
+\keyword{datasets}
