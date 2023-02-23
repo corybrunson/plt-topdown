@@ -15,6 +15,8 @@ plot(pl_d)
 pl_df <- pl_indicator(pl_d, f)
 plot(pl_df, xlim = c(0, 5))
 par(mfrow = c(1L, 1L), mar = c(5.1, 4.1, 4.1, 2.1))
-# integrate pl multiplied by an indicator function
+# integrate PL multiplied by an indicator function
 pl_integral(pl_d, p = 5)
 pl_integral(pl_df, p = 5)
+pl_integral(pl_e, p = 5)
+pl_integral(pl_ef, p = 5)
